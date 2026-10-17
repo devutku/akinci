@@ -39,7 +39,9 @@ public static class HttpHandlerFactory
         var handler = CreateHandler(credentials);
         var client = new HttpClient(handler, disposeHandler: true);
 
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("Akinci/1.0 (CleanCore DownloadManager; Windows/Linux/macOS)");
+        client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 Akinci/1.0");
+        client.DefaultRequestHeaders.Add("Accept", "*/*");
+        client.DefaultRequestHeaders.Add("Accept-Language", "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7");
 
         // HTTP Basic doğrulaması varsa Authorization başlığını doğrudan ekle
         if (credentials is { Type: AuthenticationType.Basic } &&

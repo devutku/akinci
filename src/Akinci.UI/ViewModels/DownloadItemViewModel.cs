@@ -36,6 +36,9 @@ public partial class DownloadItemViewModel : ObservableObject
     private double _progressPercentage;
 
     [ObservableProperty]
+    private bool _isIndeterminate;
+
+    [ObservableProperty]
     private string _speedText = "0 B/s";
 
     [ObservableProperty]
@@ -164,8 +167,13 @@ public partial class DownloadItemViewModel : ObservableObject
         string totalStr = total.HasValue ? FormatBytes(total.Value) : "Bilinmiyor";
 
         DownloadedAndTotalText = $"{downloadedStr} / {totalStr}";
-        ProgressText = $"{downloadedStr} / {totalStr} ({ProgressPercentage:F1}%)";
+        ProgressText = total.HasValue
+            ? $"{downloadedStr} / {totalStr} ({ProgressPercentage:F1}%)"
+            : $"{downloadedStr} indirildi";
         ConnectionsText = Chunks.Count > 0 ? $"{Chunks.Count} bağlantı" : "";
+
+        bool hasUnknownSize = !total.HasValue || total.Value <= 0;
+        IsIndeterminate = hasUnknownSize && Status == DownloadStatus.Downloading;
 
         UpdateEta(downloaded, total, speedBps);
     }
@@ -228,6 +236,7 @@ public partial class DownloadItemViewModel : ObservableObject
         Status = status;
         CanPause = status == DownloadStatus.Downloading;
         CanResume = status is DownloadStatus.Paused or DownloadStatus.Failed;
+        IsIndeterminate = (!Task.TotalBytes.HasValue || Task.TotalBytes.Value <= 0) && status == DownloadStatus.Downloading;
 
         (StatusText, StatusTextColor, StatusBgColor, StatusBorderColor, ProgressBarColor) = status switch
         {

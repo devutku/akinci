@@ -351,6 +351,7 @@
 
                                         <!-- Slim & Elegant Progress Bar (3px) -->
                                         <ProgressBar Grid.Row="1" Minimum="0" Maximum="100" Value="{Binding ProgressPercentage}"
+                                                     IsIndeterminate="{Binding IsIndeterminate}"
                                                      Height="3" CornerRadius="1.5"
                                                      Background="#202026" Foreground="{Binding ProgressBarColor}"
                                                      Margin="0,8,0,8" />
