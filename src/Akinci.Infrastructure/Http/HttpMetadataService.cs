@@ -19,9 +19,9 @@ public sealed class HttpMetadataService : IHttpMetadataService
         using var client = HttpHandlerFactory.CreateClient(credentials);
 
         // 1. Önce hafif bir HEAD isteği deneyelim
-        using var headRequest = new HttpRequestMessage(HttpMethod.Head, url.Uri);
         try
         {
+            using var headRequest = new HttpRequestMessage(HttpMethod.Head, url.Uri);
             using var response = await client.SendAsync(
                 headRequest,
                 HttpCompletionOption.ResponseHeadersRead,
@@ -29,65 +29,89 @@ public sealed class HttpMetadataService : IHttpMetadataService
 
             if (response.IsSuccessStatusCode)
             {
-                return ExtractMetadata(response, url);
-            }
-
-            // Bazı sunucular HEAD isteğini reddeder (405 Method Not Allowed)
-            if (response.StatusCode == HttpStatusCode.MethodNotAllowed)
-            {
-                return await QueryViaRangeGetAsync(client, url, cancellationToken).ConfigureAwait(false);
+                var meta = ExtractMetadata(response, url);
+                // Sunucu HEAD isteğine gerçekten pozitif bir boyut döndüyse bunu kullanabiliriz
+                if (meta.ContentLength.HasValue && meta.ContentLength.Value > 0)
+                {
+                    return meta;
+                }
             }
         }
-        catch (HttpRequestException)
+        catch
         {
-            // HEAD başarısız olursa GET fallback'i dene
-            return await QueryViaRangeGetAsync(client, url, cancellationToken).ConfigureAwait(false);
+            // HEAD başarısız olursa veya engellenirse doğrudan GET fallback'e geç
         }
 
-        // Eğer buraya gelinirse GET fallback ile tekrar sorgulayalım
-        return await QueryViaRangeGetAsync(client, url, cancellationToken).ConfigureAwait(false);
+        // 2. HEAD boyutu vermediyse veya engellendiyse: ResponseHeadersRead ile GET isteği at (dosyayı indirmeden sadece başlıkları oku)
+        return await QueryViaGetHeadersAsync(client, url, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// HEAD isteği desteklenmediğinde 'Range: bytes=0-0' GET isteği atarak boyutu ve Range desteğini sorgular.
+    /// HEAD isteği dosya boyutu vermediğinde veya engellendiğinde, gövdeyi (dosyayı) indirmeden
+    /// yalnızca HTTP başlıkları geldiği an dönen hafif GET isteğiyle boyutu ve Range desteğini çeker.
     /// </summary>
-    private static async Task<FileMetadataDto> QueryViaRangeGetAsync(
+    private static async Task<FileMetadataDto> QueryViaGetHeadersAsync(
         HttpClient client,
         DownloadUrl url,
         CancellationToken cancellationToken)
     {
-        using var getRequest = new HttpRequestMessage(HttpMethod.Get, url.Uri);
-        getRequest.Headers.Range = new RangeHeaderValue(0, 0);
+        // Adım A: Önce 'Range: bytes=0-0' ile dene (Boyutu ve Range desteğini aynı anda anlamak için en hafif yöntem)
+        try
+        {
+            using var rangeRequest = new HttpRequestMessage(HttpMethod.Get, url.Uri);
+            rangeRequest.Headers.Range = new RangeHeaderValue(0, 0);
 
-        using var response = await client.SendAsync(
+            using var response = await client.SendAsync(
+                rangeRequest,
+                HttpCompletionOption.ResponseHeadersRead,
+                cancellationToken).ConfigureAwait(false);
+
+            if (response.IsSuccessStatusCode)
+            {
+                long? totalBytes = null;
+                bool supportsRange = false;
+
+                if (response.StatusCode == HttpStatusCode.PartialContent)
+                {
+                    supportsRange = true;
+                    totalBytes = response.Content.Headers.ContentRange?.Length;
+                }
+                else
+                {
+                    totalBytes = response.Content.Headers.ContentLength;
+                    supportsRange = response.Headers.AcceptRanges.Contains("bytes");
+                }
+
+                if (totalBytes.HasValue && totalBytes.Value > 0)
+                {
+                    var fileName = ExtractFileName(response, url);
+                    var etag = response.Headers.ETag?.Tag;
+                    var contentType = response.Content.Headers.ContentType?.MediaType;
+                    return new FileMetadataDto(totalBytes, supportsRange, fileName, etag, contentType);
+                }
+            }
+        }
+        catch
+        {
+            // Range GET başarısız olursa düz GET'e geç
+        }
+
+        // Adım B: Düz standart GET isteği (ResponseHeadersRead: Gövdeyi indirmeden sadece HTTP başlıklarını okur)
+        using var getRequest = new HttpRequestMessage(HttpMethod.Get, url.Uri);
+        using var getResponse = await client.SendAsync(
             getRequest,
             HttpCompletionOption.ResponseHeadersRead,
             cancellationToken).ConfigureAwait(false);
 
-        response.EnsureSuccessStatusCode();
+        getResponse.EnsureSuccessStatusCode();
 
-        long? totalBytes = null;
-        bool supportsRange = false;
+        long? length = getResponse.Content.Headers.ContentLength;
+        bool canRange = getResponse.Headers.AcceptRanges.Contains("bytes");
+        var name = ExtractFileName(getResponse, url);
+        var tag = getResponse.Headers.ETag?.Tag;
+        var type = getResponse.Content.Headers.ContentType?.MediaType;
 
-        if (response.StatusCode == HttpStatusCode.PartialContent)
-        {
-            supportsRange = true;
-            if (response.Content.Headers.ContentRange?.Length != null)
-            {
-                totalBytes = response.Content.Headers.ContentRange.Length;
-            }
-        }
-        else
-        {
-            totalBytes = response.Content.Headers.ContentLength;
-            supportsRange = response.Headers.AcceptRanges.Contains("bytes");
-        }
-
-        var fileName = ExtractFileName(response, url);
-        var etag = response.Headers.ETag?.Tag;
-        var contentType = response.Content.Headers.ContentType?.MediaType;
-
-        return new FileMetadataDto(totalBytes, supportsRange, fileName, etag, contentType);
+        return new FileMetadataDto(length, canRange, name, tag, type);
     }
 
     private static FileMetadataDto ExtractMetadata(HttpResponseMessage response, DownloadUrl url)

@@ -102,6 +102,18 @@
                     </StackPanel>
                 </Border>
 
+                <!-- Tarayıcı Entegrasyonu Kartı -->
+                <Border Background="#18181C" BorderBrush="#22222A" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,6,0,0">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="🌐 Chrome &amp; Edge İndirme Eklentisi" FontWeight="SemiBold" FontSize="12" Foreground="#38BDF8" />
+                            <TextBlock Text="İndirmeleri otomatik yakalayan tarayıcı eklentisini kurun veya yeniden yapılandırın."
+                                       FontSize="11" Foreground="#64748B" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="Eklentiyi Kur..." Click="OnInstallExtensionClick" Classes="quiet-btn" Padding="12,7" Margin="8,0,0,0" />
+                    </Grid>
+                </Border>
+
                 <!-- Akıncı Hakkında & Hero Banner Card -->
                 <Border Background="#18181C" BorderBrush="#22222A" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,6,0,0">
                     <Grid RowDefinitions="Auto,Auto">

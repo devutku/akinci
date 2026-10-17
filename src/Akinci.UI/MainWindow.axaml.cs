@@ -38,6 +38,7 @@ public partial class MainWindow : Window
         {
             _notificationService.AttachWindow(this);
             await viewModel.InitializeAsync();
+            CheckAndPromptExtensionInstallation();
         };
 
         KeyDown += (s, e) =>
@@ -169,6 +170,20 @@ public partial class MainWindow : Window
             {
                 item.OpenFolderCommand.Execute(null);
             }
+        }
+    }
+
+    private async void CheckAndPromptExtensionInstallation()
+    {
+        if (_settingsService == null) return;
+
+        var settings = _settingsService.Current;
+        if (!settings.ExtensionPromptDismissed && !BrowserIntegrationService.IsNativeHostRegistered())
+        {
+            // UI yüklendikten sonra zarif bir bekleme (800ms)
+            await Task.Delay(800);
+            var dialog = new InstallExtensionDialog(_settingsService);
+            await dialog.ShowDialog<bool>(this);
         }
     }
 }

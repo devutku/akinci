@@ -1,0 +1,114 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Akinci.UI.Views.InstallExtensionDialog"
+        Title="Tarayıcı Entegrasyonu - AKINCI"
+        Icon="/Assets/akinci.ico"
+        Width="520"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="#0F0F12">
+
+    <Window.Styles>
+        <Style Selector="Button.primary-action-btn">
+            <Setter Property="Background" Value="#38BDF8" />
+            <Setter Property="Foreground" Value="#0F172A" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="18,10" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.primary-action-btn:pointerover">
+            <Setter Property="Background" Value="#7DD3FC" />
+        </Style>
+
+        <Style Selector="Button.quiet-btn">
+            <Setter Property="Background" Value="#1E1E24" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="14,10" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="#2B2B36" />
+        </Style>
+        <Style Selector="Button.quiet-btn:pointerover">
+            <Setter Property="Background" Value="#282832" />
+            <Setter Property="BorderBrush" Value="#38BDF8" />
+        </Style>
+
+        <Style Selector="Button.dismiss-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#64748B" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="BorderThickness" Value="0" />
+        </Style>
+        <Style Selector="Button.dismiss-btn:pointerover">
+            <Setter Property="Foreground" Value="#94A3B8" />
+        </Style>
+    </Window.Styles>
+
+    <Border Padding="24" Background="#0F0F12">
+        <StackPanel Spacing="18">
+            <!-- Header with Icon -->
+            <Grid ColumnDefinitions="Auto,*">
+                <Border Grid.Column="0" Width="44" Height="44" CornerRadius="10"
+                        Background="#102538" BorderBrush="#1E4466" BorderThickness="1"
+                        Margin="0,0,14,0" VerticalAlignment="Center">
+                    <PathIcon Data="{StaticResource IconDownload}" Width="20" Height="20" Foreground="#38BDF8"
+                              VerticalAlignment="Center" HorizontalAlignment="Center" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="3">
+                    <TextBlock Text="Chrome ve Edge İndirme Entegrasyonu" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" />
+                    <TextBlock Text="Tarayıcınızdaki indirmelerin otomatik olarak Akıncı'ya yönlendirilmesini ister misiniz?"
+                               FontSize="12" Foreground="#94A3B8" TextWrapping="Wrap" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Feature Card -->
+            <Border Background="#18181C" BorderBrush="#272730" BorderThickness="1" CornerRadius="8" Padding="14">
+                <StackPanel Spacing="10">
+                    <Grid ColumnDefinitions="Auto,*">
+                        <TextBlock Grid.Column="0" Text="⚡" FontSize="13" Margin="0,0,8,0" />
+                        <TextBlock Grid.Column="1" Text="IDM Benzeri Otomatik Yakalama: İndirme butonuna bastığınız anda Akıncı devralır."
+                                   FontSize="12" Foreground="#E2E8F0" TextWrapping="Wrap" />
+                    </Grid>
+                    <Grid ColumnDefinitions="Auto,*">
+                        <TextBlock Grid.Column="0" Text="🛡️" FontSize="13" Margin="0,0,8,0" />
+                        <TextBlock Grid.Column="1" Text="Oturum &amp; Çerez Aktarımı: Giriş yapılmış veya geri sayımlı sitelerin gerçek dosya linklerini hatasız yakalar."
+                                   FontSize="12" Foreground="#E2E8F0" TextWrapping="Wrap" />
+                    </Grid>
+                    <Grid ColumnDefinitions="Auto,*">
+                        <TextBlock Grid.Column="0" Text="🚀" FontSize="13" Margin="0,0,8,0" />
+                        <TextBlock Grid.Column="1" Text="32 Kanallı Hızlandırma: Dosyaları anında çok parçalı yüksek hızda indirir."
+                                   FontSize="12" Foreground="#E2E8F0" TextWrapping="Wrap" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <!-- Status Info -->
+            <TextBlock x:Name="TxtStatus" Text="Kayıt defteri ve yerel ana bilgisayar (Native Host) otomatik yapılandırılacaktır."
+                       FontSize="11" Foreground="#64748B" HorizontalAlignment="Center" />
+
+            <!-- Action Buttons -->
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Button Grid.Column="0" Classes="dismiss-btn" Content="Bir Daha Sorma" Click="OnDismissClick" />
+
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
+                    <Button Classes="quiet-btn" Content="Daha Sonra" Click="OnLaterClick" />
+                    <Button Classes="primary-action-btn" Content="Evet, Eklentiyi Kur" Click="OnInstallClick" />
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>

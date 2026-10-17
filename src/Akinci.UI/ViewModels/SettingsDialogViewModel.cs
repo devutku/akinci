@@ -16,6 +16,8 @@ public partial class SettingsDialogViewModel : ObservableObject
     [ObservableProperty]
     private string _virusTotalApiKey;
 
+    public SettingsService SettingsService => _settingsService;
+
     public SettingsDialogViewModel(SettingsService settingsService)
     {
         _settingsService = settingsService;
@@ -27,11 +29,10 @@ public partial class SettingsDialogViewModel : ObservableObject
 
     public void Save()
     {
-        _settingsService.SaveSettings(new AppSettings
-        {
-            DefaultDownloadDirectory = DefaultDirectory,
-            DefaultConnections = DefaultConnections,
-            VirusTotalApiKey = string.IsNullOrWhiteSpace(VirusTotalApiKey) ? null : VirusTotalApiKey.Trim()
-        });
+        var current = _settingsService.Current;
+        current.DefaultDownloadDirectory = DefaultDirectory;
+        current.DefaultConnections = DefaultConnections;
+        current.VirusTotalApiKey = string.IsNullOrWhiteSpace(VirusTotalApiKey) ? null : VirusTotalApiKey.Trim();
+        _settingsService.SaveSettings(current);
     }
 }

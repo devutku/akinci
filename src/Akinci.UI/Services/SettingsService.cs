@@ -10,6 +10,8 @@ public sealed class AppSettings
     public int DefaultConnections { get; set; } = 8;
 
     public string? VirusTotalApiKey { get; set; } = Environment.GetEnvironmentVariable("VIRUSTOTAL_API_KEY");
+
+    public bool ExtensionPromptDismissed { get; set; } = false;
 }
 
 public sealed class SettingsService

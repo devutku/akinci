@@ -38,6 +38,15 @@ public partial class SettingsDialog : Window
         }
     }
 
+    private async void OnInstallExtensionClick(object? sender, RoutedEventArgs e)
+    {
+        if (DataContext is SettingsDialogViewModel vm)
+        {
+            var dialog = new InstallExtensionDialog(vm.SettingsService);
+            await dialog.ShowDialog<bool>(this);
+        }
+    }
+
     private void OnCancelClick(object? sender, RoutedEventArgs e)
     {
         Close(false);
