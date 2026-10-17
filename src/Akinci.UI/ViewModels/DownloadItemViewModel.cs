@@ -238,7 +238,7 @@ public partial class DownloadItemViewModel : ObservableObject
     {
         Status = status;
         CanPause = status == DownloadStatus.Downloading;
-        CanResume = status is DownloadStatus.Paused or DownloadStatus.Failed;
+        CanResume = status is DownloadStatus.Paused or DownloadStatus.Failed or DownloadStatus.Pending;
         IsCompleted = status == DownloadStatus.Completed;
         IsIndeterminate = (!Task.TotalBytes.HasValue || Task.TotalBytes.Value <= 0) && status == DownloadStatus.Downloading;
 

@@ -15,7 +15,7 @@
         <!-- Lucide / Fluent Style Monochromatic Geometries -->
         <StreamGeometry x:Key="IconInbox">M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2zm0 9.5V18h16v-4.5h-4c0 1.66-1.34 3-3 3s-3-1.34-3-3H4z</StreamGeometry>
         <StreamGeometry x:Key="IconDownload">M12 3v11m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2</StreamGeometry>
-        <StreamGeometry x:Key="IconPause">M8 5v14M16 5v14</StreamGeometry>
+        <StreamGeometry x:Key="IconPause">M7 4h3.5v16H7zm6.5 0h3.5v16h-3.5z</StreamGeometry>
         <StreamGeometry x:Key="IconCheck">M20 6L9 17l-5-5</StreamGeometry>
         <StreamGeometry x:Key="IconSearch">M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm10 2l-4.35-4.35</StreamGeometry>
         <StreamGeometry x:Key="IconPauseAll">M7 4h3v16H7zm7 0h3v16h-3z</StreamGeometry>
@@ -161,6 +161,32 @@
         <Style Selector="Border.download-row Button.row-action:pointerover">
             <Setter Property="Opacity" Value="1.0" />
             <Setter Property="Background" Value="#2C2C38" />
+            <Setter Property="BorderBrush" Value="#38BDF8" />
+        </Style>
+
+        <!-- Primary Action Buttons (Pause & Resume: Highlighted, prominent blue theme) -->
+        <Style Selector="Border.download-row Button.row-action-primary">
+            <Setter Property="Opacity" Value="1.0" />
+            <Setter Property="Background" Value="#162A3B" />
+            <Setter Property="BorderBrush" Value="#1E4466" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.download-row Button.row-action-primary:pointerover">
+            <Setter Property="Background" Value="#1E3E5B" />
             <Setter Property="BorderBrush" Value="#38BDF8" />
         </Style>
     </Window.Styles>
@@ -315,7 +341,7 @@
                                             <Separator IsVisible="{Binding IsCompleted}" />
                                             <MenuItem Header="İndirmeyi Duraklat" Command="{Binding PauseCommand}" IsVisible="{Binding CanPause}">
                                                 <MenuItem.Icon>
-                                                    <PathIcon Data="{StaticResource IconPause}" Width="12" Height="12" Foreground="#F87171" />
+                                                    <PathIcon Data="{StaticResource IconPause}" Width="12" Height="12" Foreground="#38BDF8" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
                                             <MenuItem Header="İndirmeye Devam Et" Command="{Binding ResumeCommand}" IsVisible="{Binding CanResume}">
@@ -431,15 +457,15 @@
                                                     <PathIcon Data="{StaticResource IconFile}" Width="13" Height="13" Foreground="#38BDF8" />
                                                 </Button>
 
-                                                <!-- Pause Action (Net kırmızı/turuncu belirgin duraklatma) -->
+                                                <!-- Pause Action (Net, dolgulu ve canlı duraklatma) -->
                                                 <Button Command="{Binding PauseCommand}" IsVisible="{Binding CanPause}"
-                                                        Classes="row-action" ToolTip.Tip="İndirmeyi Duraklat">
-                                                    <PathIcon Data="{StaticResource IconPause}" Width="13" Height="13" Foreground="#F87171" />
+                                                        Classes="row-action-primary" ToolTip.Tip="İndirmeyi Duraklat">
+                                                    <PathIcon Data="{StaticResource IconPause}" Width="13" Height="13" Foreground="#38BDF8" />
                                                 </Button>
 
-                                                <!-- Resume Action (Canlı mavi/camgöbeği devam et) -->
+                                                <!-- Resume Action (Canlı mavi/camgöbeği başlat ve devam et) -->
                                                 <Button Command="{Binding ResumeCommand}" IsVisible="{Binding CanResume}"
-                                                        Classes="row-action" ToolTip.Tip="İndirmeye Devam Et">
+                                                        Classes="row-action-primary" ToolTip.Tip="İndirmeyi Başlat / Devam Et">
                                                     <PathIcon Data="{StaticResource IconResumeAll}" Width="13" Height="13" Foreground="#38BDF8" />
                                                 </Button>
 
