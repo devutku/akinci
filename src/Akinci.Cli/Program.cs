@@ -92,12 +92,14 @@ if (!string.IsNullOrEmpty(userName))
 var metadataService = new ProtocolMetadataService();
 var chunkDownloader = new ProtocolChunkDownloader();
 using var fileStorage = new RandomAccessFileStorageService();
-var repository = new InMemoryDownloadRepository();
+var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".akinci", "downloads.db");
+var repository = new SqliteDownloadRepository(dbPath);
 var hashCalculator = new StreamingFileHashCalculator();
 var securityScanner = new VirusTotalSecurityScanner(apiKey: virusTotalKey);
 
 var createHandler = new CreateDownloadCommandHandler(metadataService, repository, fileStorage);
 var startHandler = new StartDownloadCommandHandler(repository, chunkDownloader, fileStorage, hashCalculator, securityScanner);
+var resumeHandler = new ResumeDownloadCommandHandler(repository, chunkDownloader, fileStorage, hashCalculator, securityScanner);
 
 using var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (sender, eventArgs) =>
