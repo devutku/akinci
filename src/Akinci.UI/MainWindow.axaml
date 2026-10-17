@@ -1,0 +1,223 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Akinci.UI.ViewModels"
+        x:Class="Akinci.UI.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="AKINCI - Çok Kanallı İndirme Yöneticisi"
+        Width="1100" Height="700"
+        MinWidth="800" MinHeight="500"
+        WindowStartupLocation="CenterScreen"
+        Background="#181825">
+
+    <Window.Styles>
+        <Style Selector="Button.action-btn">
+            <Setter Property="Background" Value="#313244" />
+            <Setter Property="Foreground" Value="#CDD6F4" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10,6" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.action-btn:pointerover">
+            <Setter Property="Background" Value="#45475A" />
+        </Style>
+        <Style Selector="Button.primary-btn">
+            <Setter Property="Background" Value="#89B4FA" />
+            <Setter Property="Foreground" Value="#11111B" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontWeight" Value="Bold" />
+        </Style>
+        <Style Selector="Button.primary-btn:pointerover">
+            <Setter Property="Background" Value="#B4BEFE" />
+        </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="Margin" Value="0,0,0,10" />
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+        <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+            <Setter Property="Background" Value="Transparent" />
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*">
+        <!-- Top Application Header Bar -->
+        <Border Grid.Row="0" Background="#1E1E2E" BorderBrush="#313244" BorderThickness="0,0,0,1" Padding="20,14">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <!-- Logo & Brand -->
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                    <Border Background="#89B4FA" CornerRadius="8" Width="36" Height="36">
+                        <TextBlock Text="⚡" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="AKINCI" FontSize="18" FontWeight="ExtraBold" Foreground="#CDD6F4" LetterSpacing="1" />
+                        <TextBlock Text="Clean Core İndirme Motoru" FontSize="10" Foreground="#A6ADC8" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Statistics & Global Speed -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="20" VerticalAlignment="Center">
+                    <!-- Global Speed Gauge -->
+                    <Border Background="#181825" BorderBrush="#313244" BorderThickness="1" CornerRadius="8" Padding="14,6">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="⚡ Toplam Hız:" FontSize="12" Foreground="#A6ADC8" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding TotalSpeedText}" FontSize="13" FontWeight="Bold" Foreground="#A6E3A1" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Active Stats -->
+                    <Border Background="#181825" BorderBrush="#313244" BorderThickness="1" CornerRadius="8" Padding="14,6">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="● Aktif:" FontSize="12" Foreground="#A6ADC8" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding ActiveCount}" FontSize="13" FontWeight="Bold" Foreground="#89B4FA" VerticalAlignment="Center" />
+                            <TextBlock Text=" |  ✔ Biten:" FontSize="12" Foreground="#A6ADC8" VerticalAlignment="Center" />
+                            <TextBlock Text="{Binding CompletedCount}" FontSize="13" FontWeight="Bold" Foreground="#A6E3A1" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Action Buttons -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                    <Button Content="⏸ Tümünü Durdur" Command="{Binding PauseAllCommand}" Classes="action-btn" />
+                    <Button Content="▶ Tümünü Başlat" Command="{Binding ResumeAllCommand}" Classes="action-btn" />
+                    <Button Content="⚙ Ayarlar" Click="OnSettingsClick" Classes="action-btn" />
+                    <Button Content="+ Yeni İndirme" Click="OnAddDownloadClick" Classes="primary-btn" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Main Body: Sidebar + Download List -->
+        <Grid Grid.Row="1" ColumnDefinitions="220,*">
+            <!-- Sidebar Navigation -->
+            <Border Grid.Column="0" Background="#1E1E2E" BorderBrush="#313244" BorderThickness="0,0,1,0" Padding="16">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="KATEGORİLER" FontSize="10" FontWeight="Bold" Foreground="#6C7086" Margin="10,4,0,8" />
+
+                    <RadioButton Content="📥 Tümü" IsChecked="{Binding SelectedFilter, Converter={x:Static ObjectConverters.Equal}, ConverterParameter='Tümü'}"
+                                 Click="OnFilterClicked" Tag="Tümü" GroupName="Filters" Foreground="#CDD6F4" Margin="4,2" />
+                    <RadioButton Content="⚡ İndirilenler" IsChecked="{Binding SelectedFilter, Converter={x:Static ObjectConverters.Equal}, ConverterParameter='İndirilenler'}"
+                                 Click="OnFilterClicked" Tag="İndirilenler" GroupName="Filters" Foreground="#89B4FA" Margin="4,2" />
+                    <RadioButton Content="⏸ Duraklatılanlar" IsChecked="{Binding SelectedFilter, Converter={x:Static ObjectConverters.Equal}, ConverterParameter='Duraklatılanlar'}"
+                                 Click="OnFilterClicked" Tag="Duraklatılanlar" GroupName="Filters" Foreground="#FAB387" Margin="4,2" />
+                    <RadioButton Content="✔ Tamamlananlar" IsChecked="{Binding SelectedFilter, Converter={x:Static ObjectConverters.Equal}, ConverterParameter='Tamamlananlar'}"
+                                 Click="OnFilterClicked" Tag="Tamamlananlar" GroupName="Filters" Foreground="#A6E3A1" Margin="4,2" />
+
+                    <Separator Background="#313244" Margin="0,16" />
+
+                    <!-- Search Box -->
+                    <TextBlock Text="FİLTRELE &amp; ARA" FontSize="10" FontWeight="Bold" Foreground="#6C7086" Margin="10,0,0,6" />
+                    <TextBox Text="{Binding SearchQuery}" PlaceholderText="Dosya adı veya link..."
+                             Background="#181825" Foreground="#CDD6F4" BorderBrush="#313244" CornerRadius="6" Padding="8,6" />
+                </StackPanel>
+            </Border>
+
+            <!-- Downloads Content Panel -->
+            <ScrollViewer Grid.Column="1" Padding="20">
+                <ItemsControl ItemsSource="{Binding FilteredDownloads}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="vm:DownloadItemViewModel">
+                            <!-- Download Item Card -->
+                            <Border Background="#1E1E2E" BorderBrush="#313244" BorderThickness="1"
+                                    CornerRadius="10" Padding="16" Margin="0,0,0,14">
+                                <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10">
+                                    <!-- Row 0: Header Info -->
+                                    <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
+                                        <!-- File Icon & Names -->
+                                        <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12">
+                                            <Border Background="#313244" CornerRadius="8" Width="42" Height="42">
+                                                <TextBlock Text="📄" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                            </Border>
+                                            <StackPanel VerticalAlignment="Center" Spacing="2">
+                                                <TextBlock Text="{Binding FileName}" FontSize="14" FontWeight="Bold" Foreground="#CDD6F4" />
+                                                <TextBlock Text="{Binding Url}" FontSize="11" Foreground="#6C7086" MaxWidth="500" TextTrimming="CharacterEllipsis" />
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <!-- Status Badge & Control Buttons -->
+                                        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                            <!-- Status Chip -->
+                                            <Border Background="#181825" BorderBrush="{Binding StatusColor}" BorderThickness="1"
+                                                    CornerRadius="12" Padding="10,4">
+                                                <TextBlock Text="{Binding StatusText}" FontSize="11" FontWeight="Bold" Foreground="{Binding StatusColor}" />
+                                            </Border>
+
+                                            <!-- Controls -->
+                                            <Button Content="⏸ Duraklat" Command="{Binding PauseCommand}" IsVisible="{Binding CanPause}" Classes="action-btn" />
+                                            <Button Content="▶ Devam Et" Command="{Binding ResumeCommand}" IsVisible="{Binding CanResume}" Classes="action-btn" />
+                                            <Button Content="📁 Klasör" Command="{Binding OpenFolderCommand}" Classes="action-btn" />
+                                            <Button Content="🗑 Sil" Command="{Binding DeleteCommand}" Classes="action-btn" />
+                                        </StackPanel>
+                                    </Grid>
+
+                                    <!-- Row 1: Progress Bar & Metrics -->
+                                    <Grid Grid.Row="1" RowDefinitions="Auto,Auto" RowSpacing="6">
+                                        <!-- Gradient Progress Bar -->
+                                        <ProgressBar Grid.Row="0" Minimum="0" Maximum="100" Value="{Binding ProgressPercentage}"
+                                                     Height="8" CornerRadius="4" Background="#313244" Foreground="#89B4FA" />
+
+                                        <!-- Progress Metrics -->
+                                        <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
+                                            <TextBlock Grid.Column="0" Text="{Binding ProgressText}" FontSize="11" Foreground="#A6ADC8" />
+                                            <TextBlock Grid.Column="1" Text="{Binding SpeedText}" FontSize="11" FontWeight="Bold" Foreground="#89B4FA" />
+                                        </Grid>
+                                    </Grid>
+
+                                    <!-- Row 2: Live Multi-Chunk Progress Visualizer -->
+                                    <Border Grid.Row="2" Background="#181825" CornerRadius="6" Padding="10,8" Margin="0,2">
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="Paralel İndirme Parçaları (Chunks)" FontSize="10" FontWeight="SemiBold" Foreground="#6C7086" />
+                                            <ItemsControl ItemsSource="{Binding Chunks}">
+                                                <ItemsControl.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <StackPanel Orientation="Horizontal" Spacing="6" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsControl.ItemsPanel>
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="vm:ChunkViewModel">
+                                                        <Border Background="#313244" CornerRadius="4" Padding="6,4" MinWidth="75">
+                                                            <StackPanel Spacing="2">
+                                                                <Grid ColumnDefinitions="*,Auto">
+                                                                    <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="9" Foreground="#A6ADC8" />
+                                                                    <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat={}{0:F0}%}"
+                                                                               FontSize="9" FontWeight="Bold" Foreground="#89B4FA" />
+                                                                </Grid>
+                                                                <ProgressBar Minimum="0" Maximum="100" Value="{Binding ProgressPercentage}"
+                                                                             Height="4" CornerRadius="2" Background="#45475A" Foreground="#A6E3A1" />
+                                                            </StackPanel>
+                                                        </Border>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+
+                                    <!-- Row 3: Security & VirusTotal Verdict Badge -->
+                                    <Border Grid.Row="3" Background="#181825" BorderBrush="#313244" BorderThickness="1" CornerRadius="6" Padding="10,6">
+                                        <Grid ColumnDefinitions="Auto,*,Auto">
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <TextBlock Text="🛡" FontSize="13" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding SecurityBadgeText}" FontSize="11" FontWeight="SemiBold"
+                                                           Foreground="{Binding HasThreat, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                           VerticalAlignment="Center">
+                                                    <!-- Foreground styling depending on verdict -->
+                                                </TextBlock>
+                                            </StackPanel>
+
+                                            <!-- VirusTotal Report Link -->
+                                            <Button Grid.Column="2" Content="VirusTotal Raporu ↗"
+                                                    Command="{Binding OpenSecurityReportCommand}"
+                                                    IsVisible="{Binding SecurityVerdict, Converter={x:Static ObjectConverters.IsNotNull}}"
+                                                    Background="Transparent" Foreground="#89B4FA" FontSize="10" Padding="4,2" />
+                                        </Grid>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Window>

@@ -4,6 +4,7 @@
     <Project Path="src/Akinci.Cli/Akinci.Cli.csproj" />
     <Project Path="src/Akinci.Domain/Akinci.Domain.csproj" />
     <Project Path="src/Akinci.Infrastructure/Akinci.Infrastructure.csproj" />
+    <Project Path="src/Akinci.UI/Akinci.UI.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Akinci.Application.UnitTests/Akinci.Application.UnitTests.csproj" />
