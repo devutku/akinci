@@ -64,10 +64,14 @@ public sealed record SecurityVerdict
 
         if (HasThreat)
         {
-            return $"{MaliciousVotes} antivirüs motoru zararlı uyarısı verdi!";
+            return TotalEngines > 0
+                ? $"{MaliciousVotes}/{TotalEngines} motor zararlı uyarısı verdi!"
+                : $"{MaliciousVotes} motor zararlı uyarısı verdi!";
         }
 
-        return $"{HarmlessVotes + UndetectedVotes} antivirüs motorundan geçti, güvenli";
+        return TotalEngines > 0
+            ? $"{HarmlessVotes}/{TotalEngines} antivirüs motorundan geçti, güvenli"
+            : $"{HarmlessVotes} antivirüs motorundan geçti, güvenli";
     }
 
     public override string ToString() => FormatBadge();

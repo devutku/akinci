@@ -7,29 +7,36 @@ public class SecurityVerdictTests
 {
     private const string SampleHash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 
-    [Fact]
-    public void Clean_Verdict_MarksAsSafeAndFormatsBadge()
+    [Theory]
+    [InlineData(68, 70)]
+    [InlineData(72, 72)]
+    [InlineData(50, 65)]
+    public void Clean_Verdict_MarksAsSafeAndFormatsBadge(int harmlessVotes, int totalEngines)
     {
-        var verdict = SecurityVerdict.Clean(SampleHash, harmlessVotes: 68, totalEngines: 70);
+        var verdict = SecurityVerdict.Clean(SampleHash, harmlessVotes, totalEngines);
 
         Assert.True(verdict.IsScanned);
         Assert.True(verdict.IsSafe);
         Assert.False(verdict.HasThreat);
         Assert.Equal(0, verdict.MaliciousVotes);
-        Assert.Equal(70, verdict.TotalEngines);
-        Assert.Equal("70 antivirüs motorundan geçti, güvenli", verdict.FormatBadge());
+        Assert.Equal(totalEngines, verdict.TotalEngines);
+        Assert.Equal($"{harmlessVotes}/{totalEngines} antivirüs motorundan geçti, güvenli", verdict.FormatBadge());
     }
 
-    [Fact]
-    public void Infected_Verdict_MarksAsThreatAndFormatsBadge()
+    [Theory]
+    [InlineData(5, 70)]
+    [InlineData(1, 68)]
+    [InlineData(14, 75)]
+    public void Infected_Verdict_MarksAsThreatAndFormatsBadge(int maliciousVotes, int totalEngines)
     {
-        var verdict = SecurityVerdict.Infected(SampleHash, maliciousVotes: 5, totalEngines: 70);
+        var verdict = SecurityVerdict.Infected(SampleHash, maliciousVotes, totalEngines);
 
         Assert.True(verdict.IsScanned);
         Assert.False(verdict.IsSafe);
         Assert.True(verdict.HasThreat);
-        Assert.Equal(5, verdict.MaliciousVotes);
-        Assert.Equal("5 antivirüs motoru zararlı uyarısı verdi!", verdict.FormatBadge());
+        Assert.Equal(maliciousVotes, verdict.MaliciousVotes);
+        Assert.Equal(totalEngines, verdict.TotalEngines);
+        Assert.Equal($"{maliciousVotes}/{totalEngines} motor zararlı uyarısı verdi!", verdict.FormatBadge());
     }
 
     [Fact]
