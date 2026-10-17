@@ -5,10 +5,6 @@
   <img src="src/Akinci.UI/Assets/akinci-logo-dark.svg" alt="Akıncı Logo" width="220" />
 </p>
 
-<p align="center">
-  <img src="src/Akinci.UI/Assets/akinci-banner.jpg" alt="Akıncı Sanatsal İllüstrasyon" width="850" style="border-radius: 12px;" />
-</p>
-
 ---
 
 ## ⚡ Genel Bakış
