@@ -86,3 +86,9 @@ Akıncı, açık kaynak ekosistemini desteklerken nihai masaüstü uygulamasın�
   Uygulamanın kendisi, kullanıcı arayüzü ve dağıtılabilir ikili paketleri **[GNU General Public License v3.0 (GPLv3)](LICENSE)** ile korunmaktadır.
 
 > Bu sayede indirme motorunu bağımsız bir NuGet paketi olarak projelerinizde serbestçe kullanabilirsiniz; ancak Akıncı masaüstü uygulamasının arayüzü ve bütünleşik türevleri daima açık kaynak kalmak zorundadır.
+
+---
+
+## ⚠️ Sorumluluk Reddi (Disclaimer)
+
+> **Uyarı:** Akıncı, eğitim ve açık veri aktarımı amaçlarıyla geliştirilmiş bir ağ aracıdır. Telif hakkıyla korunan veya platform kullanım şartlarına aykırı içeriklerin indirilmesinden kullanıcı sorumludur.
