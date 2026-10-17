@@ -11,7 +11,29 @@ public class AssetGeneratorTests
         var targetDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "src", "Akinci.UI", "Assets"));
         Directory.CreateDirectory(targetDir);
         var icoPath = Path.Combine(targetDir, "akinci.ico");
+        var pngLogoPath = Path.Combine(targetDir, "akinci-logo.png");
 
+        if (File.Exists(pngLogoPath))
+        {
+            var pngBytes = File.ReadAllBytes(pngLogoPath);
+            using var iconStream = new MemoryStream();
+            using var iconWriter = new BinaryWriter(iconStream);
+            iconWriter.Write((short)0); // reserved
+            iconWriter.Write((short)1); // type 1 = icon
+            iconWriter.Write((short)1); // count = 1
+            iconWriter.Write((byte)128);// width
+            iconWriter.Write((byte)128);// height
+            iconWriter.Write((byte)0);  // colors
+            iconWriter.Write((byte)0);  // reserved
+            iconWriter.Write((short)1); // planes
+            iconWriter.Write((short)32);// bpp
+            iconWriter.Write(pngBytes.Length);
+            iconWriter.Write(22); // offset = 6 + 16
+            iconWriter.Write(pngBytes);
+            File.WriteAllBytes(icoPath, iconStream.ToArray());
+            Assert.True(File.Exists(icoPath));
+            return;
+        }
         const int width = 32;
         const int height = 32;
         using var ms = new MemoryStream();

@@ -48,9 +48,9 @@
         <Border Grid.Row="0" Background="#1E1E2E" BorderBrush="#313244" BorderThickness="0,0,0,1" Padding="20,14">
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <!-- Logo & Brand -->
-                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                    <Border Background="#89B4FA" CornerRadius="8" Width="36" Height="36">
-                        <TextBlock Text="⚡" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <Border CornerRadius="8" Width="40" Height="40" ClipToBounds="True" Background="#181825">
+                        <Image Source="avares://Akinci.UI/Assets/akinci-logo-dark.svg" Width="40" Height="40" />
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="AKINCI" FontSize="18" FontWeight="ExtraBold" Foreground="#CDD6F4" LetterSpacing="1" />
@@ -115,10 +115,26 @@
             </Border>
 
             <!-- Downloads Content Panel -->
-            <ScrollViewer Grid.Column="1" Padding="20">
-                <ItemsControl ItemsSource="{Binding FilteredDownloads}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate x:DataType="vm:DownloadItemViewModel">
+            <Grid Grid.Column="1">
+                <!-- Empty State (No downloads) -->
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="16"
+                            IsVisible="{Binding !FilteredDownloads.Count}">
+                    <Border CornerRadius="20" Width="130" Height="130" ClipToBounds="True" Background="#1E1E2E"
+                            BorderBrush="#313244" BorderThickness="1" HorizontalAlignment="Center" Padding="10">
+                        <Image Source="avares://Akinci.UI/Assets/akinci-logo-dark.svg" Width="110" Height="110" />
+                    </Border>
+                    <StackPanel Spacing="6" HorizontalAlignment="Center">
+                        <TextBlock Text="Henüz Bir İndirme Eklenmedi" FontSize="18" FontWeight="Bold" Foreground="#CDD6F4" HorizontalAlignment="Center" />
+                        <TextBlock Text="Yeni bir indirme görevi başlatmak için '+ İndirme Ekle' butonuna tıklayın veya bir link yapıştırın."
+                                   FontSize="12" Foreground="#A6ADC8" HorizontalAlignment="Center" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Downloads Scroll Area -->
+                <ScrollViewer Padding="20">
+                    <ItemsControl ItemsSource="{Binding FilteredDownloads}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate x:DataType="vm:DownloadItemViewModel">
                             <!-- Download Item Card -->
                             <Border Background="#1E1E2E" BorderBrush="#313244" BorderThickness="1"
                                     CornerRadius="10" Padding="16" Margin="0,0,0,14">
@@ -219,6 +235,7 @@
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
             </ScrollViewer>
+            </Grid>
         </Grid>
     </Grid>
 </Window>

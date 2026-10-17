@@ -4,6 +4,7 @@
         x:Class="Akinci.UI.Views.AddDownloadDialog"
         x:DataType="vm:AddDownloadDialogViewModel"
         Title="Yeni İndirme Ekle - AKINCI"
+        Icon="/Assets/akinci.ico"
         Width="580" Height="520"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
@@ -28,10 +29,15 @@
     <Border Padding="24">
         <Grid RowDefinitions="Auto,*,Auto">
             <!-- Header -->
-            <StackPanel Grid.Row="0" Margin="0,0,0,16">
-                <TextBlock Text="Yeni İndirme Görevi" FontSize="20" FontWeight="Bold" Foreground="#89B4FA" />
-                <TextBlock Text="HTTP, HTTPS, FTP veya FTPS bağlantısı girin." FontSize="12" Foreground="#A6ADC8" />
-            </StackPanel>
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,16">
+                <Border Grid.Column="0" CornerRadius="8" Width="44" Height="44" ClipToBounds="True" Background="#181825" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <Image Source="avares://Akinci.UI/Assets/akinci-logo-dark.svg" Width="44" Height="44" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="Yeni İndirme Görevi" FontSize="18" FontWeight="Bold" Foreground="#89B4FA" />
+                    <TextBlock Text="HTTP, HTTPS, FTP veya FTPS bağlantısı girin." FontSize="12" Foreground="#A6ADC8" />
+                </StackPanel>
+            </Grid>
 
             <!-- Form Content -->
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
