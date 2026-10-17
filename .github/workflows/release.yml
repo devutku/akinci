@@ -21,6 +21,12 @@ jobs:
           - os: ubuntu-latest
             rid: linux-x64
             archive_ext: tar.gz
+          - os: macos-latest
+            rid: osx-arm64
+            archive_ext: tar.gz
+          - os: macos-13
+            rid: osx-x64
+            archive_ext: tar.gz
 
     steps:
       - name: Checkout Code
@@ -57,6 +63,14 @@ jobs:
           cp -r src/Akinci.NativeHost/extension dist/linux-x64/extension/
           tar -czvf "akinci-${{ github.ref_name }}-linux-x64.tar.gz" -C dist/linux-x64 .
 
+      - name: Package macOS Artifacts
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          mkdir -p dist/${{ matrix.rid }}/manifests dist/${{ matrix.rid }}/extension
+          cp -r src/Akinci.NativeHost/manifests/* dist/${{ matrix.rid }}/manifests/
+          cp -r src/Akinci.NativeHost/extension/* dist/${{ matrix.rid }}/extension/
+          tar -czvf "akinci-${{ github.ref_name }}-${{ matrix.rid }}.tar.gz" -C dist/${{ matrix.rid }} .
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -76,12 +90,14 @@ jobs:
       - name: Publish GitHub Prerelease
         uses: softprops/action-gh-release@v2
         with:
-          name: "Akıncı Downloader ${{ github.ref_name }} (Beta)"
-          prerelease: true
+          name: "Akıncı Downloader ${{ github.ref_name }}"
+          prerelease: false
           generate_release_notes: true
           files: |
             akinci-*-win-x64.zip
             akinci-*-linux-x64.tar.gz
+            akinci-*-osx-arm64.tar.gz
+            akinci-*-osx-x64.tar.gz
           body: |
             ## 🦅 Akıncı Çok Kanallı İndirme Motoru (Beta Sürümü)
             

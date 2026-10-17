@@ -10,19 +10,33 @@ public static class BrowserIntegrationService
 
     public static bool IsNativeHostRegistered()
     {
-        if (!OperatingSystem.IsWindows()) return false;
-
-        try
+        if (OperatingSystem.IsWindows())
         {
-            using var chromeKey = Registry.CurrentUser.OpenSubKey($@"Software\Google\Chrome\NativeMessagingHosts\{HostName}");
-            if (chromeKey != null) return true;
+            try
+            {
+                using var chromeKey = Registry.CurrentUser.OpenSubKey($@"Software\Google\Chrome\NativeMessagingHosts\{HostName}");
+                if (chromeKey != null) return true;
 
-            using var edgeKey = Registry.CurrentUser.OpenSubKey($@"Software\Microsoft\Edge\NativeMessagingHosts\{HostName}");
-            if (edgeKey != null) return true;
+                using var edgeKey = Registry.CurrentUser.OpenSubKey($@"Software\Microsoft\Edge\NativeMessagingHosts\{HostName}");
+                if (edgeKey != null) return true;
+            }
+            catch { }
+            return false;
         }
-        catch
+
+        var userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+        if (OperatingSystem.IsLinux())
         {
-            // İzin hatası vb.
+            var chromePath = Path.Combine(userHome, ".config", "google-chrome", "NativeMessagingHosts", $"{HostName}.json");
+            var chromiumPath = Path.Combine(userHome, ".config", "chromium", "NativeMessagingHosts", $"{HostName}.json");
+            return File.Exists(chromePath) || File.Exists(chromiumPath);
+        }
+
+        if (OperatingSystem.IsMacOS())
+        {
+            var chromePath = Path.Combine(userHome, "Library", "Application Support", "Google", "Chrome", "NativeMessagingHosts", $"{HostName}.json");
+            return File.Exists(chromePath);
         }
 
         return false;
@@ -42,8 +56,6 @@ public static class BrowserIntegrationService
 
     public static bool SetupIntegration()
     {
-        if (!OperatingSystem.IsWindows()) return false;
-
         try
         {
             var userAkinciDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".akinci");
@@ -55,26 +67,29 @@ public static class BrowserIntegrationService
             Directory.CreateDirectory(extensionDir);
             Directory.CreateDirectory(manifestsDir);
 
-            // 1. Kaynak dosyaları bul (dist klasörü, derleme çıktısı veya proje dizini)
+            // 1. Kaynak dosyaları bul
             var currentExeDir = AppDomain.CurrentDomain.BaseDirectory;
-            var searchPaths = new[]
+            var searchPaths = new List<string>
             {
+                currentExeDir,
                 Path.Combine(currentExeDir, "..", "Akinci.NativeHost"),
                 Path.Combine(currentExeDir, "Akinci.NativeHost"),
                 Path.Combine(currentExeDir, "..", "..", "..", "..", "Akinci.NativeHost"),
-                @"C:\Users\Admin\git\akinci\akinci\dist\Akinci.NativeHost",
-                @"C:\Users\Admin\git\akinci\akinci\src\Akinci.NativeHost"
+                Path.Combine(currentExeDir, "..", "dist", "Akinci")
             };
 
             string? foundNativeHostExe = null;
             string? foundExtensionSrc = null;
 
+            var binaryName = OperatingSystem.IsWindows() ? "Akinci-BrowserBridge.exe" : "Akinci-BrowserBridge";
+            var fallbackBinary = OperatingSystem.IsWindows() ? "Akinci.NativeHost.exe" : "Akinci.NativeHost";
+
             foreach (var p in searchPaths)
             {
-                var exeCandidate = Path.Combine(p, "Akinci-BrowserBridge.exe");
+                var exeCandidate = Path.Combine(p, binaryName);
                 if (!File.Exists(exeCandidate))
                 {
-                    exeCandidate = Path.Combine(p, "Akinci.NativeHost.exe");
+                    exeCandidate = Path.Combine(p, fallbackBinary);
                 }
 
                 if (File.Exists(exeCandidate) && foundNativeHostExe == null)
@@ -90,10 +105,20 @@ public static class BrowserIntegrationService
             }
 
             // Host binary dosyasını kopyala
-            var targetHostExe = Path.Combine(hostDir, "Akinci-BrowserBridge.exe");
+            var targetHostExe = Path.Combine(hostDir, binaryName);
             if (foundNativeHostExe != null && File.Exists(foundNativeHostExe))
             {
                 File.Copy(foundNativeHostExe, targetHostExe, overwrite: true);
+
+                // Linux ve macOS için çalıştırma (execute) yetkisi ver
+                if (!OperatingSystem.IsWindows())
+                {
+                    try
+                    {
+                        Process.Start("chmod", $"+x \"{targetHostExe}\"")?.WaitForExit();
+                    }
+                    catch { }
+                }
             }
 
             // Eklenti dosyalarını kopyala
@@ -108,8 +133,7 @@ public static class BrowserIntegrationService
                 }
             }
 
-            // 2. Chrome Manifest dosyasını oluştur (Tam mutlak yol ile)
-            var chromeManifestPath = Path.Combine(manifestsDir, $"{HostName}.json");
+            // 2. Manifest nesnesi oluştur (Mutlak yol ile)
             var manifestObj = new
             {
                 name = HostName,
@@ -121,19 +145,47 @@ public static class BrowserIntegrationService
                     "chrome-extension://*/*"
                 }
             };
-
             var json = JsonSerializer.Serialize(manifestObj, new JsonSerializerOptions { WriteIndented = true });
-            File.WriteAllText(chromeManifestPath, json);
 
-            // 3. Windows Kayıt Defterine Yaz (Google Chrome & Microsoft Edge)
-            using (var chromeKey = Registry.CurrentUser.CreateSubKey($@"Software\Google\Chrome\NativeMessagingHosts\{HostName}"))
+            // 3. Platforma Özgü Kayıt İşlemleri
+            if (OperatingSystem.IsWindows())
             {
+                var chromeManifestPath = Path.Combine(manifestsDir, $"{HostName}.json");
+                File.WriteAllText(chromeManifestPath, json);
+
+                using var chromeKey = Registry.CurrentUser.CreateSubKey($@"Software\Google\Chrome\NativeMessagingHosts\{HostName}");
                 chromeKey.SetValue("", chromeManifestPath);
-            }
 
-            using (var edgeKey = Registry.CurrentUser.CreateSubKey($@"Software\Microsoft\Edge\NativeMessagingHosts\{HostName}"))
-            {
+                using var edgeKey = Registry.CurrentUser.CreateSubKey($@"Software\Microsoft\Edge\NativeMessagingHosts\{HostName}");
                 edgeKey.SetValue("", chromeManifestPath);
+            }
+            else
+            {
+                var userHome = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                var targetManifestDirs = new List<string>();
+
+                if (OperatingSystem.IsLinux())
+                {
+                    targetManifestDirs.Add(Path.Combine(userHome, ".config", "google-chrome", "NativeMessagingHosts"));
+                    targetManifestDirs.Add(Path.Combine(userHome, ".config", "chromium", "NativeMessagingHosts"));
+                    targetManifestDirs.Add(Path.Combine(userHome, ".mozilla", "native-messaging-hosts"));
+                }
+                else if (OperatingSystem.IsMacOS())
+                {
+                    targetManifestDirs.Add(Path.Combine(userHome, "Library", "Application Support", "Google", "Chrome", "NativeMessagingHosts"));
+                    targetManifestDirs.Add(Path.Combine(userHome, "Library", "Application Support", "Chromium", "NativeMessagingHosts"));
+                    targetManifestDirs.Add(Path.Combine(userHome, "Library", "Application Support", "Mozilla", "NativeMessagingHosts"));
+                }
+
+                foreach (var dir in targetManifestDirs)
+                {
+                    try
+                    {
+                        Directory.CreateDirectory(dir);
+                        File.WriteAllText(Path.Combine(dir, $"{HostName}.json"), json);
+                    }
+                    catch { }
+                }
             }
 
             return true;
@@ -147,37 +199,65 @@ public static class BrowserIntegrationService
     public static void OpenExtensionFolder()
     {
         var extDir = GetPermanentExtensionPath();
-        if (Directory.Exists(extDir))
+        if (!Directory.Exists(extDir)) return;
+
+        try
         {
-            Process.Start(new ProcessStartInfo
+            if (OperatingSystem.IsWindows())
             {
-                FileName = extDir,
-                UseShellExecute = true
-            });
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = extDir,
+                    UseShellExecute = true
+                });
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                Process.Start("open", $"\"{extDir}\"");
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                Process.Start("xdg-open", $"\"{extDir}\"");
+            }
         }
+        catch { }
     }
 
     public static void OpenChromeExtensionsPage()
     {
         try
         {
-            Process.Start(new ProcessStartInfo
+            if (OperatingSystem.IsWindows())
             {
-                FileName = "chrome",
-                Arguments = "chrome://extensions",
-                UseShellExecute = true
-            });
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "chrome",
+                    Arguments = "chrome://extensions",
+                    UseShellExecute = true
+                });
+            }
+            else if (OperatingSystem.IsMacOS())
+            {
+                Process.Start("open", "-a \"Google Chrome\" \"chrome://extensions\"");
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                Process.Start("google-chrome", "chrome://extensions");
+            }
         }
         catch
         {
             try
             {
-                Process.Start(new ProcessStartInfo
+                if (OperatingSystem.IsWindows())
                 {
-                    FileName = "msedge",
-                    Arguments = "edge://extensions",
-                    UseShellExecute = true
-                });
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = "msedge",
+                        Arguments = "edge://extensions",
+                        UseShellExecute = true
+                    });
+                }
             }
             catch { }
         }
