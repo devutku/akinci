@@ -32,6 +32,19 @@ public partial class MainWindow : Window
             _notificationService.AttachWindow(this);
             await viewModel.InitializeAsync();
         };
+
+        KeyDown += (s, e) =>
+        {
+            if (e.KeyModifiers == Avalonia.Input.KeyModifiers.Control && e.Key == Avalonia.Input.Key.V)
+            {
+                OnAddDownloadClick(this, new RoutedEventArgs());
+            }
+            else if (e.KeyModifiers == Avalonia.Input.KeyModifiers.Control && e.Key == Avalonia.Input.Key.F)
+            {
+                var searchBox = this.FindControl<TextBox>("SearchInputBox");
+                searchBox?.Focus();
+            }
+        };
     }
 
     protected override void OnClosing(WindowClosingEventArgs e)
@@ -94,7 +107,7 @@ public partial class MainWindow : Window
 
     private void OnFilterClicked(object? sender, RoutedEventArgs e)
     {
-        if (sender is RadioButton { Tag: string filter } && DataContext is MainWindowViewModel vm)
+        if (sender is Control { Tag: string filter } && DataContext is MainWindowViewModel vm)
         {
             vm.SelectedFilter = filter;
         }

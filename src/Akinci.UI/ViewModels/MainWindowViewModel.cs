@@ -29,6 +29,11 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private string _selectedFilter = "Tümü";
 
+    public bool IsAllSelected => SelectedFilter == "Tümü";
+    public bool IsDownloadingSelected => SelectedFilter == "İndirilenler";
+    public bool IsPausedSelected => SelectedFilter == "Duraklatılanlar";
+    public bool IsCompletedSelected => SelectedFilter == "Tamamlananlar";
+
     [ObservableProperty]
     private string _searchQuery = "";
 
@@ -116,7 +121,14 @@ public partial class MainWindowViewModel : ObservableObject
         _ = itemVm.StartDownloadAsync();
     }
 
-    partial void OnSelectedFilterChanged(string value) => ApplyFilter();
+    partial void OnSelectedFilterChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsAllSelected));
+        OnPropertyChanged(nameof(IsDownloadingSelected));
+        OnPropertyChanged(nameof(IsPausedSelected));
+        OnPropertyChanged(nameof(IsCompletedSelected));
+        ApplyFilter();
+    }
     partial void OnSearchQueryChanged(string value) => ApplyFilter();
 
     public void ApplyFilter()
