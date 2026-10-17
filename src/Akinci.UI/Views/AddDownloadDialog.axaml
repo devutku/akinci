@@ -31,7 +31,7 @@
             <!-- Header -->
             <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,16">
                 <Border Grid.Column="0" CornerRadius="8" Width="44" Height="44" ClipToBounds="True" Background="#181825" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Image Source="avares://Akinci.UI/Assets/akinci-logo-dark.svg" Width="44" Height="44" />
+                    <Image Source="/Assets/akinci-logo.png" Width="44" Height="44" />
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
                     <TextBlock Text="Yeni İndirme Görevi" FontSize="18" FontWeight="Bold" Foreground="#89B4FA" />

@@ -50,7 +50,7 @@
                 <!-- Logo & Brand -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                     <Border CornerRadius="8" Width="40" Height="40" ClipToBounds="True" Background="#181825">
-                        <Image Source="avares://Akinci.UI/Assets/akinci-logo-dark.svg" Width="40" Height="40" />
+                        <Image Source="/Assets/akinci-logo.png" Width="38" Height="38" />
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="AKINCI" FontSize="18" FontWeight="ExtraBold" Foreground="#CDD6F4" LetterSpacing="1" />
@@ -121,7 +121,7 @@
                             IsVisible="{Binding !FilteredDownloads.Count}">
                     <Border CornerRadius="20" Width="130" Height="130" ClipToBounds="True" Background="#1E1E2E"
                             BorderBrush="#313244" BorderThickness="1" HorizontalAlignment="Center" Padding="10">
-                        <Image Source="avares://Akinci.UI/Assets/akinci-logo-dark.svg" Width="110" Height="110" />
+                        <Image Source="/Assets/akinci-logo.png" Width="110" Height="110" />
                     </Border>
                     <StackPanel Spacing="6" HorizontalAlignment="Center">
                         <TextBlock Text="Henüz Bir İndirme Eklenmedi" FontSize="18" FontWeight="Bold" Foreground="#CDD6F4" HorizontalAlignment="Center" />
