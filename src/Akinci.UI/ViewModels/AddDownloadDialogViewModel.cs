@@ -9,6 +9,12 @@ public partial class AddDownloadDialogViewModel : ObservableObject
     private string _url = "";
 
     [ObservableProperty]
+    private int _detectedUrlCount;
+
+    [ObservableProperty]
+    private string _submitButtonText = "İndirmeyi Başlat";
+
+    [ObservableProperty]
     private string _destinationDirectory;
 
     [ObservableProperty]
@@ -37,10 +43,40 @@ public partial class AddDownloadDialogViewModel : ObservableObject
     public bool IsAuthRequired => SelectedAuthType != "Yok";
     public bool ShowDomainField => SelectedAuthType is "NTLM" or "Kerberos" or "Negotiate";
 
-    public AddDownloadDialogViewModel(string defaultDirectory, int defaultConnections = 8)
+    public AddDownloadDialogViewModel(string defaultDirectory, int defaultConnections = 8, string? initialUrl = null)
     {
         _destinationDirectory = defaultDirectory;
         _connections = defaultConnections;
+        if (!string.IsNullOrWhiteSpace(initialUrl))
+        {
+            Url = initialUrl.Trim();
+        }
+    }
+
+    partial void OnUrlChanged(string value)
+    {
+        var count = GetValidUrls().Count;
+        DetectedUrlCount = count;
+        SubmitButtonText = count > 1 ? $"{count} İndirmeyi Başlat" : "İndirmeyi Başlat";
+    }
+
+    public List<string> GetValidUrls()
+    {
+        if (string.IsNullOrWhiteSpace(Url)) return [];
+
+        var lines = Url.Split(new[] { '\r', '\n', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var result = new List<string>();
+
+        foreach (var line in lines)
+        {
+            if (Uri.TryCreate(line, UriKind.Absolute, out var uri) &&
+                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == "ftp" || uri.Scheme == "ftps"))
+            {
+                result.Add(line);
+            }
+        }
+
+        return result;
     }
 
     partial void OnSelectedAuthTypeChanged(string value)

@@ -80,8 +80,15 @@
 
             <!-- Form Content (No Scrollbar, Clean Fit) -->
             <StackPanel Grid.Row="1" Spacing="5">
-                <TextBlock Text="İndirme Bağlantısı (URL)*" Classes="label" />
-                <TextBox Text="{Binding Url}" PlaceholderText="https:// veya ftp://..." />
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Grid.Column="0" Text="İndirme Bağlantıları (URL - Liste halinde birden fazla yapıştırabilirsiniz)*" Classes="label" />
+                    <TextBlock Grid.Column="1" Text="{Binding DetectedUrlCount, StringFormat={}{0} Link Algılandı}"
+                               IsVisible="{Binding DetectedUrlCount}"
+                               Foreground="#38BDF8" FontSize="11" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </Grid>
+                <TextBox Text="{Binding Url}"
+                         PlaceholderText="https://... (Tek link veya liste halinde alt alta birden fazla link yapıştırın)"
+                         AcceptsReturn="True" TextWrapping="Wrap" Height="64" VerticalContentAlignment="Top" />
 
                 <TextBlock Text="Kayıt Dizini" Classes="label" />
                 <Grid ColumnDefinitions="*,Auto">
@@ -89,7 +96,7 @@
                     <Button Grid.Column="1" Content="Seç..." Click="OnBrowseFolderClick" Classes="quiet-btn" Padding="12,7" />
                 </Grid>
 
-                <TextBlock Text="Özel Dosya Adı (İsteğe bağlı)" Classes="label" />
+                <TextBlock Text="Özel Dosya Adı (İsteğe bağlı - Tek link için)" Classes="label" />
                 <TextBox Text="{Binding CustomFileName}" PlaceholderText="Örn: ubuntu-desktop.iso (Boş bırakılırsa otomatik bulunur)" />
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
@@ -129,7 +136,7 @@
             <!-- Actions Footer (Quiet Gray Cancel, Sole Cyan Submit) -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,16,0,0">
                 <Button Content="İptal" Click="OnCancelClick" Classes="quiet-btn" />
-                <Button Content="İndirmeyi Başlat" Click="OnSubmitClick" Classes="primary-action-btn" />
+                <Button Content="{Binding SubmitButtonText}" Click="OnSubmitClick" Classes="primary-action-btn" />
             </StackPanel>
         </Grid>
     </Border>

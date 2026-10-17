@@ -2,6 +2,7 @@ using Akinci.UI.Services;
 using Akinci.UI.ViewModels;
 using Akinci.UI.Views;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Interactivity;
 
 namespace Akinci.UI;
@@ -78,15 +79,22 @@ public partial class MainWindow : Window
             };
 
             var result = await dialog.ShowDialog<bool>(this);
-            if (result && !string.IsNullOrWhiteSpace(dialogVm.Url))
+            var validUrls = dialogVm.GetValidUrls();
+
+            if (result && validUrls.Count > 0)
             {
                 var creds = dialogVm.BuildCredentials();
-                await vm.AddDownloadAsync(
-                    dialogVm.Url.Trim(),
-                    dialogVm.DestinationDirectory,
-                    dialogVm.Connections,
-                    dialogVm.CustomFileName,
-                    creds);
+                foreach (var url in validUrls)
+                {
+                    // Tek link ise özel dosya adı geçerli; çoklu link ise her biri kendi adını otomatik alır
+                    string? customName = validUrls.Count == 1 ? dialogVm.CustomFileName : null;
+                    await vm.AddDownloadAsync(
+                        url,
+                        dialogVm.DestinationDirectory,
+                        dialogVm.Connections,
+                        customName,
+                        creds);
+                }
             }
         }
     }
