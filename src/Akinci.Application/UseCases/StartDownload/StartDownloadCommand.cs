@@ -113,6 +113,7 @@ public sealed class StartDownloadCommandHandler
                             }
                         }
                     },
+                    task.Credentials,
                     cancellationToken);
             });
 

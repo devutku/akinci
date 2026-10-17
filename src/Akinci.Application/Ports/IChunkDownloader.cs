@@ -15,10 +15,12 @@ public interface IChunkDownloader
     /// <param name="url">İndirme bağlantısı</param>
     /// <param name="chunk">İndirilecek parça varlığı</param>
     /// <param name="onDataReceived">Okunan her blokta çalıştırılacak fonksiyon: (yazılacakOfset, veri, iptalJetonu)</param>
+    /// <param name="credentials">Kimlik doğrulama bilgileri (Basic, NTLM, Kerberos, Negotiate)</param>
     /// <param name="cancellationToken">İptal jetonu</param>
     Task DownloadChunkAsync(
         DownloadUrl url,
         Chunk chunk,
         Func<long, ReadOnlyMemory<byte>, CancellationToken, Task> onDataReceived,
+        DownloadCredentials? credentials = null,
         CancellationToken cancellationToken = default);
 }

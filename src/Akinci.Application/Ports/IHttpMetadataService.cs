@@ -9,7 +9,10 @@ namespace Akinci.Application.Ports;
 public interface IHttpMetadataService
 {
     /// <summary>
-    /// Verilen URL için HTTP başlıklarını sorgulayarak dosya üstverisini döner.
+    /// Verilen URL için üstveri sorgulaması yapar (HTTP HEAD / Range / FTP SIZE desteği).
     /// </summary>
-    Task<FileMetadataDto> GetMetadataAsync(DownloadUrl url, CancellationToken cancellationToken = default);
+    Task<FileMetadataDto> GetMetadataAsync(
+        DownloadUrl url,
+        DownloadCredentials? credentials = null,
+        CancellationToken cancellationToken = default);
 }

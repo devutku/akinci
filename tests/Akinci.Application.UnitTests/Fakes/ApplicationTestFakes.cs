@@ -59,7 +59,10 @@ public class FakeHttpMetadataService : IHttpMetadataService
         ETag: "\"12345\"",
         ContentType: "application/zip");
 
-    public Task<FileMetadataDto> GetMetadataAsync(DownloadUrl url, CancellationToken cancellationToken = default)
+    public Task<FileMetadataDto> GetMetadataAsync(
+        DownloadUrl url,
+        DownloadCredentials? credentials = null,
+        CancellationToken cancellationToken = default)
     {
         return Task.FromResult(MetadataToReturn);
     }
@@ -111,6 +114,7 @@ public class FakeChunkDownloader : IChunkDownloader
         DownloadUrl url,
         Chunk chunk,
         Func<long, ReadOnlyMemory<byte>, CancellationToken, Task> onDataReceived,
+        DownloadCredentials? credentials = null,
         CancellationToken cancellationToken = default)
     {
         if (SimulateFailure)

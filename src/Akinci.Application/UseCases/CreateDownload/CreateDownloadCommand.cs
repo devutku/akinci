@@ -9,7 +9,8 @@ public sealed record CreateDownloadCommand(
     string Url,
     string DestinationDirectory,
     int RequestedConnections = 8,
-    string? CustomFileName = null);
+    string? CustomFileName = null,
+    DownloadCredentials? Credentials = null);
 
 public sealed class CreateDownloadCommandHandler
 {
@@ -32,7 +33,7 @@ public sealed class CreateDownloadCommandHandler
         var downloadUrl = DownloadUrl.Create(command.Url);
 
         // 1. Sunucudan üstveriyi sorgula
-        var metadata = await _metadataService.GetMetadataAsync(downloadUrl, cancellationToken);
+        var metadata = await _metadataService.GetMetadataAsync(downloadUrl, command.Credentials, cancellationToken);
 
         // 2. Dosya adını ve hedef yolunu belirle
         var fileName = !string.IsNullOrWhiteSpace(command.CustomFileName)
@@ -48,7 +49,8 @@ public sealed class CreateDownloadCommandHandler
             downloadUrl,
             destinationPath,
             metadata.ContentLength,
-            metadata.SupportsRangeRequests);
+            metadata.SupportsRangeRequests,
+            command.Credentials);
 
         // 4. Parçaları hesapla ve ata
         task.InitializeChunks(command.RequestedConnections);

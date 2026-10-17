@@ -52,13 +52,16 @@ public sealed class DownloadTask
     /// </summary>
     public bool IsAllChunksCompleted => _chunks.Count > 0 && _chunks.All(c => c.IsCompleted);
 
+    public DownloadCredentials? Credentials { get; private set; }
+
     public DownloadTask(
         Guid id,
         DownloadUrl url,
         string destinationFilePath,
         long? totalBytes = null,
         bool supportsRangeRequests = false,
-        DownloadStatus status = DownloadStatus.Pending)
+        DownloadStatus status = DownloadStatus.Pending,
+        DownloadCredentials? credentials = null)
     {
         Id = id == Guid.Empty ? Guid.NewGuid() : id;
         Url = url ?? throw new ArgumentNullException(nameof(url));
@@ -68,6 +71,7 @@ public sealed class DownloadTask
         TotalBytes = totalBytes;
         SupportsRangeRequests = supportsRangeRequests;
         Status = status;
+        Credentials = credentials;
         CreatedAt = DateTime.UtcNow;
     }
 
@@ -78,7 +82,8 @@ public sealed class DownloadTask
         DownloadUrl url,
         string destinationFilePath,
         long? totalBytes = null,
-        bool supportsRangeRequests = false)
+        bool supportsRangeRequests = false,
+        DownloadCredentials? credentials = null)
     {
         return new DownloadTask(
             Guid.NewGuid(),
@@ -86,7 +91,16 @@ public sealed class DownloadTask
             destinationFilePath,
             totalBytes,
             supportsRangeRequests,
-            DownloadStatus.Pending);
+            DownloadStatus.Pending,
+            credentials);
+    }
+
+    /// <summary>
+    /// Göreve kimlik doğrulama bilgilerini atar veya günceller.
+    /// </summary>
+    public void SetCredentials(DownloadCredentials? credentials)
+    {
+        Credentials = credentials;
     }
 
     /// <summary>

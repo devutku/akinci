@@ -17,6 +17,20 @@ public sealed record DownloadUrl
         Value = uri.AbsoluteUri;
     }
 
+    private static readonly HashSet<string> SupportedSchemes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        Uri.UriSchemeHttp,
+        Uri.UriSchemeHttps,
+        Uri.UriSchemeFtp,
+        "ftps"
+    };
+
+    public bool IsHttp => Uri.Scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase) ||
+                          Uri.Scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase);
+
+    public bool IsFtp => Uri.Scheme.Equals(Uri.UriSchemeFtp, StringComparison.OrdinalIgnoreCase) ||
+                         Uri.Scheme.Equals("ftps", StringComparison.OrdinalIgnoreCase);
+
     public static DownloadUrl Create(string url)
     {
         if (string.IsNullOrWhiteSpace(url))
@@ -29,9 +43,9 @@ public sealed record DownloadUrl
             throw new DomainException($"Geçersiz URL formatı: '{url}'.");
         }
 
-        if (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps)
+        if (!SupportedSchemes.Contains(uri.Scheme))
         {
-            throw new DomainException($"Desteklenmeyen URL şeması: '{uri.Scheme}'. Yalnızca HTTP ve HTTPS desteklenir.");
+            throw new DomainException($"Desteklenmeyen URL şeması: '{uri.Scheme}'. Yalnızca HTTP, HTTPS, FTP ve FTPS desteklenir.");
         }
 
         return new DownloadUrl(uri);
