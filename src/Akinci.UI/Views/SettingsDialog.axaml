@@ -5,93 +5,126 @@
         x:DataType="vm:SettingsDialogViewModel"
         Title="Ayarlar - AKINCI"
         Icon="/Assets/akinci.ico"
-        Width="580" Height="620"
+        Width="580"
+        SizeToContent="Height"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
-        Background="#1E1E2E">
+        Background="#0F0F12">
 
     <Window.Styles>
         <Style Selector="TextBlock.label">
-            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Foreground" Value="#CDD6F4" />
-            <Setter Property="Margin" Value="0,8,0,4" />
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="Margin" Value="0,6,0,3" />
         </Style>
         <Style Selector="TextBox">
-            <Setter Property="Background" Value="#313244" />
-            <Setter Property="Foreground" Value="#CDD6F4" />
-            <Setter Property="BorderBrush" Value="#45475A" />
-            <Setter Property="CornerRadius" Value="6" />
-            <Setter Property="Padding" Value="10,8" />
+            <Setter Property="Background" Value="#18181C" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="BorderBrush" Value="#272730" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Padding" Value="10,7" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+            <Setter Property="BorderBrush" Value="#38BDF8" />
+        </Style>
+        <Style Selector="Button.quiet-btn">
+            <Setter Property="Background" Value="#272730" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Padding" Value="14,7" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.quiet-btn:pointerover">
+            <Setter Property="Background" Value="#353542" />
+        </Style>
+        <Style Selector="Button.primary-action-btn">
+            <Setter Property="Background" Value="#38BDF8" />
+            <Setter Property="Foreground" Value="#0F172A" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Padding" Value="16,7" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.primary-action-btn:pointerover">
+            <Setter Property="Background" Value="#7DD3FC" />
         </Style>
     </Window.Styles>
 
-    <Border Padding="24">
+    <Border Padding="22,18">
         <Grid RowDefinitions="Auto,*,Auto">
-            <!-- Header with SVG Logo -->
-            <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,16">
-                <Border Grid.Column="0" CornerRadius="8" Width="44" Height="44" ClipToBounds="True" Background="#181825" Margin="0,0,12,0" VerticalAlignment="Center">
-                    <Image Source="/Assets/akinci-logo.png" Width="44" Height="44" />
+            <!-- Header (Strict Contrast: Clean Logo & Typography) -->
+            <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Margin="0,0,0,14">
+                <Border Grid.Column="0" CornerRadius="6" Width="38" Height="38" ClipToBounds="True" Background="#18181C" Margin="0,0,12,0" VerticalAlignment="Center">
+                    <Image Source="/Assets/akinci-logo.png" Width="38" Height="38" />
                 </Border>
-                <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="Uygulama Ayarları" FontSize="18" FontWeight="Bold" Foreground="#89B4FA" />
-                    <TextBlock Text="İndirme tercihlerinizi ve VirusTotal entegrasyonunu yapılandırın." FontSize="12" Foreground="#A6ADC8" />
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="Uygulama Ayarları" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" />
+                    <TextBlock Text="İndirme tercihlerinizi ve VirusTotal entegrasyonunu yapılandırın." FontSize="11" Foreground="#64748B" />
                 </StackPanel>
             </Grid>
 
-            <!-- Form Content -->
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
-                <StackPanel Spacing="10">
-                    <TextBlock Text="Varsayılan Kayıt Dizini" Classes="label" />
-                    <Grid ColumnDefinitions="*,Auto">
-                        <TextBox Grid.Column="0" Text="{Binding DefaultDirectory}" Margin="0,0,8,0" />
-                        <Button Grid.Column="1" Content="Seç..." Click="OnBrowseFolderClick"
-                                Background="#45475A" Foreground="#CDD6F4" CornerRadius="6" Padding="12,8" />
-                    </Grid>
+            <!-- Form Content (No Scrollbar, Clean Fit) -->
+            <StackPanel Grid.Row="1" Spacing="6">
+                <TextBlock Text="Varsayılan Kayıt Dizini" Classes="label" />
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Grid.Column="0" Text="{Binding DefaultDirectory}" Margin="0,0,8,0" />
+                    <Button Grid.Column="1" Content="Seç..." Click="OnBrowseFolderClick" Classes="quiet-btn" Padding="12,7" />
+                </Grid>
 
-                    <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
-                        <TextBlock Grid.Column="0" Text="Varsayılan Bağlantı / Parça Sayısı" Classes="label" VerticalAlignment="Center" />
-                        <TextBlock Grid.Column="1" Text="{Binding DefaultConnections}" FontWeight="Bold" Foreground="#89B4FA" VerticalAlignment="Center" />
-                    </Grid>
-                    <Slider Minimum="1" Maximum="32" Value="{Binding DefaultConnections}" IsSnapToTickEnabled="True" TickFrequency="1" />
+                <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                    <TextBlock Grid.Column="0" Text="Varsayılan Bağlantı / Parça Sayısı" Classes="label" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{Binding DefaultConnections}" FontWeight="Bold" Foreground="#38BDF8" FontSize="13" VerticalAlignment="Center" />
+                </Grid>
+                <Slider Minimum="1" Maximum="32" Value="{Binding DefaultConnections}" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,2,0,4" />
 
-                    <!-- VirusTotal Kartı -->
-                    <Border Background="#28283D" CornerRadius="8" Padding="12" Margin="0,10,0,0">
-                        <StackPanel Spacing="6">
-                            <TextBlock Text="🛡 VirusTotal API Entegrasyonu" FontWeight="Bold" Foreground="#A6E3A1" />
-                            <TextBlock Text="İndirilen dosyaların 70+ antivirüs motoru ile taranması için API anahtarınızı girin."
-                                       FontSize="11" Foreground="#A6ADC8" TextWrapping="Wrap" />
-                            <TextBox Text="{Binding VirusTotalApiKey}" PasswordChar="●" PlaceholderText="VirusTotal API Key (64 karakter)" />
+                <!-- VirusTotal Kartı (Strict Monochrome) -->
+                <Border Background="#18181C" BorderBrush="#22222A" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,6,0,0">
+                    <StackPanel Spacing="6">
+                        <TextBlock Text="🛡 VirusTotal API Entegrasyonu" FontWeight="SemiBold" FontSize="12" Foreground="#34D399" />
+                        <TextBlock Text="İndirilen dosyaların 70+ antivirüs motoru ile taranması için API anahtarınızı girin."
+                                   FontSize="11" Foreground="#64748B" TextWrapping="Wrap" />
+                        <TextBox Text="{Binding VirusTotalApiKey}" PasswordChar="●" PlaceholderText="VirusTotal API Key (64 karakter)" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Akıncı Hakkında & Hero Banner Card -->
+                <Border Background="#18181C" BorderBrush="#22222A" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,6,0,0">
+                    <Grid RowDefinitions="Auto,Auto">
+                        <Border Grid.Row="0" CornerRadius="4" ClipToBounds="True" Height="100" Margin="0,0,0,8">
+                            <Image Source="avares://Akinci.UI/Assets/akinci-banner.jpg" Stretch="UniformToFill" />
+                        </Border>
+
+                        <StackPanel Grid.Row="1" Spacing="2">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBlock Grid.Column="0" Text="AKINCI İndirme Motoru v1.0.0" FontWeight="SemiBold" FontSize="12" Foreground="#F8FAFC" />
+                                <TextBlock Grid.Column="1" Text=".NET 10 • Clean Core" FontSize="10" FontWeight="SemiBold" Foreground="#38BDF8" />
+                            </Grid>
+                            <TextBlock Text="Katı Clean Core mimarisi, SocketsHttpHandler, FluentFTP, SQLite WAL persistence ve VirusTotal v3 analizi."
+                                       FontSize="11" Foreground="#64748B" TextWrapping="Wrap" />
                         </StackPanel>
-                    </Border>
+                    </Grid>
+                </Border>
+            </StackPanel>
 
-                    <!-- Akıncı Hakkında & Hero Banner Card (JPG Illustration Showcase) -->
-                    <Border Background="#181825" BorderBrush="#313244" BorderThickness="1" CornerRadius="10" Padding="14" Margin="0,12,0,0">
-                        <Grid RowDefinitions="Auto,Auto">
-                            <!-- Hero JPG Banner -->
-                            <Border Grid.Row="0" CornerRadius="8" ClipToBounds="True" Height="130" Margin="0,0,0,10">
-                                <Image Source="avares://Akinci.UI/Assets/akinci-banner.jpg" Stretch="UniformToFill" />
-                            </Border>
-
-                            <StackPanel Grid.Row="1" Spacing="4">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <TextBlock Grid.Column="0" Text="AKINCI İndirme Motoru v1.0.0" FontWeight="Bold" FontSize="13" Foreground="#CDD6F4" />
-                                    <TextBlock Grid.Column="1" Text=".NET 10 • Clean Core" FontSize="11" FontWeight="SemiBold" Foreground="#89B4FA" />
-                                </Grid>
-                                <TextBlock Text="Katı Clean Core mimarisi, SocketsHttpHandler, FluentFTP, SQLite WAL persistence ve eşzamanlı VirusTotal v3 güvenlik analizi ile geliştirilmiştir."
-                                           FontSize="11" Foreground="#A6ADC8" TextWrapping="Wrap" />
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                </StackPanel>
-            </ScrollViewer>
-
-            <!-- Footer -->
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,16,0,0">
-                <Button Content="İptal" Click="OnCancelClick"
-                        Background="#313244" Foreground="#CDD6F4" CornerRadius="6" Padding="16,8" />
-                <Button Content="Kaydet" Click="OnSaveClick"
-                        Background="#89B4FA" Foreground="#1E1E2E" FontWeight="Bold" CornerRadius="6" Padding="16,8" />
+            <!-- Actions Footer -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,16,0,0">
+                <Button Content="İptal" Click="OnCancelClick" Classes="quiet-btn" />
+                <Button Content="Kaydet" Click="OnSaveClick" Classes="primary-action-btn" />
             </StackPanel>
         </Grid>
     </Border>
