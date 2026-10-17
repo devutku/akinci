@@ -42,16 +42,49 @@ public partial class DownloadItemViewModel : ObservableObject
     private string _progressText = "";
 
     [ObservableProperty]
+    private string _totalSizeText = "";
+
+    [ObservableProperty]
+    private string _downloadedAndTotalText = "";
+
+    [ObservableProperty]
+    private string _etaText = "";
+
+    [ObservableProperty]
+    private string _connectionsText = "";
+
+    [ObservableProperty]
+    private string _progressBarColor = "#38BDF8";
+
+    [ObservableProperty]
     private string _statusText = "Beklemede";
 
     [ObservableProperty]
-    private string _statusColor = "#9E9E9E"; // Gri
+    private string _statusColor = "#94A3B8";
+
+    [ObservableProperty]
+    private string _statusTextColor = "#94A3B8";
+
+    [ObservableProperty]
+    private string _statusBgColor = "#1E293B";
+
+    [ObservableProperty]
+    private string _statusBorderColor = "#334155";
 
     [ObservableProperty]
     private SecurityVerdict? _securityVerdict;
 
     [ObservableProperty]
     private string _securityBadgeText = "Tarama Bekleniyor";
+
+    [ObservableProperty]
+    private string _securityBgColor = "#1E293B";
+
+    [ObservableProperty]
+    private string _securityBorderColor = "#334155";
+
+    [ObservableProperty]
+    private string _securityTextColor = "#94A3B8";
 
     [ObservableProperty]
     private bool _hasThreat;
@@ -95,7 +128,7 @@ public partial class DownloadItemViewModel : ObservableObject
         }
 
         UpdateStatusState(task.Status);
-        UpdateProgressText(task.DownloadedBytes, task.TotalBytes);
+        UpdateProgressMetrics(task.DownloadedBytes, task.TotalBytes, 0);
         UpdateSecurityDisplay(task.SecurityVerdict);
     }
 
@@ -105,7 +138,7 @@ public partial class DownloadItemViewModel : ObservableObject
         {
             ProgressPercentage = dto.ProgressPercentage;
             SpeedText = dto.Speed.FormatHumanReadable();
-            UpdateProgressText(dto.DownloadedBytes, dto.TotalBytes);
+            UpdateProgressMetrics(dto.DownloadedBytes, dto.TotalBytes, dto.Speed.BytesPerSecond);
             UpdateStatusState(dto.Status);
 
             // Chunk'ları güncelle
@@ -124,11 +157,70 @@ public partial class DownloadItemViewModel : ObservableObject
         });
     }
 
-    private void UpdateProgressText(long downloaded, long? total)
+    private void UpdateProgressMetrics(long downloaded, long? total, double speedBps)
     {
-        string downloadedMb = $"{downloaded / (1024.0 * 1024.0):F2} MB";
-        string totalMb = total.HasValue ? $"{total.Value / (1024.0 * 1024.0):F2} MB" : "Bilinmiyor";
-        ProgressText = $"{downloadedMb} / {totalMb} ({ProgressPercentage:F1}%)";
+        TotalSizeText = total.HasValue ? FormatBytes(total.Value) : "Boyut Belirsiz";
+        string downloadedStr = FormatBytes(downloaded);
+        string totalStr = total.HasValue ? FormatBytes(total.Value) : "Bilinmiyor";
+
+        DownloadedAndTotalText = $"{downloadedStr} / {totalStr}";
+        ProgressText = $"{downloadedStr} / {totalStr} ({ProgressPercentage:F1}%)";
+        ConnectionsText = Chunks.Count > 0 ? $"{Chunks.Count} bağlantı" : "";
+
+        UpdateEta(downloaded, total, speedBps);
+    }
+
+    private void UpdateEta(long downloaded, long? total, double speedBps)
+    {
+        if (Status != DownloadStatus.Downloading || speedBps <= 0 || !total.HasValue)
+        {
+            EtaText = Status switch
+            {
+                DownloadStatus.Completed => "Tamamlandı",
+                DownloadStatus.Paused => "Duraklatıldı",
+                DownloadStatus.Failed => "Hata",
+                DownloadStatus.Canceled => "İptal",
+                _ => ""
+            };
+            return;
+        }
+
+        long remainingBytes = Math.Max(0, total.Value - downloaded);
+        double seconds = remainingBytes / speedBps;
+
+        if (seconds < 1)
+        {
+            EtaText = "Kalan: < 1 sn";
+        }
+        else if (seconds < 60)
+        {
+            EtaText = $"Kalan: {(int)seconds} sn";
+        }
+        else if (seconds < 3600)
+        {
+            int mins = (int)(seconds / 60);
+            int secs = (int)(seconds % 60);
+            EtaText = $"Kalan: {mins} dk {secs} sn";
+        }
+        else
+        {
+            int hours = (int)(seconds / 3600);
+            int mins = (int)((seconds % 3600) / 60);
+            EtaText = $"Kalan: {hours} sa {mins} dk";
+        }
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
+        int i = 0;
+        double dbl = bytes;
+        while (dbl >= 1024 && i < suffixes.Length - 1)
+        {
+            dbl /= 1024;
+            i++;
+        }
+        return $"{dbl:0.##} {suffixes[i]}";
     }
 
     private void UpdateStatusState(DownloadStatus status)
@@ -137,15 +229,16 @@ public partial class DownloadItemViewModel : ObservableObject
         CanPause = status == DownloadStatus.Downloading;
         CanResume = status is DownloadStatus.Paused or DownloadStatus.Failed;
 
-        (StatusText, StatusColor) = status switch
+        (StatusText, StatusTextColor, StatusBgColor, StatusBorderColor, ProgressBarColor) = status switch
         {
-            DownloadStatus.Downloading => ("İndiriliyor", "#2196F3"),  // Mavi
-            DownloadStatus.Completed => ("Tamamlandı", "#4CAF50"),    // Yeşil
-            DownloadStatus.Paused => ("Duraklatıldı", "#FF9800"),     // Turuncu
-            DownloadStatus.Failed => ("Hata Oluştu", "#F44336"),      // Kırmızı
-            DownloadStatus.Canceled => ("İptal Edildi", "#9E9E9E"),  // Gri
-            _ => ("Beklemede", "#9E9E9E")
+            DownloadStatus.Downloading => ("İndiriliyor", "#93C5FD", "#0C2B45", "#1E4E79", "#38BDF8"),  // Pastel Mavi
+            DownloadStatus.Completed   => ("Tamamlandı", "#34D399", "#063A29", "#0D6348", "#10B981"),   // Pastel Yeşil
+            DownloadStatus.Paused      => ("Duraklatıldı", "#94A3B8", "#1E293B", "#334155", "#475569"), // Monokrom Gri
+            DownloadStatus.Failed      => ("Hata Oluştu", "#F87171", "#3C1313", "#6E2222", "#EF4444"),  // Pastel Kırmızı
+            DownloadStatus.Canceled    => ("İptal Edildi", "#64748B", "#182234", "#283548", "#334155"),
+            _                          => ("Beklemede", "#94A3B8", "#1E293B", "#334155", "#38BDF8")
         };
+        StatusColor = StatusTextColor;
     }
 
     private void UpdateSecurityDisplay(SecurityVerdict? verdict)
@@ -154,6 +247,9 @@ public partial class DownloadItemViewModel : ObservableObject
         if (verdict == null)
         {
             SecurityBadgeText = "Tarama Bekleniyor";
+            SecurityBgColor = "#1E293B";
+            SecurityBorderColor = "#334155";
+            SecurityTextColor = "#64748B";
             HasThreat = false;
             IsSafe = false;
             return;
@@ -162,6 +258,25 @@ public partial class DownloadItemViewModel : ObservableObject
         SecurityBadgeText = verdict.FormatBadge();
         HasThreat = verdict.HasThreat;
         IsSafe = verdict.IsSafe;
+
+        if (verdict.HasThreat)
+        {
+            SecurityBgColor = "#3C1313";
+            SecurityBorderColor = "#6E2222";
+            SecurityTextColor = "#F87171";
+        }
+        else if (verdict.IsSafe)
+        {
+            SecurityBgColor = "#063A29";
+            SecurityBorderColor = "#0D6348";
+            SecurityTextColor = "#34D399";
+        }
+        else
+        {
+            SecurityBgColor = "#1E293B";
+            SecurityBorderColor = "#334155";
+            SecurityTextColor = "#94A3B8";
+        }
     }
 
     public async Task StartDownloadAsync()

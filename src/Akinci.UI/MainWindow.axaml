@@ -8,7 +8,9 @@
         Width="1080" Height="680"
         MinWidth="820" MinHeight="500"
         WindowStartupLocation="CenterScreen"
-        Background="#0B0F17">
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="-1"
+        Background="#0F0F12">
 
     <Window.Resources>
         <!-- Lucide / Fluent Style Monochromatic Geometries -->
@@ -24,10 +26,13 @@
         <StreamGeometry x:Key="IconTrash">M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z</StreamGeometry>
         <StreamGeometry x:Key="IconFile">M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6</StreamGeometry>
         <StreamGeometry x:Key="IconShield">M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z</StreamGeometry>
+        <StreamGeometry x:Key="IconMinimize">M4 12h16</StreamGeometry>
+        <StreamGeometry x:Key="IconMaximize">M4 4h16v16H4z</StreamGeometry>
+        <StreamGeometry x:Key="IconClose">M6 18L18 6M6 6l12 12</StreamGeometry>
     </Window.Resources>
 
     <Window.Styles>
-        <!-- Nav Item Button -->
+        <!-- Nav Item Button (Strict contrast: #18181C base, #1C2430 selected) -->
         <Style Selector="Button.nav-item">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="#94A3B8" />
@@ -38,80 +43,144 @@
             <Setter Property="Margin" Value="0,1" />
             <Setter Property="BorderThickness" Value="3,0,0,0" />
             <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="FontSize" Value="13" />
+            <Setter Property="FontSize" Value="12" />
         </Style>
         <Style Selector="Button.nav-item:pointerover">
-            <Setter Property="Background" Value="#1E293B" />
-            <Setter Property="Foreground" Value="#F1F5F9" />
+            <Setter Property="Background" Value="#1C1C22" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
         </Style>
         <Style Selector="Button.nav-item.selected">
-            <Setter Property="Background" Value="#1E293B" />
-            <Setter Property="Foreground" Value="#F1F5F9" />
+            <Setter Property="Background" Value="#1C2430" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="BorderBrush" Value="#38BDF8" />
         </Style>
 
-        <!-- Minimal Icon Toolbar Button -->
+        <!-- Quiet Gray Toolbar Buttons (Frameless #272730, crisp white text/icons) -->
         <Style Selector="Button.icon-btn">
+            <Setter Property="Background" Value="#272730" />
+            <Setter Property="Foreground" Value="#F8FAFC" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="7" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.icon-btn:pointerover">
+            <Setter Property="Background" Value="#353542" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+        </Style>
+
+        <!-- Frameless Window Control Buttons -->
+        <Style Selector="Button.window-control-btn">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="#94A3B8" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="Padding" Value="7" />
-            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="8,6" />
+            <Setter Property="Width" Value="34" />
+            <Setter Property="Height" Value="28" />
+            <Setter Property="CornerRadius" Value="4" />
             <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
-        <Style Selector="Button.icon-btn:pointerover">
-            <Setter Property="Background" Value="#1E293B" />
+        <Style Selector="Button.window-control-btn:pointerover">
+            <Setter Property="Background" Value="#272730" />
             <Setter Property="Foreground" Value="#F8FAFC" />
         </Style>
+        <Style Selector="Button.window-close-btn:pointerover">
+            <Setter Property="Background" Value="#E11D48" />
+            <Setter Property="Foreground" Value="#FFFFFF" />
+        </Style>
 
-        <!-- Single Primary Accent Button -->
+        <!-- Sole Highlighted Cyan Accent Button (#38BDF8) -->
         <Style Selector="Button.primary-action-btn">
             <Setter Property="Background" Value="#38BDF8" />
             <Setter Property="Foreground" Value="#0F172A" />
             <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="CornerRadius" Value="5" />
             <Setter Property="Padding" Value="12,6" />
             <Setter Property="FontSize" Value="12" />
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
         </Style>
         <Style Selector="Button.primary-action-btn:pointerover">
             <Setter Property="Background" Value="#7DD3FC" />
         </Style>
 
-        <!-- Card Action Buttons -->
-        <Style Selector="Button.card-action-btn">
-            <Setter Property="Background" Value="#1E293B" />
-            <Setter Property="Foreground" Value="#94A3B8" />
+        <!-- Download List Item Row (Strict Contrast: #18181C cards on #0F0F12 body) -->
+        <Style Selector="Border.download-row">
+            <Setter Property="Background" Value="#18181C" />
+            <Setter Property="BorderBrush" Value="#22222A" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="BorderBrush" Value="#334155" />
-            <Setter Property="CornerRadius" Value="5" />
-            <Setter Property="Padding" Value="8,4" />
-            <Setter Property="FontSize" Value="11" />
-            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="14,10" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.12" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.12" />
+                </Transitions>
+            </Setter>
         </Style>
-        <Style Selector="Button.card-action-btn:pointerover">
-            <Setter Property="Background" Value="#334155" />
-            <Setter Property="Foreground" Value="#F1F5F9" />
+        <Style Selector="Border.download-row:pointerover">
+            <Setter Property="Background" Value="#202026" />
+            <Setter Property="BorderBrush" Value="#2E2E38" />
+        </Style>
+
+        <!-- Hover Action Buttons (subtle by default, visible on row pointerover) -->
+        <Style Selector="Border.download-row Button.row-action">
+            <Setter Property="Opacity" Value="0.25" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="5" />
+            <Setter Property="Width" Value="26" />
+            <Setter Property="Height" Value="26" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Border.download-row:pointerover Button.row-action">
+            <Setter Property="Opacity" Value="0.8" />
+        </Style>
+        <Style Selector="Border.download-row Button.row-action:pointerover">
+            <Setter Property="Opacity" Value="1.0" />
+            <Setter Property="Background" Value="#272730" />
         </Style>
     </Window.Styles>
 
     <Grid RowDefinitions="Auto,*">
-        <!-- Top Application Toolbar (Minimalist, Flat, Unboxed) -->
-        <Border Grid.Row="0" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,0,0,1" Padding="16,9">
+        <!-- Top Application TitleBar / Toolbar (Frameless, Window Draggable, Mica/Acrylic Feel) -->
+        <Border Grid.Row="0" Background="#131317" BorderBrush="#1E1E24" BorderThickness="0,0,0,1"
+                Padding="16,7,8,7" PointerPressed="OnTitleBarPointerPressed">
             <Grid ColumnDefinitions="Auto,*,Auto">
-                <!-- Left: Brand Logo & Integrated Search Box -->
+                <!-- Left: Brand Logo & Integrated Quiet Search Box -->
                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="16" VerticalAlignment="Center">
                     <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <Image Source="/Assets/akinci-logo.png" Width="24" Height="24" VerticalAlignment="Center" />
-                        <TextBlock Text="AKINCI" FontSize="14" FontWeight="Bold" Foreground="#F8FAFC" LetterSpacing="0.8" VerticalAlignment="Center" />
+                        <Image Source="/Assets/akinci-logo.png" Width="22" Height="22" VerticalAlignment="Center" />
+                        <TextBlock Text="AKINCI" FontSize="13" FontWeight="Bold" Foreground="#F8FAFC" LetterSpacing="0.8" VerticalAlignment="Center" />
                     </StackPanel>
 
-                    <!-- Embedded Toolbar Search Box -->
+                    <!-- Integrated Search Box (Quiet dark #18181C) -->
                     <TextBox x:Name="SearchInputBox" Text="{Binding SearchQuery}" PlaceholderText="Filtrele veya ara (Ctrl+F)..."
                              Width="210" Height="28" VerticalContentAlignment="Center"
-                             Background="#1E293B" Foreground="#F1F5F9" BorderBrush="#334155" CornerRadius="6" Padding="8,0" FontSize="12">
+                             Background="#18181C" Foreground="#F8FAFC" BorderBrush="#272730" CornerRadius="5" Padding="8,0" FontSize="12">
                         <TextBox.InnerLeftContent>
                             <PathIcon Data="{StaticResource IconSearch}" Width="12" Height="12" Foreground="#64748B" Margin="6,0,0,0" />
                         </TextBox.InnerLeftContent>
@@ -122,38 +191,51 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="6" VerticalAlignment="Center">
                     <TextBlock Text="↓" Foreground="#38BDF8" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
                     <TextBlock Text="{Binding TotalSpeedText}" Foreground="#38BDF8" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
-                    <TextBlock Text="•" Foreground="#334155" FontSize="12" Margin="4,0" VerticalAlignment="Center" />
+                    <TextBlock Text="•" Foreground="#272730" FontSize="12" Margin="4,0" VerticalAlignment="Center" />
                     <TextBlock Text="Aktif:" Foreground="#64748B" FontSize="12" VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding ActiveCount}" Foreground="#E2E8F0" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
-                    <TextBlock Text="•" Foreground="#334155" FontSize="12" Margin="4,0" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding ActiveCount}" Foreground="#F8FAFC" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                    <TextBlock Text="•" Foreground="#272730" FontSize="12" Margin="4,0" VerticalAlignment="Center" />
                     <TextBlock Text="Biten:" Foreground="#64748B" FontSize="12" VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding CompletedCount}" Foreground="#E2E8F0" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
+                    <TextBlock Text="{Binding CompletedCount}" Foreground="#F8FAFC" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
                 </StackPanel>
 
-                <!-- Right: Monochromatic Icon Actions + Primary Add Button -->
+                <!-- Right: Quiet Buttons, Accent Action + Integrated Window Controls -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                     <Button Command="{Binding PauseAllCommand}" Classes="icon-btn" ToolTip.Tip="Tümünü Duraklat">
-                        <PathIcon Data="{StaticResource IconPauseAll}" Width="13" Height="13" Foreground="#94A3B8" />
+                        <PathIcon Data="{StaticResource IconPauseAll}" Width="12" Height="12" Foreground="#F8FAFC" />
                     </Button>
                     <Button Command="{Binding ResumeAllCommand}" Classes="icon-btn" ToolTip.Tip="Tümünü Başlat">
-                        <PathIcon Data="{StaticResource IconResumeAll}" Width="13" Height="13" Foreground="#94A3B8" />
+                        <PathIcon Data="{StaticResource IconResumeAll}" Width="12" Height="12" Foreground="#F8FAFC" />
                     </Button>
                     <Button Click="OnSettingsClick" Classes="icon-btn" ToolTip.Tip="Ayarlar">
-                        <PathIcon Data="{StaticResource IconSettings}" Width="13" Height="13" Foreground="#94A3B8" />
+                        <PathIcon Data="{StaticResource IconSettings}" Width="12" Height="12" Foreground="#F8FAFC" />
                     </Button>
 
-                    <Rectangle Width="1" Height="16" Fill="#1E293B" Margin="4,0" VerticalAlignment="Center" />
+                    <Rectangle Width="1" Height="16" Fill="#272730" Margin="4,0" VerticalAlignment="Center" />
 
-                    <!-- Single Clean Highlighted Button -->
+                    <!-- Single Clean Highlighted Button (#38BDF8) -->
                     <Button Content="+ İndirme Ekle" Click="OnAddDownloadClick" Classes="primary-action-btn" />
+
+                    <Rectangle Width="1" Height="16" Fill="#272730" Margin="4,0" VerticalAlignment="Center" />
+
+                    <!-- Frameless Window Controls (Minimize, Maximize, Close) -->
+                    <Button Click="OnMinimizeClick" Classes="window-control-btn" ToolTip.Tip="Simge Durumuna Küçült">
+                        <PathIcon Data="{StaticResource IconMinimize}" Width="11" Height="11" Foreground="#94A3B8" />
+                    </Button>
+                    <Button Click="OnMaximizeClick" Classes="window-control-btn" ToolTip.Tip="Büyüt / Önceki Boyut">
+                        <PathIcon Data="{StaticResource IconMaximize}" Width="10" Height="10" Foreground="#94A3B8" />
+                    </Button>
+                    <Button Click="OnCloseClick" Classes="window-control-btn window-close-btn" ToolTip.Tip="Kapat (Arka Plana Al)">
+                        <PathIcon Data="{StaticResource IconClose}" Width="11" Height="11" Foreground="#94A3B8" />
+                    </Button>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- Main Body: Sidebar + Content Area -->
         <Grid Grid.Row="1" ColumnDefinitions="190,*">
-            <!-- Left Sidebar Navigation (Modern Desktop List Style) -->
-            <Border Grid.Column="0" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="0,0,1,0" Padding="10,12">
+            <!-- Left Sidebar Navigation (Strict Contrast: #131317 background, #1E1E24 border) -->
+            <Border Grid.Column="0" Background="#131317" BorderBrush="#1E1E24" BorderThickness="0,0,1,0" Padding="10,12">
                 <StackPanel Spacing="3">
                     <TextBlock Text="İNDİRMELER" FontSize="10" FontWeight="SemiBold" Foreground="#475569" Margin="10,2,0,6" />
 
@@ -221,93 +303,120 @@
                     <ItemsControl ItemsSource="{Binding FilteredDownloads}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:DownloadItemViewModel">
-                                <!-- Download Card -->
-                                <Border Background="#111827" BorderBrush="#1E293B" BorderThickness="1"
-                                        CornerRadius="8" Padding="14" Margin="0,0,0,10">
-                                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10">
-                                        <!-- Header Row: File Icon, Name, URL, and Status/Controls -->
-                                        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto">
-                                            <!-- File Icon & Details -->
-                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
-                                                <Border Background="#1E293B" CornerRadius="6" Width="36" Height="36" VerticalAlignment="Center">
-                                                    <PathIcon Data="{StaticResource IconFile}" Width="16" Height="16" Foreground="#94A3B8" />
-                                                </Border>
-                                                <StackPanel VerticalAlignment="Center" Spacing="2">
-                                                    <TextBlock Text="{Binding FileName}" FontSize="13" FontWeight="SemiBold" Foreground="#F1F5F9" />
-                                                    <TextBlock Text="{Binding Url}" FontSize="11" Foreground="#64748B" MaxWidth="520" TextTrimming="CharacterEllipsis" />
-                                                </StackPanel>
+                                <!-- Modern Desktop Download Row (Linear / GitHub Desktop / qBittorrent Style) -->
+                                <Border Classes="download-row">
+                                    <Grid RowDefinitions="Auto,Auto,Auto">
+                                        <!-- Layer 1 (Upper): File Name, Total Size, Status & Security Badges -->
+                                        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                                            <!-- File Icon, Name and Total Size -->
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <PathIcon Data="{StaticResource IconFile}" Width="13" Height="13" Foreground="#64748B" VerticalAlignment="Center" />
+                                                <TextBlock Text="{Binding FileName}" FontSize="13" FontWeight="SemiBold" Foreground="#F1F5F9"
+                                                           VerticalAlignment="Center" MaxWidth="560" TextTrimming="CharacterEllipsis" />
+                                                <TextBlock Text="{Binding TotalSizeText}" FontSize="11" Foreground="#64748B"
+                                                           VerticalAlignment="Center" Margin="2,0,0,0" />
                                             </StackPanel>
 
-                                            <!-- Controls and Status Tag -->
-                                            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                <!-- Status Chip (Subtle, Clean) -->
-                                                <Border Background="#1E293B" BorderBrush="#334155" BorderThickness="1"
-                                                        CornerRadius="4" Padding="8,3" Margin="0,0,4,0">
-                                                    <TextBlock Text="{Binding StatusText}" FontSize="11" Foreground="{Binding StatusColor}" FontWeight="SemiBold" />
-                                                </Border>
+                                            <!-- Compact Status & Security Badges -->
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                                                <!-- Minimal VirusTotal Security Badge -->
+                                                <Button Command="{Binding OpenSecurityReportCommand}"
+                                                        Background="{Binding SecurityBgColor}"
+                                                        BorderBrush="{Binding SecurityBorderColor}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="4"
+                                                        Padding="6,2"
+                                                        Cursor="Hand"
+                                                        ToolTip.Tip="VirusTotal Güvenlik Raporu (Tıkla ve Aç)"
+                                                        IsVisible="{Binding SecurityVerdict, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                    <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                        <PathIcon Data="{StaticResource IconShield}" Width="10" Height="10"
+                                                                  Foreground="{Binding SecurityTextColor}" VerticalAlignment="Center" />
+                                                        <TextBlock Text="{Binding SecurityBadgeText}" FontSize="10" FontWeight="SemiBold"
+                                                                   Foreground="{Binding SecurityTextColor}" VerticalAlignment="Center" />
+                                                    </StackPanel>
+                                                </Button>
 
-                                                <!-- Action Buttons -->
-                                                <Button Content="Duraklat" Command="{Binding PauseCommand}" IsVisible="{Binding CanPause}" Classes="card-action-btn" />
-                                                <Button Content="Devam Et" Command="{Binding ResumeCommand}" IsVisible="{Binding CanResume}" Classes="card-action-btn" />
-                                                <Button Content="Klasör" Command="{Binding OpenFolderCommand}" Classes="card-action-btn" />
-                                                <Button Content="Sil" Command="{Binding DeleteCommand}" Classes="card-action-btn" />
+                                                <!-- Soft Pastel Status Badge -->
+                                                <Border Background="{Binding StatusBgColor}"
+                                                        BorderBrush="{Binding StatusBorderColor}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="4"
+                                                        Padding="7,2"
+                                                        VerticalAlignment="Center">
+                                                    <TextBlock Text="{Binding StatusText}" FontSize="10" FontWeight="SemiBold"
+                                                               Foreground="{Binding StatusTextColor}" VerticalAlignment="Center" />
+                                                </Border>
                                             </StackPanel>
                                         </Grid>
 
-                                        <!-- Progress Bar & Speed Metrics -->
-                                        <Grid Grid.Row="1" RowDefinitions="Auto,Auto" RowSpacing="5">
-                                            <ProgressBar Grid.Row="0" Minimum="0" Maximum="100" Value="{Binding ProgressPercentage}"
-                                                         Height="5" CornerRadius="2" Background="#1E293B" Foreground="#38BDF8" />
+                                        <!-- Slim & Elegant Progress Bar (3px) -->
+                                        <ProgressBar Grid.Row="1" Minimum="0" Maximum="100" Value="{Binding ProgressPercentage}"
+                                                     Height="3" CornerRadius="1.5"
+                                                     Background="#202026" Foreground="{Binding ProgressBarColor}"
+                                                     Margin="0,8,0,8" />
 
-                                            <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
-                                                <TextBlock Grid.Column="0" Text="{Binding ProgressText}" FontSize="11" Foreground="#64748B" />
-                                                <TextBlock Grid.Column="1" Text="{Binding SpeedText}" FontSize="11" FontWeight="SemiBold" Foreground="#38BDF8" />
-                                            </Grid>
-                                        </Grid>
-
-                                        <!-- Parallel Chunk Progress Bar (Slim, Minimalist) -->
-                                        <Border Grid.Row="2" Background="#0F172A" CornerRadius="5" Padding="8,6" Margin="0,1">
-                                            <StackPanel Spacing="5">
-                                                <TextBlock Text="Paralel İndirme Akışı (Chunks)" FontSize="10" Foreground="#475569" />
-                                                <ItemsControl ItemsSource="{Binding Chunks}">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <StackPanel Orientation="Horizontal" Spacing="5" />
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate x:DataType="vm:ChunkViewModel">
-                                                            <Border Background="#1E293B" CornerRadius="3" Padding="5,3" MinWidth="68">
-                                                                <StackPanel Spacing="2">
-                                                                    <Grid ColumnDefinitions="*,Auto">
-                                                                        <TextBlock Grid.Column="0" Text="{Binding Title}" FontSize="8" Foreground="#64748B" />
-                                                                        <TextBlock Grid.Column="1" Text="{Binding ProgressPercentage, StringFormat={}{0:F0}%}"
-                                                                                   FontSize="8" FontWeight="SemiBold" Foreground="#94A3B8" />
-                                                                    </Grid>
-                                                                    <ProgressBar Minimum="0" Maximum="100" Value="{Binding ProgressPercentage}"
-                                                                                 Height="3" CornerRadius="1" Background="#334155" Foreground="#38BDF8" />
-                                                                </StackPanel>
-                                                            </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </StackPanel>
-                                        </Border>
-
-                                        <!-- Security & VirusTotal Verdict Badge (Restrained & Elegant) -->
-                                        <Border Grid.Row="3" Background="#0F172A" BorderBrush="#1E293B" BorderThickness="1" CornerRadius="5" Padding="8,5">
-                                            <Grid ColumnDefinitions="Auto,*,Auto">
-                                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                    <PathIcon Data="{StaticResource IconShield}" Width="12" Height="12" Foreground="#94A3B8" VerticalAlignment="Center" />
-                                                    <TextBlock Text="{Binding SecurityBadgeText}" FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center" />
+                                        <!-- Layer 2 (Lower): Technical Details & Hover Actions -->
+                                        <Grid Grid.Row="2" ColumnDefinitions="*,Auto">
+                                            <!-- Left: Instantaneous Speed, Downloaded/Total, ETA, Connection Count -->
+                                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                                                <!-- Instantaneous Speed -->
+                                                <StackPanel Orientation="Horizontal" Spacing="3" VerticalAlignment="Center">
+                                                    <TextBlock Text="↓" Foreground="#38BDF8" FontSize="11" FontWeight="Bold" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding SpeedText}" FontSize="11" FontWeight="SemiBold" Foreground="#38BDF8" VerticalAlignment="Center" />
                                                 </StackPanel>
 
-                                                <Button Grid.Column="2" Content="VirusTotal Raporu ↗"
-                                                        Command="{Binding OpenSecurityReportCommand}"
-                                                        IsVisible="{Binding SecurityVerdict, Converter={x:Static ObjectConverters.IsNotNull}}"
-                                                        Background="Transparent" Foreground="#38BDF8" FontSize="11" Padding="4,2" />
-                                            </Grid>
-                                        </Border>
+                                                <TextBlock Text="•" Foreground="#272730" FontSize="11" VerticalAlignment="Center" />
+
+                                                <!-- Downloaded / Total Amount -->
+                                                <TextBlock Text="{Binding DownloadedAndTotalText}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+
+                                                <!-- Percentage -->
+                                                <TextBlock Text="{Binding ProgressPercentage, StringFormat={}({0:F1}%)}"
+                                                           FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+
+                                                <!-- Remaining Time (ETA) -->
+                                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                                            IsVisible="{Binding EtaText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                    <TextBlock Text="•" Foreground="#272730" FontSize="11" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding EtaText}" FontSize="11" Foreground="#94A3B8" VerticalAlignment="Center" />
+                                                </StackPanel>
+
+                                                <!-- Connections / Chunks count -->
+                                                <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center"
+                                                            IsVisible="{Binding ConnectionsText, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                                    <TextBlock Text="•" Foreground="#272730" FontSize="11" VerticalAlignment="Center" />
+                                                    <TextBlock Text="{Binding ConnectionsText}" FontSize="11" Foreground="#475569" VerticalAlignment="Center" />
+                                                </StackPanel>
+                                            </StackPanel>
+
+                                            <!-- Right: Hover Actions (Durdur/Devam et, Klasörde Aç, Sil) -->
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+                                                <!-- Pause Action -->
+                                                <Button Command="{Binding PauseCommand}" IsVisible="{Binding CanPause}"
+                                                        Classes="row-action" ToolTip.Tip="İndirmeyi Duraklat">
+                                                    <PathIcon Data="{StaticResource IconPause}" Width="12" Height="12" Foreground="#94A3B8" />
+                                                </Button>
+
+                                                <!-- Resume Action -->
+                                                <Button Command="{Binding ResumeCommand}" IsVisible="{Binding CanResume}"
+                                                        Classes="row-action" ToolTip.Tip="İndirmeye Devam Et">
+                                                    <PathIcon Data="{StaticResource IconResumeAll}" Width="12" Height="12" Foreground="#38BDF8" />
+                                                </Button>
+
+                                                <!-- Open Folder Action -->
+                                                <Button Command="{Binding OpenFolderCommand}"
+                                                        Classes="row-action" ToolTip.Tip="Klasörde Göster">
+                                                    <PathIcon Data="{StaticResource IconFolder}" Width="12" Height="12" Foreground="#94A3B8" />
+                                                </Button>
+
+                                                <!-- Delete Action -->
+                                                <Button Command="{Binding DeleteCommand}"
+                                                        Classes="row-action" ToolTip.Tip="Listeden Kaldır">
+                                                    <PathIcon Data="{StaticResource IconTrash}" Width="12" Height="12" Foreground="#94A3B8" />
+                                                </Button>
+                                            </StackPanel>
+                                        </Grid>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
