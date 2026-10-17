@@ -136,31 +136,32 @@
             <Setter Property="BorderBrush" Value="#2E2E38" />
         </Style>
 
-        <!-- Hover Action Buttons (subtle by default, visible on row pointerover) -->
+        <!-- Action Buttons (Clear, crisp desktop buttons) -->
         <Style Selector="Border.download-row Button.row-action">
-            <Setter Property="Opacity" Value="0.25" />
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="CornerRadius" Value="4" />
-            <Setter Property="Padding" Value="5" />
-            <Setter Property="Width" Value="26" />
-            <Setter Property="Height" Value="26" />
+            <Setter Property="Opacity" Value="0.9" />
+            <Setter Property="Background" Value="#202026" />
+            <Setter Property="BorderBrush" Value="#2B2B36" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="5" />
+            <Setter Property="Padding" Value="4" />
+            <Setter Property="Width" Value="28" />
+            <Setter Property="Height" Value="28" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Transitions">
                 <Transitions>
-                    <DoubleTransition Property="Opacity" Duration="0:0:0.12" />
+                    <DoubleTransition Property="Opacity" Duration="0:0:0.1" />
                     <BrushTransition Property="Background" Duration="0:0:0.1" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
                 </Transitions>
             </Setter>
         </Style>
-        <Style Selector="Border.download-row:pointerover Button.row-action">
-            <Setter Property="Opacity" Value="0.8" />
-        </Style>
         <Style Selector="Border.download-row Button.row-action:pointerover">
             <Setter Property="Opacity" Value="1.0" />
-            <Setter Property="Background" Value="#272730" />
+            <Setter Property="Background" Value="#2C2C38" />
+            <Setter Property="BorderBrush" Value="#38BDF8" />
         </Style>
     </Window.Styles>
 
@@ -304,6 +305,32 @@
                             <DataTemplate x:DataType="vm:DownloadItemViewModel">
                                 <!-- Modern Desktop Download Row (Linear / GitHub Desktop / qBittorrent Style) -->
                                 <Border Classes="download-row">
+                                    <Border.ContextMenu>
+                                        <ContextMenu Background="#18181C" BorderBrush="#272730" BorderThickness="1" CornerRadius="6">
+                                            <MenuItem Header="İndirmeyi Duraklat" Command="{Binding PauseCommand}" IsVisible="{Binding CanPause}">
+                                                <MenuItem.Icon>
+                                                    <PathIcon Data="{StaticResource IconPause}" Width="12" Height="12" Foreground="#F87171" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="İndirmeye Devam Et" Command="{Binding ResumeCommand}" IsVisible="{Binding CanResume}">
+                                                <MenuItem.Icon>
+                                                    <PathIcon Data="{StaticResource IconResumeAll}" Width="12" Height="12" Foreground="#38BDF8" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator IsVisible="{Binding CanPause}" />
+                                            <MenuItem Header="Klasörde Göster" Command="{Binding OpenFolderCommand}">
+                                                <MenuItem.Icon>
+                                                    <PathIcon Data="{StaticResource IconFolder}" Width="12" Height="12" Foreground="#94A3B8" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator />
+                                            <MenuItem Header="İndirmeyi Sil..." Command="{Binding DeleteCommand}">
+                                                <MenuItem.Icon>
+                                                    <PathIcon Data="{StaticResource IconTrash}" Width="12" Height="12" Foreground="#EF4444" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                        </ContextMenu>
+                                    </Border.ContextMenu>
                                     <Grid RowDefinitions="Auto,Auto,Auto">
                                         <!-- Layer 1 (Upper): File Name, Total Size, Status & Security Badges -->
                                         <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
@@ -390,30 +417,30 @@
                                                 </StackPanel>
                                             </StackPanel>
 
-                                            <!-- Right: Hover Actions (Durdur/Devam et, Klasörde Aç, Sil) -->
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-                                                <!-- Pause Action -->
+                                            <!-- Right: Actions (Durdur/Devam et, Klasörde Aç, Sil) -->
+                                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                <!-- Pause Action (Net kırmızı/turuncu belirgin duraklatma) -->
                                                 <Button Command="{Binding PauseCommand}" IsVisible="{Binding CanPause}"
                                                         Classes="row-action" ToolTip.Tip="İndirmeyi Duraklat">
-                                                    <PathIcon Data="{StaticResource IconPause}" Width="12" Height="12" Foreground="#94A3B8" />
+                                                    <PathIcon Data="{StaticResource IconPause}" Width="13" Height="13" Foreground="#F87171" />
                                                 </Button>
 
-                                                <!-- Resume Action -->
+                                                <!-- Resume Action (Canlı mavi/camgöbeği devam et) -->
                                                 <Button Command="{Binding ResumeCommand}" IsVisible="{Binding CanResume}"
                                                         Classes="row-action" ToolTip.Tip="İndirmeye Devam Et">
-                                                    <PathIcon Data="{StaticResource IconResumeAll}" Width="12" Height="12" Foreground="#38BDF8" />
+                                                    <PathIcon Data="{StaticResource IconResumeAll}" Width="13" Height="13" Foreground="#38BDF8" />
                                                 </Button>
 
                                                 <!-- Open Folder Action -->
                                                 <Button Command="{Binding OpenFolderCommand}"
                                                         Classes="row-action" ToolTip.Tip="Klasörde Göster">
-                                                    <PathIcon Data="{StaticResource IconFolder}" Width="12" Height="12" Foreground="#94A3B8" />
+                                                    <PathIcon Data="{StaticResource IconFolder}" Width="13" Height="13" Foreground="#94A3B8" />
                                                 </Button>
 
                                                 <!-- Delete Action -->
                                                 <Button Command="{Binding DeleteCommand}"
-                                                        Classes="row-action" ToolTip.Tip="Listeden Kaldır">
-                                                    <PathIcon Data="{StaticResource IconTrash}" Width="12" Height="12" Foreground="#94A3B8" />
+                                                        Classes="row-action" ToolTip.Tip="İndirmeyi Sil...">
+                                                    <PathIcon Data="{StaticResource IconTrash}" Width="13" Height="13" Foreground="#EF4444" />
                                                 </Button>
                                             </StackPanel>
                                         </Grid>

@@ -28,6 +28,12 @@ public partial class MainWindow : Window
         _settingsService = settingsService;
         _notificationService = notificationService;
 
+        viewModel.ConfirmDeleteHandler = async (item) =>
+        {
+            var dialog = new DeleteDownloadDialog(item.FileName, item.DestinationFilePath);
+            return await dialog.ShowDialog<DeleteDownloadOption>(this);
+        };
+
         Loaded += async (s, e) =>
         {
             _notificationService.AttachWindow(this);

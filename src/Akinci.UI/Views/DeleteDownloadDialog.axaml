@@ -1,0 +1,132 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="Akinci.UI.Views.DeleteDownloadDialog"
+        Title="İndirmeyi Sil - AKINCI"
+        Icon="/Assets/akinci.ico"
+        Width="480"
+        SizeToContent="Height"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False"
+        Background="#0F0F12">
+
+    <Window.Styles>
+        <Style Selector="Button.choice-btn">
+            <Setter Property="Background" Value="#18181C" />
+            <Setter Property="BorderBrush" Value="#272730" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="14,12" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.choice-btn:pointerover">
+            <Setter Property="Background" Value="#202028" />
+            <Setter Property="BorderBrush" Value="#38BDF8" />
+        </Style>
+
+        <Style Selector="Button.danger-btn">
+            <Setter Property="Background" Value="#1F1315" />
+            <Setter Property="BorderBrush" Value="#4C1D24" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="14,12" />
+            <Setter Property="HorizontalAlignment" Value="Stretch" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Transitions">
+                <Transitions>
+                    <BrushTransition Property="Background" Duration="0:0:0.1" />
+                    <BrushTransition Property="BorderBrush" Duration="0:0:0.1" />
+                </Transitions>
+            </Setter>
+        </Style>
+        <Style Selector="Button.danger-btn:pointerover">
+            <Setter Property="Background" Value="#2E181C" />
+            <Setter Property="BorderBrush" Value="#EF4444" />
+        </Style>
+
+        <Style Selector="Button.cancel-btn">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="#94A3B8" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
+        <Style Selector="Button.cancel-btn:pointerover">
+            <Setter Property="Foreground" Value="#F8FAFC" />
+        </Style>
+    </Window.Styles>
+
+    <Border Padding="24" Background="#0F0F12">
+        <StackPanel Spacing="16">
+            <!-- Header -->
+            <Grid ColumnDefinitions="Auto,*">
+                <Border Grid.Column="0" Width="36" Height="36" CornerRadius="18"
+                        Background="#26181B" BorderBrush="#4C1D24" BorderThickness="1"
+                        Margin="0,0,12,0" VerticalAlignment="Center">
+                    <PathIcon Data="{StaticResource IconTrash}" Width="16" Height="16" Foreground="#EF4444"
+                              VerticalAlignment="Center" HorizontalAlignment="Center" />
+                </Border>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="İndirmeyi Sil" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" />
+                    <TextBlock Text="Bu indirmeyi nasıl kaldırmak istiyorsunuz?" FontSize="12" Foreground="#94A3B8" />
+                </StackPanel>
+            </Grid>
+
+            <!-- Target File Info Card -->
+            <Border Background="#18181C" BorderBrush="#272730" BorderThickness="1"
+                    CornerRadius="6" Padding="12">
+                <Grid ColumnDefinitions="Auto,*">
+                    <PathIcon Grid.Column="0" Data="{StaticResource IconFile}" Width="16" Height="16"
+                              Foreground="#38BDF8" Margin="0,0,10,0" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock x:Name="TxtFileName" Text="dosya.rar" FontSize="12" FontWeight="SemiBold"
+                                   Foreground="#F8FAFC" TextTrimming="CharacterEllipsis" />
+                        <TextBlock x:Name="TxtFilePath" Text="C:\Downloads\dosya.rar" FontSize="11"
+                                   Foreground="#64748B" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Choice 1: Remove from list only -->
+            <Button Classes="choice-btn" Click="OnRemoveFromListClick">
+                <Grid ColumnDefinitions="Auto,*">
+                    <PathIcon Grid.Column="0" Data="{StaticResource IconClose}" Width="14" Height="14"
+                              Foreground="#94A3B8" Margin="0,2,12,0" VerticalAlignment="Top" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock Text="Yalnızca Listeden Kaldır" FontSize="13" FontWeight="SemiBold" Foreground="#F8FAFC" />
+                        <TextBlock Text="İndirilen dosya diskinizde saklanmaya devam eder, yalnızca Akıncı listesinden temizlenir."
+                                   FontSize="11" Foreground="#64748B" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Button>
+
+            <!-- Choice 2: Delete file and list -->
+            <Button Classes="danger-btn" Click="OnDeleteFileAndListClick">
+                <Grid ColumnDefinitions="Auto,*">
+                    <PathIcon Grid.Column="0" Data="{StaticResource IconTrash}" Width="14" Height="14"
+                              Foreground="#EF4444" Margin="0,2,12,0" VerticalAlignment="Top" />
+                    <StackPanel Grid.Column="1" Spacing="2">
+                        <TextBlock Text="Dosyayı ve Listeyi Sil" FontSize="13" FontWeight="SemiBold" Foreground="#F87171" />
+                        <TextBlock Text="İndirilen dosya ve geçici parçalar bilgisayarınızdan kalıcı olarak silinir."
+                                   FontSize="11" Foreground="#991B1B" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Grid>
+            </Button>
+
+            <!-- Bottom Cancel Bar -->
+            <Grid HorizontalAlignment="Right" Margin="0,4,0,0">
+                <Button Classes="cancel-btn" Content="Vazgeç" Click="OnCancelClick" />
+            </Grid>
+        </StackPanel>
+    </Border>
+</Window>

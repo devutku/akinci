@@ -26,6 +26,8 @@ public partial class MainWindowViewModel : ObservableObject
     public ObservableCollection<DownloadItemViewModel> AllDownloads { get; } = new();
     public ObservableCollection<DownloadItemViewModel> FilteredDownloads { get; } = new();
 
+    public Func<DownloadItemViewModel, Task<Views.DeleteDownloadOption>>? ConfirmDeleteHandler { get; set; }
+
     [ObservableProperty]
     private string _selectedFilter = "Tümü";
 
@@ -82,6 +84,7 @@ public partial class MainWindowViewModel : ObservableObject
             {
                 var itemVm = new DownloadItemViewModel(task, _startHandler, _pauseHandler, _resumeHandler, _repository, _notificationService);
                 itemVm.Deleted += OnItemDeleted;
+                itemVm.ConfirmDeleteHandler = ConfirmDeleteHandler;
                 AllDownloads.Add(itemVm);
             }
             ApplyFilter();
@@ -109,6 +112,7 @@ public partial class MainWindowViewModel : ObservableObject
 
         var itemVm = new DownloadItemViewModel(task, _startHandler, _pauseHandler, _resumeHandler, _repository, _notificationService);
         itemVm.Deleted += OnItemDeleted;
+        itemVm.ConfirmDeleteHandler = ConfirmDeleteHandler;
 
         Dispatcher.UIThread.Post(() =>
         {

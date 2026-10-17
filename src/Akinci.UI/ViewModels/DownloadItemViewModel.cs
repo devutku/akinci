@@ -413,12 +413,49 @@ public partial class DownloadItemViewModel : ObservableObject
         }
     }
 
+    public Func<DownloadItemViewModel, Task<Views.DeleteDownloadOption>>? ConfirmDeleteHandler { get; set; }
+
     [RelayCommand]
     public async Task DeleteAsync()
     {
+        var option = Views.DeleteDownloadOption.RemoveFromListOnly;
+        if (ConfirmDeleteHandler != null)
+        {
+            option = await ConfirmDeleteHandler(this);
+            if (option == Views.DeleteDownloadOption.Cancel)
+            {
+                return;
+            }
+        }
+
         if (CanPause)
         {
             await PauseAsync();
+        }
+
+        if (option == Views.DeleteDownloadOption.DeleteFileAndList)
+        {
+            try
+            {
+                if (File.Exists(DestinationFilePath))
+                {
+                    File.Delete(DestinationFilePath);
+                }
+
+                var dir = Path.GetDirectoryName(DestinationFilePath);
+                var fn = Path.GetFileName(DestinationFilePath);
+                if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir))
+                {
+                    foreach (var f in Directory.GetFiles(dir, fn + ".*"))
+                    {
+                        try { File.Delete(f); } catch { }
+                    }
+                }
+            }
+            catch
+            {
+                // Dosya meşgul veya kilitli olabilir
+            }
         }
 
         await _repository.DeleteAsync(Task.Id);
