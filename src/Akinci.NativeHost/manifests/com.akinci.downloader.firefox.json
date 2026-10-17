@@ -1,7 +1,7 @@
 {
   "name": "com.akinci.downloader",
   "description": "Akıncı Downloader Native Messaging Host for Mozilla Firefox",
-  "path": "Akinci.NativeHost.exe",
+  "path": "Akinci-BrowserBridge.exe",
   "type": "stdio",
   "allowed_extensions": [
     "akinci@downloader.com"

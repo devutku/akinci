@@ -8,6 +8,7 @@
     <ApplicationIcon>Assets\akinci.ico</ApplicationIcon>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
+    <AssemblyName>Akinci</AssemblyName>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
     <PackageLicenseExpression>GPL-3.0-or-later</PackageLicenseExpression>

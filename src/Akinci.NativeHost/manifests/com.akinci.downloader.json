@@ -1,7 +1,7 @@
 {
   "name": "com.akinci.downloader",
   "description": "Akıncı Downloader Native Messaging Host for Chrome and Chromium-based browsers",
-  "path": "Akinci.NativeHost.exe",
+  "path": "Akinci-BrowserBridge.exe",
   "type": "stdio",
   "allowed_origins": [
     "chrome-extension://*/*"

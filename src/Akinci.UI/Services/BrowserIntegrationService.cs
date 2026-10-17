@@ -71,7 +71,12 @@ public static class BrowserIntegrationService
 
             foreach (var p in searchPaths)
             {
-                var exeCandidate = Path.Combine(p, "Akinci.NativeHost.exe");
+                var exeCandidate = Path.Combine(p, "Akinci-BrowserBridge.exe");
+                if (!File.Exists(exeCandidate))
+                {
+                    exeCandidate = Path.Combine(p, "Akinci.NativeHost.exe");
+                }
+
                 if (File.Exists(exeCandidate) && foundNativeHostExe == null)
                 {
                     foundNativeHostExe = exeCandidate;
@@ -85,7 +90,7 @@ public static class BrowserIntegrationService
             }
 
             // Host binary dosyasını kopyala
-            var targetHostExe = Path.Combine(hostDir, "Akinci.NativeHost.exe");
+            var targetHostExe = Path.Combine(hostDir, "Akinci-BrowserBridge.exe");
             if (foundNativeHostExe != null && File.Exists(foundNativeHostExe))
             {
                 File.Copy(foundNativeHostExe, targetHostExe, overwrite: true);

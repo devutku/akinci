@@ -56,10 +56,10 @@ Tüm bağımlılıkları içeren tek parça çalıştırılabilir dosya üretmek
 ```bat
 publish.bat
 ```
-Çıktılar `dist/` klasöründe üretilir:
-* `dist\Akinci.UI\Akinci.UI.exe` (Masaüstü Arayüzü)
-* `dist\Akinci.Cli\Akinci.Cli.exe` (Terminal Sürümü)
-* `dist\Akinci.NativeHost\Akinci.NativeHost.exe` (Tarayıcı Köprüsü)
+Çıktılar `dist/Akinci/` klasöründe üretilir:
+* `dist\Akinci\Akinci.exe` (Masaüstü Uygulaması)
+* `dist\Akinci\Akinci-CLI.exe` (Terminal Sürümü)
+* `dist\Akinci\Akinci-BrowserBridge.exe` (Tarayıcı Köprüsü)
 
 ### Linux & macOS:
 ```bash

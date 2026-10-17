@@ -31,30 +31,30 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Publish Akinci.UI (${{ matrix.rid }})
-        run: dotnet publish src/Akinci.UI/Akinci.UI.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -o dist/${{ matrix.rid }}/Akinci.UI
+      - name: Publish Akinci Desktop (${{ matrix.rid }})
+        run: dotnet publish src/Akinci.UI/Akinci.UI.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -o dist/${{ matrix.rid }}
 
-      - name: Publish Akinci.Cli (${{ matrix.rid }})
-        run: dotnet publish src/Akinci.Cli/Akinci.Cli.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -o dist/${{ matrix.rid }}/Akinci.Cli
+      - name: Publish Akinci CLI (${{ matrix.rid }})
+        run: dotnet publish src/Akinci.Cli/Akinci.Cli.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -o dist/${{ matrix.rid }}
 
-      - name: Publish Akinci.NativeHost (${{ matrix.rid }})
-        run: dotnet publish src/Akinci.NativeHost/Akinci.NativeHost.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -o dist/${{ matrix.rid }}/Akinci.NativeHost
+      - name: Publish Akinci Browser Bridge (${{ matrix.rid }})
+        run: dotnet publish src/Akinci.NativeHost/Akinci.NativeHost.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -o dist/${{ matrix.rid }}
 
       - name: Package Windows Artifacts
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
-          Copy-Item -Recurse src/Akinci.NativeHost/manifests dist/win-x64/Akinci.NativeHost/
-          Copy-Item -Recurse src/Akinci.NativeHost/extension dist/win-x64/Akinci.NativeHost/
-          Copy-Item src/Akinci.NativeHost/install-host.bat dist/win-x64/Akinci.NativeHost/
-          Copy-Item src/Akinci.NativeHost/uninstall-host.bat dist/win-x64/Akinci.NativeHost/
+          Copy-Item -Recurse src/Akinci.NativeHost/manifests dist/win-x64/manifests/
+          Copy-Item -Recurse src/Akinci.NativeHost/extension dist/win-x64/extension/
+          Copy-Item src/Akinci.NativeHost/install-host.bat dist/win-x64/
+          Copy-Item src/Akinci.NativeHost/uninstall-host.bat dist/win-x64/
           Compress-Archive -Path dist/win-x64/* -DestinationPath "akinci-${{ github.ref_name }}-win-x64.zip"
 
       - name: Package Linux Artifacts
         if: matrix.os == 'ubuntu-latest'
         run: |
-          cp -r src/Akinci.NativeHost/manifests dist/linux-x64/Akinci.NativeHost/
-          cp -r src/Akinci.NativeHost/extension dist/linux-x64/Akinci.NativeHost/
+          cp -r src/Akinci.NativeHost/manifests dist/linux-x64/manifests/
+          cp -r src/Akinci.NativeHost/extension dist/linux-x64/extension/
           tar -czvf "akinci-${{ github.ref_name }}-linux-x64.tar.gz" -C dist/linux-x64 .
 
       - name: Upload Artifact
