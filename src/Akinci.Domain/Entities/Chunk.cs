@@ -13,12 +13,22 @@ public sealed class Chunk
     public int Index { get; }
     public ByteRange Range { get; }
     public long CurrentOffset { get; private set; }
+    private bool _isStreamCompleted;
 
     /// <summary>
     /// Parçanın indirilip indirilmediğini belirtir.
-    /// CurrentOffset, Range.End değerini 1 bayt geçtiğinde tüm baytlar alınmış demektir.
+    /// CurrentOffset, Range.End değerini 1 bayt geçtiğinde veya akış sonlandığında tüm baytlar alınmış demektir.
     /// </summary>
-    public bool IsCompleted => CurrentOffset > Range.End;
+    public bool IsCompleted => _isStreamCompleted || CurrentOffset > Range.End;
+
+    /// <summary>
+    /// Boyutu baştan bilinmeyen açık uçlu akışlarda sunucu akışı kapattığında parçayı tamamlar.
+    /// </summary>
+    public void CompleteStream(long totalBytesRead)
+    {
+        CurrentOffset = Range.Start + totalBytesRead;
+        _isStreamCompleted = true;
+    }
 
     /// <summary>
     /// Bu parça için şu ana kadar başarıyla indirilen bayt miktarı.

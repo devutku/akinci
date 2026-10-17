@@ -45,9 +45,17 @@ public sealed class HttpChunkDownloader : IChunkDownloader
 
                 long startOffset = chunk.CurrentOffset;
                 long endOffset = chunk.Range.End;
+                bool isUnbounded = endOffset >= long.MaxValue - 2;
 
                 using var request = new HttpRequestMessage(HttpMethod.Get, url.Uri);
-                request.Headers.Range = new RangeHeaderValue(startOffset, endOffset);
+                if (!isUnbounded)
+                {
+                    request.Headers.Range = new RangeHeaderValue(startOffset, endOffset);
+                }
+                else if (startOffset > 0)
+                {
+                    request.Headers.Range = new RangeHeaderValue(startOffset, null);
+                }
 
                 using var response = await client.SendAsync(
                     request,
@@ -62,38 +70,72 @@ public sealed class HttpChunkDownloader : IChunkDownloader
                         response.StatusCode);
                 }
 
+                // Web sayfası (HTML) koruması: Arşiv/Binary dosyası beklenirken HTML gelmesi durumu
+                var mediaType = response.Content.Headers.ContentType?.MediaType;
+                if (mediaType != null && mediaType.StartsWith("text/html", StringComparison.OrdinalIgnoreCase))
+                {
+                    var fn = url.GetFileNameFromUrl().ToLowerInvariant();
+                    if (fn.EndsWith(".rar") || fn.EndsWith(".zip") || fn.EndsWith(".7z") ||
+                        fn.EndsWith(".iso") || fn.EndsWith(".exe") || fn.EndsWith(".bin") ||
+                        fn.EndsWith(".tar") || fn.EndsWith(".gz") || fn.EndsWith(".mp4"))
+                    {
+                        throw new InvalidOperationException(
+                            "Sunucu doğrudan dosya yerine bir web sayfası (HTML) döndürdü. Yapıştırdığınız bağlantı doğrudan dosya indirme linki (Direct Download Link) değil, bir web sayfasıdır.");
+                    }
+                }
+
                 await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
 
                 byte[] rentedBuffer = ArrayPool<byte>.Shared.Rent(BufferSize);
                 try
                 {
                     long currentOffset = startOffset;
-                    long totalBytesToRead = endOffset - startOffset + 1;
-                    long totalBytesReadSoFar = 0;
 
-                    while (totalBytesReadSoFar < totalBytesToRead)
+                    if (isUnbounded)
                     {
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        int maxRead = (int)Math.Min(BufferSize, totalBytesToRead - totalBytesReadSoFar);
-                        int bytesRead = await stream.ReadAsync(rentedBuffer.AsMemory(0, maxRead), cancellationToken).ConfigureAwait(false);
-
-                        if (bytesRead == 0)
+                        // Boyut önceden bilinmiyorsa sunucu akışı kapatana kadar tüm baytları oku
+                        while (true)
                         {
-                            break; // Akış erken kapandıysa döngüden çıkıp retry ile kalan baytları isteyeceğiz
+                            cancellationToken.ThrowIfCancellationRequested();
+                            int bytesRead = await stream.ReadAsync(rentedBuffer.AsMemory(0, BufferSize), cancellationToken).ConfigureAwait(false);
+                            if (bytesRead == 0)
+                            {
+                                break;
+                            }
+
+                            await onDataReceived(currentOffset, rentedBuffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
+                            currentOffset += bytesRead;
+                        }
+                        chunk.CompleteStream(currentOffset - startOffset);
+                    }
+                    else
+                    {
+                        long totalBytesToRead = endOffset - startOffset + 1;
+                        long totalBytesReadSoFar = 0;
+
+                        while (totalBytesReadSoFar < totalBytesToRead)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+
+                            int maxRead = (int)Math.Min(BufferSize, totalBytesToRead - totalBytesReadSoFar);
+                            int bytesRead = await stream.ReadAsync(rentedBuffer.AsMemory(0, maxRead), cancellationToken).ConfigureAwait(false);
+
+                            if (bytesRead == 0)
+                            {
+                                break;
+                            }
+
+                            await onDataReceived(currentOffset, rentedBuffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
+
+                            currentOffset += bytesRead;
+                            totalBytesReadSoFar += bytesRead;
                         }
 
-                        // Diske in-place yazım fonksiyonunu tetikle
-                        await onDataReceived(currentOffset, rentedBuffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
-
-                        currentOffset += bytesRead;
-                        totalBytesReadSoFar += bytesRead;
-                    }
-
-                    if (totalBytesReadSoFar < totalBytesToRead && response.StatusCode == HttpStatusCode.PartialContent)
-                    {
-                        throw new IOException(
-                            $"Chunk #{chunk.Index} bağlantısı erken kesildi. İndirilen: {totalBytesReadSoFar}/{totalBytesToRead}. Yeniden bağlanılıyor...");
+                        if (totalBytesReadSoFar < totalBytesToRead && response.StatusCode == HttpStatusCode.PartialContent)
+                        {
+                            throw new IOException(
+                                $"Chunk #{chunk.Index} bağlantısı erken kesildi. İndirilen: {totalBytesReadSoFar}/{totalBytesToRead}. Yeniden bağlanılıyor...");
+                        }
                     }
                 }
                 finally

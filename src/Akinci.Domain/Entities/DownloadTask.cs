@@ -155,7 +155,8 @@ public sealed class DownloadTask
         // Boyut bilinmiyorsa veya sunucu Range desteklemiyorsa tek parçada indirmek zorundayız
         if (!SupportsRangeRequests || TotalBytes is null or <= 0)
         {
-            var singleRange = new ByteRange(0, Math.Max(0, (TotalBytes ?? 1) - 1));
+            long endOffset = TotalBytes is > 0 ? TotalBytes.Value - 1 : long.MaxValue - 1;
+            var singleRange = new ByteRange(0, endOffset);
             _chunks.Add(new Chunk(Id, 0, singleRange));
             return;
         }
