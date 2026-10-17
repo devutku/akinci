@@ -1,0 +1,114 @@
+using Akinci.Domain.Exceptions;
+using Akinci.Domain.ValueObjects;
+
+namespace Akinci.Domain.Entities;
+
+/// <summary>
+/// Çok kanallı indirmede bağımsız olarak indirilen bir dosya parçasını (Chunk) temsil eden Domain Varlığı (Entity).
+/// </summary>
+public sealed class Chunk
+{
+    public Guid Id { get; }
+    public Guid DownloadTaskId { get; }
+    public int Index { get; }
+    public ByteRange Range { get; }
+    public long CurrentOffset { get; private set; }
+
+    /// <summary>
+    /// Parçanın indirilip indirilmediğini belirtir.
+    /// CurrentOffset, Range.End değerini 1 bayt geçtiğinde tüm baytlar alınmış demektir.
+    /// </summary>
+    public bool IsCompleted => CurrentOffset > Range.End;
+
+    /// <summary>
+    /// Bu parça için şu ana kadar başarıyla indirilen bayt miktarı.
+    /// </summary>
+    public long DownloadedBytes => Math.Clamp(CurrentOffset - Range.Start, 0, Range.TotalBytes);
+
+    /// <summary>
+    /// Bu parçanın tamamlanması için kalan bayt miktarı.
+    /// </summary>
+    public long RemainingBytes => Range.TotalBytes - DownloadedBytes;
+
+    /// <summary>
+    /// Parçanın yüzde kaçının tamamlandığı (0.0 - 100.0).
+    /// </summary>
+    public double ProgressPercentage => Range.TotalBytes == 0
+        ? 100.0
+        : Math.Clamp((double)DownloadedBytes / Range.TotalBytes * 100.0, 0.0, 100.0);
+
+    public Chunk(Guid downloadTaskId, int index, ByteRange range)
+    {
+        Id = Guid.NewGuid();
+        DownloadTaskId = downloadTaskId;
+        Index = index;
+        Range = range ?? throw new ArgumentNullException(nameof(range));
+        CurrentOffset = range.Start;
+    }
+
+    /// <summary>
+    /// Veritabanından veya kalıcı durumdan yeniden yüklerken kullanılan kurucu metot.
+    /// </summary>
+    public Chunk(Guid id, Guid downloadTaskId, int index, ByteRange range, long currentOffset)
+    {
+        Id = id;
+        DownloadTaskId = downloadTaskId;
+        Index = index;
+        Range = range ?? throw new ArgumentNullException(nameof(range));
+
+        if (currentOffset < range.Start || currentOffset > range.End + 1)
+        {
+            throw new InvalidByteRangeException(range.Start, range.End,
+                $"Kayıtlı ofset ({currentOffset}) aralık sınırları [{range.Start}, {range.End + 1}] dışında.");
+        }
+
+        CurrentOffset = currentOffset;
+    }
+
+    /// <summary>
+    /// İndirilen bayt miktarını ofsete ekler ve ilerlemeyi günceller.
+    /// </summary>
+    public void AdvanceOffset(long byteCount)
+    {
+        if (byteCount <= 0)
+        {
+            throw new DomainException($"İlerletilecek bayt miktarı pozitif olmalıdır. Verilen: {byteCount}");
+        }
+
+        if (IsCompleted)
+        {
+            throw new DomainException($"Zaten tamamlanmış bir chunk (#{Index}) ilerletilemez.");
+        }
+
+        var newOffset = CurrentOffset + byteCount;
+        if (newOffset > Range.End + 1)
+        {
+            throw new InvalidByteRangeException(Range.Start, Range.End,
+                $"Chunk #{Index} taşma hatası: Yeni ofset ({newOffset}) parça bitişini ({Range.End + 1}) aşıyor.");
+        }
+
+        CurrentOffset = newOffset;
+    }
+
+    /// <summary>
+    /// Duraklatma/Devam etme senaryolarında ofseti doğrudan ayarlar.
+    /// </summary>
+    public void SetOffset(long newOffset)
+    {
+        if (newOffset < Range.Start || newOffset > Range.End + 1)
+        {
+            throw new InvalidByteRangeException(Range.Start, Range.End,
+                $"Ofset ({newOffset}) aralık sınırları [{Range.Start}, {Range.End + 1}] dışında.");
+        }
+
+        CurrentOffset = newOffset;
+    }
+
+    /// <summary>
+    /// Parçayı sıfırdan yeniden indirmek için ofseti başlangıca çeker.
+    /// </summary>
+    public void Reset()
+    {
+        CurrentOffset = Range.Start;
+    }
+}

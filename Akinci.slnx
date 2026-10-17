@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Akinci.Application/Akinci.Application.csproj" />
+    <Project Path="src/Akinci.Domain/Akinci.Domain.csproj" />
+    <Project Path="src/Akinci.Infrastructure/Akinci.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Akinci.Application.UnitTests/Akinci.Application.UnitTests.csproj" />
+    <Project Path="tests/Akinci.Domain.UnitTests/Akinci.Domain.UnitTests.csproj" />
+  </Folder>
+</Solution>
