@@ -29,7 +29,11 @@ public class ResumeAndResilienceIntegrationTests : IAsyncLifetime
         RandomNumberGenerator.Fill(_mockPayload);
         _mockSha256 = Convert.ToHexString(SHA256.HashData(_mockPayload));
 
-        int port = Random.Shared.Next(50000, 60000);
+        using var tempSocket = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
+        tempSocket.Start();
+        int port = ((IPEndPoint)tempSocket.LocalEndpoint).Port;
+        tempSocket.Stop();
+
         _serverPrefix = $"http://127.0.0.1:{port}/";
         _listener = new HttpListener();
         _listener.Prefixes.Add(_serverPrefix);

@@ -14,6 +14,10 @@ public sealed record DownloadCredentials
     public string? Domain { get; }
     public bool UseDefaultCredentials { get; }
 
+    public string? CookieHeader { get; }
+    public string? Referer { get; }
+    public string? UserAgent { get; }
+
     public static readonly DownloadCredentials Anonymous = new(AuthenticationType.None, null, null, null, false);
 
     private DownloadCredentials(
@@ -21,13 +25,51 @@ public sealed record DownloadCredentials
         string? userName,
         string? password,
         string? domain,
-        bool useDefaultCredentials)
+        bool useDefaultCredentials,
+        string? cookieHeader = null,
+        string? referer = null,
+        string? userAgent = null)
     {
         Type = type;
         UserName = userName;
         Password = password;
         Domain = domain;
         UseDefaultCredentials = useDefaultCredentials;
+        CookieHeader = cookieHeader;
+        Referer = referer;
+        UserAgent = userAgent;
+    }
+
+    /// <summary>
+    /// Tarayıcıdan veya Cloudflare/WAF oturumundan alınan Cookie, Referer ve User-Agent ile oturumlu istek nesnesi oluşturur.
+    /// </summary>
+    public static DownloadCredentials WithSession(string? cookieHeader, string? referer = null, string? userAgent = null)
+    {
+        return new DownloadCredentials(
+            AuthenticationType.None,
+            null,
+            null,
+            null,
+            false,
+            string.IsNullOrWhiteSpace(cookieHeader) ? null : cookieHeader.Trim(),
+            string.IsNullOrWhiteSpace(referer) ? null : referer.Trim(),
+            string.IsNullOrWhiteSpace(userAgent) ? null : userAgent.Trim());
+    }
+
+    /// <summary>
+    /// Mevcut kimlik bilgilerini koruyarak oturum çerezi ve referans adresini iliştirir.
+    /// </summary>
+    public DownloadCredentials WithSessionInfo(string? cookieHeader, string? referer = null, string? userAgent = null)
+    {
+        return new DownloadCredentials(
+            Type,
+            UserName,
+            Password,
+            Domain,
+            UseDefaultCredentials,
+            cookieHeader ?? CookieHeader,
+            referer ?? Referer,
+            userAgent ?? UserAgent);
     }
 
     /// <summary>
@@ -92,7 +134,11 @@ public sealed record DownloadCredentials
 
     public override string ToString()
     {
-        if (Type == AuthenticationType.None) return "Anonymous";
+        if (Type == AuthenticationType.None)
+        {
+            if (!string.IsNullOrEmpty(CookieHeader)) return "Session/Cookies (Browser)";
+            return "Anonymous";
+        }
         if (UseDefaultCredentials) return $"{Type} (Default OS Credentials)";
         var domainPrefix = string.IsNullOrEmpty(Domain) ? "" : $"{Domain}\\";
         return $"{Type} ({domainPrefix}{UserName})";

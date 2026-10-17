@@ -28,8 +28,12 @@ public class HttpDownloadIntegrationTests : IAsyncLifetime
         RandomNumberGenerator.Fill(_mockPayload);
         _mockSha256 = Convert.ToHexString(SHA256.HashData(_mockPayload));
 
-        // 2. Rastgele portta HttpListener başlat
-        int port = Random.Shared.Next(40000, 50000);
+        // 2. İşletim sisteminden boş bir dinamik port alarak HttpListener başlat
+        using var tempSocket = new System.Net.Sockets.TcpListener(IPAddress.Loopback, 0);
+        tempSocket.Start();
+        int port = ((IPEndPoint)tempSocket.LocalEndpoint).Port;
+        tempSocket.Stop();
+
         _serverPrefix = $"http://127.0.0.1:{port}/";
         _listener = new HttpListener();
         _listener.Prefixes.Add(_serverPrefix);

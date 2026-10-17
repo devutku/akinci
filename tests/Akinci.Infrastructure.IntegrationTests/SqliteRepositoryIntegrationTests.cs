@@ -108,6 +108,32 @@ public class SqliteRepositoryIntegrationTests : IAsyncLifetime
         Assert.Null(loaded);
     }
 
+    [Fact]
+    public async Task AddAndGetByIdAsync_PersistsSessionCookiesAndRefererCorrectly()
+    {
+        var creds = DownloadCredentials.WithSession(
+            cookieHeader: "cf_clearance=test_clearance_token_123; session=abc456",
+            referer: "https://example.com/download-page",
+            userAgent: "Mozilla/5.0 TestBrowser/1.0");
+
+        var task = DownloadTask.Create(
+            DownloadUrl.Create("https://example.com/protected-file.zip"),
+            @"C:\Downloads\protected-file.zip",
+            totalBytes: 5000,
+            supportsRangeRequests: true,
+            credentials: creds);
+
+        await _repository.AddAsync(task);
+
+        var loaded = await _repository.GetByIdAsync(task.Id);
+
+        Assert.NotNull(loaded);
+        Assert.NotNull(loaded.Credentials);
+        Assert.Equal("cf_clearance=test_clearance_token_123; session=abc456", loaded.Credentials.CookieHeader);
+        Assert.Equal("https://example.com/download-page", loaded.Credentials.Referer);
+        Assert.Equal("Mozilla/5.0 TestBrowser/1.0", loaded.Credentials.UserAgent);
+    }
+
     public async Task DisposeAsync()
     {
         await _repository.DisposeAsync();

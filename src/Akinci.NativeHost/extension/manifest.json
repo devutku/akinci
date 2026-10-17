@@ -6,9 +6,11 @@
   "permissions": [
     "contextMenus",
     "nativeMessaging",
-    "downloads"
+    "downloads",
+    "cookies"
   ],
   "host_permissions": [
+    "<all_urls>",
     "http://127.0.0.1:49500/*"
   ],
   "background": {

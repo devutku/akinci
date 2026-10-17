@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Akinci.Domain.ValueObjects;
 using Akinci.UI.ViewModels;
 
 namespace Akinci.UI.Services;
@@ -8,7 +9,8 @@ public sealed record BrowserDownloadRequest(
     string Url,
     string? CustomFileName = null,
     string? Referrer = null,
-    string? Cookies = null);
+    string? Cookies = null,
+    string? UserAgent = null);
 
 /// <summary>
 /// Tarayıcı eklentisi (Chrome, Firefox, Edge) ve Native Messaging host'tan gelen
@@ -96,12 +98,23 @@ public sealed class IpcServerService : IAsyncDisposable
                 if (downloadReq != null && !string.IsNullOrWhiteSpace(downloadReq.Url))
                 {
                     var settings = _settingsService.Current;
+                    DownloadCredentials? credentials = null;
+                    if (!string.IsNullOrWhiteSpace(downloadReq.Cookies) ||
+                        !string.IsNullOrWhiteSpace(downloadReq.Referrer) ||
+                        !string.IsNullOrWhiteSpace(downloadReq.UserAgent))
+                    {
+                        credentials = DownloadCredentials.WithSession(
+                            downloadReq.Cookies,
+                            downloadReq.Referrer,
+                            downloadReq.UserAgent);
+                    }
+
                     await _mainViewModel.AddDownloadAsync(
                         downloadReq.Url.Trim(),
                         settings.DefaultDownloadDirectory,
                         settings.DefaultConnections,
                         downloadReq.CustomFileName,
-                        null);
+                        credentials);
 
                     _notificationService.ShowNotification(
                         "Tarayıcıdan İndirme Eklendi",

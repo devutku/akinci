@@ -77,6 +77,9 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
                         auth_password TEXT,
                         auth_domain TEXT,
                         auth_use_default_credentials INTEGER NOT NULL,
+                        session_cookies TEXT,
+                        session_referer TEXT,
+                        session_user_agent TEXT,
                         vt_is_scanned INTEGER,
                         vt_malicious INTEGER,
                         vt_suspicious INTEGER,
@@ -99,6 +102,22 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
                     CREATE INDEX IF NOT EXISTS idx_chunks_task_id ON chunks(task_id);
                 ";
                 await createCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }
+
+            // Mevcut veritabanı şeması için güvenli kolon genişletmeleri
+            try
+            {
+                await using var alterCmd = connection.CreateCommand();
+                alterCmd.CommandText = @"
+                    ALTER TABLE downloads ADD COLUMN session_cookies TEXT;
+                    ALTER TABLE downloads ADD COLUMN session_referer TEXT;
+                    ALTER TABLE downloads ADD COLUMN session_user_agent TEXT;
+                ";
+                await alterCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Kolonlar zaten mevcutsa SQLite hata fırlatır, yoksay
             }
 
             _initialized = true;
@@ -125,13 +144,15 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
                     id, url, destination_file_path, total_bytes, supports_range, status,
                     created_at, started_at, paused_at, completed_at, failure_reason,
                     sha256_hash, auth_type, auth_username, auth_password, auth_domain,
-                    auth_use_default_credentials, vt_is_scanned, vt_malicious, vt_suspicious,
+                    auth_use_default_credentials, session_cookies, session_referer, session_user_agent,
+                    vt_is_scanned, vt_malicious, vt_suspicious,
                     vt_harmless, vt_undetected, vt_scan_url, vt_custom_message
                 ) VALUES (
                     $id, $url, $destination_file_path, $total_bytes, $supports_range, $status,
                     $created_at, $started_at, $paused_at, $completed_at, $failure_reason,
                     $sha256_hash, $auth_type, $auth_username, $auth_password, $auth_domain,
-                    $auth_use_default_credentials, $vt_is_scanned, $vt_malicious, $vt_suspicious,
+                    $auth_use_default_credentials, $session_cookies, $session_referer, $session_user_agent,
+                    $vt_is_scanned, $vt_malicious, $vt_suspicious,
                     $vt_harmless, $vt_undetected, $vt_scan_url, $vt_custom_message
                 );
             ";
@@ -188,6 +209,9 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
                     auth_password = $auth_password,
                     auth_domain = $auth_domain,
                     auth_use_default_credentials = $auth_use_default_credentials,
+                    session_cookies = $session_cookies,
+                    session_referer = $session_referer,
+                    session_user_agent = $session_user_agent,
                     vt_is_scanned = $vt_is_scanned,
                     vt_malicious = $vt_malicious,
                     vt_suspicious = $vt_suspicious,
@@ -380,6 +404,11 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
             cmd.Parameters.AddWithValue("$auth_use_default_credentials", 0);
         }
 
+        // Tarayıcı oturum ve çerez bilgileri
+        cmd.Parameters.AddWithValue("$session_cookies", (object?)task.Credentials?.CookieHeader ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$session_referer", (object?)task.Credentials?.Referer ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("$session_user_agent", (object?)task.Credentials?.UserAgent ?? DBNull.Value);
+
         // VirusTotal güvenlik bilgileri
         if (task.SecurityVerdict != null)
         {
@@ -438,6 +467,22 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
             }
         }
 
+        // Tarayıcı oturum ve çerez bilgilerini oku
+        var cookiesOrdinal = GetOrdinalOrDefault(reader, "session_cookies");
+        var refererOrdinal = GetOrdinalOrDefault(reader, "session_referer");
+        var userAgentOrdinal = GetOrdinalOrDefault(reader, "session_user_agent");
+
+        string? cookies = cookiesOrdinal >= 0 && !reader.IsDBNull(cookiesOrdinal) ? reader.GetString(cookiesOrdinal) : null;
+        string? referer = refererOrdinal >= 0 && !reader.IsDBNull(refererOrdinal) ? reader.GetString(refererOrdinal) : null;
+        string? userAgent = userAgentOrdinal >= 0 && !reader.IsDBNull(userAgentOrdinal) ? reader.GetString(userAgentOrdinal) : null;
+
+        if (!string.IsNullOrEmpty(cookies) || !string.IsNullOrEmpty(referer) || !string.IsNullOrEmpty(userAgent))
+        {
+            creds = creds != null
+                ? creds.WithSessionInfo(cookies, referer, userAgent)
+                : DownloadCredentials.WithSession(cookies, referer, userAgent);
+        }
+
         var task = new DownloadTask(id, url, destPath, totalBytes, supportsRange, status, creds);
 
         if (!reader.IsDBNull(reader.GetOrdinal("failure_reason")))
@@ -465,6 +510,18 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
         }
 
         return task;
+    }
+
+    private static int GetOrdinalOrDefault(SqliteDataReader reader, string columnName)
+    {
+        try
+        {
+            return reader.GetOrdinal(columnName);
+        }
+        catch
+        {
+            return -1;
+        }
     }
 
     public ValueTask DisposeAsync()

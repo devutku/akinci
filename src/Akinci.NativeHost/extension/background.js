@@ -21,6 +21,25 @@ function shouldIntercept(filename, url) {
   return TARGET_EXTENSIONS.some(ext => target.endsWith(ext));
 }
 
+// Belirtilen URL ve Referrer için tarayıcıdaki tüm çerezleri (Cloudflare cf_clearance dahil) topla
+async function getCookiesForUrl(targetUrl, referrerUrl) {
+  try {
+    let cookies = [];
+    if (targetUrl) {
+      cookies = await chrome.cookies.getAll({ url: targetUrl });
+    }
+    if ((!cookies || cookies.length === 0) && referrerUrl) {
+      cookies = await chrome.cookies.getAll({ url: referrerUrl });
+    }
+    if (cookies && cookies.length > 0) {
+      return cookies.map(c => `${c.name}=${c.value}`).join("; ");
+    }
+  } catch (err) {
+    console.warn("[Akıncı] Çerezler alınamadı:", err);
+  }
+  return "";
+}
+
 // 1. Sağ tık menüsü
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
@@ -30,11 +49,12 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 });
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === "akinci-download-link") {
     const targetUrl = info.linkUrl || info.srcUrl;
     if (targetUrl) {
-      sendToAkinci(targetUrl, tab?.url);
+      const cookies = await getCookiesForUrl(targetUrl, tab?.url);
+      await sendToAkinci(targetUrl, tab?.url, null, cookies);
     }
   }
 });
@@ -50,8 +70,10 @@ if (chrome.downloads && chrome.downloads.onDeterminingFilename) {
         chrome.downloads.erase({ id: downloadItem.id });
       });
 
-      // Doğrudan Akıncı'ya aktar
-      sendToAkinci(downloadItem.url, downloadItem.referrer, downloadItem.filename);
+      // Çerezleri al ve doğrudan Akıncı'ya aktar
+      getCookiesForUrl(downloadItem.url, downloadItem.referrer).then(cookies => {
+        sendToAkinci(downloadItem.url, downloadItem.referrer, downloadItem.filename, cookies);
+      });
       return;
     }
     suggest();
@@ -63,17 +85,21 @@ if (chrome.downloads && chrome.downloads.onDeterminingFilename) {
       chrome.downloads.cancel(downloadItem.id, () => {
         chrome.downloads.erase({ id: downloadItem.id });
       });
-      sendToAkinci(downloadItem.url, downloadItem.referrer, downloadItem.filename);
+      getCookiesForUrl(downloadItem.url, downloadItem.referrer).then(cookies => {
+        sendToAkinci(downloadItem.url, downloadItem.referrer, downloadItem.filename, cookies);
+      });
     }
   });
 }
 
 // 3. Akıncı Motoruna İletme (Native Messaging Host veya HTTP IPC)
-async function sendToAkinci(url, referrer, customFileName) {
+async function sendToAkinci(url, referrer, customFileName, cookies) {
   const payload = {
     url: url,
     referrer: referrer || "",
-    customFileName: customFileName || null
+    customFileName: customFileName || null,
+    cookies: cookies || "",
+    userAgent: navigator.userAgent || ""
   };
 
   // 1. Önce Native Messaging Host üzerinden dene

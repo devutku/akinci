@@ -29,6 +29,13 @@ public static class HttpHandlerFactory
             MaxAutomaticRedirections = 10
         };
 
+        // Eğer tarayıcıdan özel Cookie header (cf_clearance vb.) aktarılmışsa,
+        // CookieContainer'ın kısıtlamalarına takılmadan doğrudan başlık olarak iletilmesi için UseCookies = false yapılır.
+        if (!string.IsNullOrWhiteSpace(credentials?.CookieHeader))
+        {
+            handler.UseCookies = false;
+        }
+
         ConfigureAuthentication(handler, credentials);
 
         return handler;
@@ -39,11 +46,43 @@ public static class HttpHandlerFactory
         var handler = CreateHandler(credentials);
         var client = new HttpClient(handler, disposeHandler: true);
 
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36");
-        client.DefaultRequestHeaders.Add("Accept", "*/*");
-        client.DefaultRequestHeaders.Add("Accept-Language", "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7");
+        // 1. Modern Chromium User-Agent (veya özel aktarılan tarayıcı User-Agent)
+        var userAgent = !string.IsNullOrWhiteSpace(credentials?.UserAgent)
+            ? credentials.UserAgent
+            : "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36";
+        client.DefaultRequestHeaders.TryAddWithoutValidation("User-Agent", userAgent);
 
-        // HTTP Basic doğrulaması varsa Authorization başlığını doğrudan ekle
+        // 2. Accept & Dil Başlıkları
+        client.DefaultRequestHeaders.TryAddWithoutValidation(
+            "Accept",
+            "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7");
+        client.DefaultRequestHeaders.TryAddWithoutValidation("Accept-Language", "tr-TR,tr;q=0.9,en-US;q=0.8,en;q=0.7");
+
+        // 3. Client Hints (Chromium Fingerprint - Cloudflare/WAF bot korumasını aşmak için zorunlu)
+        client.DefaultRequestHeaders.TryAddWithoutValidation("sec-ch-ua", "\"Chromium\";v=\"130\", \"Google Chrome\";v=\"130\", \"Not?A_Brand\";v=\"99\"");
+        client.DefaultRequestHeaders.TryAddWithoutValidation("sec-ch-ua-mobile", "?0");
+        client.DefaultRequestHeaders.TryAddWithoutValidation("sec-ch-ua-platform", "\"Windows\"");
+
+        // 4. Fetch Metadata (Sec-Fetch-*)
+        client.DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-Dest", "document");
+        client.DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-Mode", "navigate");
+        client.DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-Site", "none");
+        client.DefaultRequestHeaders.TryAddWithoutValidation("Sec-Fetch-User", "?1");
+        client.DefaultRequestHeaders.TryAddWithoutValidation("Upgrade-Insecure-Requests", "1");
+
+        // 5. Referer (Hotlink korumaları ve sayfa bazlı yönlendirmeler için)
+        if (!string.IsNullOrWhiteSpace(credentials?.Referer))
+        {
+            client.DefaultRequestHeaders.TryAddWithoutValidation("Referer", credentials.Referer);
+        }
+
+        // 6. Cookie (Cloudflare cf_clearance, oturum ve indirme anahtarları)
+        if (!string.IsNullOrWhiteSpace(credentials?.CookieHeader))
+        {
+            client.DefaultRequestHeaders.TryAddWithoutValidation("Cookie", credentials.CookieHeader);
+        }
+
+        // 7. HTTP Basic doğrulaması varsa Authorization başlığını doğrudan ekle
         if (credentials is { Type: AuthenticationType.Basic } &&
             !string.IsNullOrEmpty(credentials.UserName))
         {
