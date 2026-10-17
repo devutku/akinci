@@ -8,8 +8,7 @@
         Width="1080" Height="680"
         MinWidth="820" MinHeight="500"
         WindowStartupLocation="CenterScreen"
-        ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaTitleBarHeightHint="-1"
+        SystemDecorations="BorderOnly"
         Background="#0F0F12">
 
     <Window.Resources>
