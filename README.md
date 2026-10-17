@@ -59,23 +59,6 @@ Akinci/
     └── Akinci.Infrastructure.IntegrationTests/
 ```
 
----
-
-## 🚀 Görsel Varlık Kullanım Rehberi (SVG & JPG)
-
-Akıncı mimarisinde grafik varlıklar amacına en uygun şekilde konumlandırılmıştır:
-
-* **SVG (`src/Akinci.UI/Assets/akinci-logo-dark.svg`):**
-  * **Kullanım Alanı:** Masaüstü başlık çubuğu (Header Brand), Boş Durum (Empty State) karşılama rozetleri, Yeni İndirme & Ayarlar diyalog başlıkları ve tarayıcı eklenti simgeleri.
-  * **Nedeni:** Vektörel formatta her türlü DPI ekran çözünürlüğünde sıfır kalite kaybıyla keskin ve net çizim sağlar.
-* **JPG (`src/Akinci.UI/Assets/akinci-banner.jpg`):**
-  * **Kullanım Alanı:** Ayarlar penceresindeki "Akıncı Hakkında & Mimari" vitrin kartı, Dokümantasyon ve README başlık afişi.
-  * **Nedeni:** Zengin renk geçişleri, poligon gölgeleri ve yüksek çözünürlüklü sanatsal illüstrasyon detaylarını en iyi performansta sunar.
-* **ICO (`src/Akinci.UI/Assets/akinci.ico`):**
-  * **Kullanım Alanı:** Windows uygulama simgesi, görev çubuğu ve Sistem Tepsisi (TrayIcon).
-
----
-
 ## 🛠 Derleme ve Tek Dosya (Single-File) Dağıtım
 
 Tüm bağımlılıkları içeren tek parça çalıştırılabilir dosya üretmek için:
