@@ -13,4 +13,5 @@ public sealed record DownloadProgressDto(
     double ProgressPercentage,
     DownloadSpeed Speed,
     DownloadStatus Status,
-    IReadOnlyList<ChunkProgressDto> Chunks);
+    IReadOnlyList<ChunkProgressDto> Chunks,
+    SecurityVerdict? SecurityVerdict = null);

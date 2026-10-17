@@ -53,6 +53,8 @@ public sealed class DownloadTask
     public bool IsAllChunksCompleted => _chunks.Count > 0 && _chunks.All(c => c.IsCompleted);
 
     public DownloadCredentials? Credentials { get; private set; }
+    public string? Sha256Hash { get; private set; }
+    public SecurityVerdict? SecurityVerdict { get; private set; }
 
     public DownloadTask(
         Guid id,
@@ -101,6 +103,22 @@ public sealed class DownloadTask
     public void SetCredentials(DownloadCredentials? credentials)
     {
         Credentials = credentials;
+    }
+
+    /// <summary>
+    /// İndirme tamamlandığında hesaplanan SHA-256 hash değerini atar.
+    /// </summary>
+    public void SetSha256(string sha256)
+    {
+        Sha256Hash = sha256;
+    }
+
+    /// <summary>
+    /// VirusTotal veya güvenlik taraması sonucunu kaydeder.
+    /// </summary>
+    public void SetSecurityVerdict(SecurityVerdict verdict)
+    {
+        SecurityVerdict = verdict;
     }
 
     /// <summary>

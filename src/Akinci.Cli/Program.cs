@@ -32,6 +32,7 @@ if (args.Length == 0 || args[0] is "-h" or "--help")
     Console.WriteLine("  -u, --user <kullanıcı>     Kimlik doğrulama kullanıcı adı");
     Console.WriteLine("  -p, --pass <şifre>         Kimlik doğrulama parolası");
     Console.WriteLine("  -a, --auth <tür>           Kimlik doğrulama türü: basic, ntlm, kerberos, negotiate");
+    Console.WriteLine("  --vt-key <key>             VirusTotal API anahtarı (Varsayılan: $VIRUSTOTAL_API_KEY)");
     Console.WriteLine();
     Console.WriteLine("Örnek:");
     Console.WriteLine("  akinci https://speed.hetzner.de/100MB.bin -c 8 -o downloads");
@@ -45,6 +46,7 @@ string? customFileName = null;
 string? userName = null;
 string? password = null;
 string authType = "basic";
+string? virusTotalKey = null;
 
 for (int i = 1; i < args.Length; i++)
 {
@@ -68,6 +70,9 @@ for (int i = 1; i < args.Length; i++)
         case "-a" or "--auth" when i + 1 < args.Length:
             authType = args[++i].ToLowerInvariant();
             break;
+        case "--vt-key" when i + 1 < args.Length:
+            virusTotalKey = args[++i];
+            break;
     }
 }
 
@@ -88,9 +93,11 @@ var metadataService = new ProtocolMetadataService();
 var chunkDownloader = new ProtocolChunkDownloader();
 using var fileStorage = new RandomAccessFileStorageService();
 var repository = new InMemoryDownloadRepository();
+var hashCalculator = new StreamingFileHashCalculator();
+var securityScanner = new VirusTotalSecurityScanner(apiKey: virusTotalKey);
 
 var createHandler = new CreateDownloadCommandHandler(metadataService, repository, fileStorage);
-var startHandler = new StartDownloadCommandHandler(repository, chunkDownloader, fileStorage);
+var startHandler = new StartDownloadCommandHandler(repository, chunkDownloader, fileStorage, hashCalculator, securityScanner);
 
 using var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (sender, eventArgs) =>
@@ -153,6 +160,37 @@ try
         Console.WriteLine($"✔ İNDİRME TAMAMLANDI! Süre: {stopwatch.Elapsed.TotalSeconds:F2} sn");
         Console.WriteLine($"  Kaydedilen Konum: {task.DestinationFilePath}");
         Console.ResetColor();
+
+        if (!string.IsNullOrEmpty(task.Sha256Hash))
+        {
+            Console.WriteLine($"  SHA-256: {task.Sha256Hash}");
+        }
+
+        if (task.SecurityVerdict != null)
+        {
+            var v = task.SecurityVerdict;
+            if (v.HasThreat)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"  [GÜVENLİK TEHLİKESİ] ⚠ {v.FormatBadge()}");
+            }
+            else if (v.IsSafe)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"  [GÜVENLİK] ✔ {v.FormatBadge()}");
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.WriteLine($"  [GÜVENLİK] ℹ {v.FormatBadge()}");
+            }
+
+            if (!string.IsNullOrEmpty(v.ScanUrl))
+            {
+                Console.WriteLine($"  Rapor: {v.ScanUrl}");
+            }
+            Console.ResetColor();
+        }
     }
     else if (task.Status == DownloadStatus.Paused)
     {

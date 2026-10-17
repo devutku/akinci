@@ -17,15 +17,21 @@ public sealed class StartDownloadCommandHandler
     private readonly IDownloadRepository _repository;
     private readonly IChunkDownloader _chunkDownloader;
     private readonly IFileStorageService _fileStorage;
+    private readonly IFileHashCalculator? _hashCalculator;
+    private readonly IFileSecurityScanner? _securityScanner;
 
     public StartDownloadCommandHandler(
         IDownloadRepository repository,
         IChunkDownloader chunkDownloader,
-        IFileStorageService fileStorage)
+        IFileStorageService fileStorage,
+        IFileHashCalculator? hashCalculator = null,
+        IFileSecurityScanner? securityScanner = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _chunkDownloader = chunkDownloader ?? throw new ArgumentNullException(nameof(chunkDownloader));
         _fileStorage = fileStorage ?? throw new ArgumentNullException(nameof(fileStorage));
+        _hashCalculator = hashCalculator;
+        _securityScanner = securityScanner;
     }
 
     public async Task HandleAsync(StartDownloadCommand command, CancellationToken cancellationToken = default)
@@ -68,7 +74,8 @@ public sealed class StartDownloadCommandHandler
                 task.ProgressPercentage,
                 speed,
                 task.Status,
-                chunkDtos
+                chunkDtos,
+                task.SecurityVerdict
             );
 
             command.Progress.Report(progressDto);
@@ -120,6 +127,20 @@ public sealed class StartDownloadCommandHandler
             await Task.WhenAll(workerTasks);
 
             task.Complete();
+
+            // Dosya tamamlandı: SHA-256 hash hesaplama ve otomatik VirusTotal güvenlik taraması
+            if (_hashCalculator != null)
+            {
+                var sha256 = await _hashCalculator.CalculateSha256Async(task.DestinationFilePath, CancellationToken.None);
+                task.SetSha256(sha256);
+
+                if (_securityScanner != null)
+                {
+                    var verdict = await _securityScanner.ScanHashAsync(sha256, CancellationToken.None);
+                    task.SetSecurityVerdict(verdict);
+                }
+            }
+
             await _repository.UpdateAsync(task, CancellationToken.None);
             ReportProgress(DownloadSpeed.Zero);
         }
