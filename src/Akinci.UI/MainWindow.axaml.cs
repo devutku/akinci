@@ -110,13 +110,20 @@ public partial class MainWindow : Window
     {
         if (_settingsService != null)
         {
-            var dialogVm = new SettingsDialogViewModel(_settingsService);
-            var dialog = new SettingsDialog
+            try
             {
-                DataContext = dialogVm
-            };
+                var dialogVm = new SettingsDialogViewModel(_settingsService);
+                var dialog = new SettingsDialog
+                {
+                    DataContext = dialogVm
+                };
 
-            await dialog.ShowDialog<bool>(this);
+                await dialog.ShowDialog<bool>(this);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[Settings Error] {ex}");
+            }
         }
     }
 

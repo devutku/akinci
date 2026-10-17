@@ -118,7 +118,7 @@
                 <Border Background="#18181C" BorderBrush="#22222A" BorderThickness="1" CornerRadius="6" Padding="12" Margin="0,6,0,0">
                     <Grid RowDefinitions="Auto,Auto">
                         <Border Grid.Row="0" CornerRadius="4" ClipToBounds="True" Height="100" Margin="0,0,0,8">
-                            <Image Source="avares://Akinci.UI/Assets/akinci-banner.jpg" Stretch="UniformToFill" />
+                            <Image Source="/Assets/akinci-banner.jpg" Stretch="UniformToFill" />
                         </Border>
 
                         <StackPanel Grid.Row="1" Spacing="2">
