@@ -1,0 +1,96 @@
+name: Release Beta
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build & Publish Release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            rid: win-x64
+            archive_ext: zip
+          - os: ubuntu-latest
+            rid: linux-x64
+            archive_ext: tar.gz
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Publish Akinci.UI (${{ matrix.rid }})
+        run: dotnet publish src/Akinci.UI/Akinci.UI.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -o dist/${{ matrix.rid }}/Akinci.UI
+
+      - name: Publish Akinci.Cli (${{ matrix.rid }})
+        run: dotnet publish src/Akinci.Cli/Akinci.Cli.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -o dist/${{ matrix.rid }}/Akinci.Cli
+
+      - name: Publish Akinci.NativeHost (${{ matrix.rid }})
+        run: dotnet publish src/Akinci.NativeHost/Akinci.NativeHost.csproj -c Release -r ${{ matrix.rid }} --self-contained true -p:PublishSingleFile=true -o dist/${{ matrix.rid }}/Akinci.NativeHost
+
+      - name: Package Windows Artifacts
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          Copy-Item -Recurse src/Akinci.NativeHost/manifests dist/win-x64/Akinci.NativeHost/
+          Copy-Item -Recurse src/Akinci.NativeHost/extension dist/win-x64/Akinci.NativeHost/
+          Copy-Item src/Akinci.NativeHost/install-host.bat dist/win-x64/Akinci.NativeHost/
+          Copy-Item src/Akinci.NativeHost/uninstall-host.bat dist/win-x64/Akinci.NativeHost/
+          Compress-Archive -Path dist/win-x64/* -DestinationPath "akinci-${{ github.ref_name }}-win-x64.zip"
+
+      - name: Package Linux Artifacts
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cp -r src/Akinci.NativeHost/manifests dist/linux-x64/Akinci.NativeHost/
+          cp -r src/Akinci.NativeHost/extension dist/linux-x64/Akinci.NativeHost/
+          tar -czvf "akinci-${{ github.ref_name }}-linux-x64.tar.gz" -C dist/linux-x64 .
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: akinci-${{ matrix.rid }}
+          path: akinci-${{ github.ref_name }}-*.*
+
+  create-github-release:
+    name: Create GitHub Release
+    needs: build-and-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Publish GitHub Prerelease
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Akıncı Downloader ${{ github.ref_name }} (Beta)"
+          prerelease: true
+          generate_release_notes: true
+          files: |
+            akinci-*-win-x64.zip
+            akinci-*-linux-x64.tar.gz
+          body: |
+            ## 🦅 Akıncı Çok Kanallı İndirme Motoru (Beta Sürümü)
+            
+            Akıncı'nın ilk genel beta sürümüne hoş geldiniz!
+            
+            ### ✨ Öne Çıkan Özellikler:
+            * **Clean Core Mimarisi:** .NET 10 tabanlı, DI, Repository ve Use Case desenleriyle tasarlanmış bağımsız çekirdek.
+            * **Çok Kanallı & Parçalı Hızlandırma:** HTTP/HTTPS ve FTP/FTPS protokollerinde paralel parçalı dosya indirme.
+            * **Canlı VirusTotal Güvenlik Taraması:** İndirme tamamlandığında akış üzerinden eşzamanlı SHA-256 hesaplama ve 70+ antivirüs motoru analizi.
+            * **Avalonia UI Koyu Tema:** Modern koyu arayüz, gerçek zamanlı parça ilerleme grafiği ve hız sayaçları.
+            * **Sistem Tepsisi & Bildirimler:** Arka planda çalışma (minimize-to-tray) ve yerel toast masaüstü bildirimleri.
+            * **Tarayıcı Entegrasyonu:** Chrome, Microsoft Edge ve Firefox için Native Messaging Host ve sağ tık *"Akıncı ile İndir"* eklentisi.
