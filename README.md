@@ -1,4 +1,4 @@
-# AKINCI (Downloader)
+# AKINCI
 ### Çok Kanallı, Yüksek Başarımlı & Güvenlik Korumalı İndirme Motoru
 
 <p align="center">
