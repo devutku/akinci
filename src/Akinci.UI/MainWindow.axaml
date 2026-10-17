@@ -304,9 +304,15 @@
                         <ItemsControl.ItemTemplate>
                             <DataTemplate x:DataType="vm:DownloadItemViewModel">
                                 <!-- Modern Desktop Download Row (Linear / GitHub Desktop / qBittorrent Style) -->
-                                <Border Classes="download-row">
+                                <Border Classes="download-row" DoubleTapped="OnRowDoubleTapped">
                                     <Border.ContextMenu>
                                         <ContextMenu Background="#18181C" BorderBrush="#272730" BorderThickness="1" CornerRadius="6">
+                                            <MenuItem Header="Dosyayı Aç" Command="{Binding OpenFileCommand}" IsVisible="{Binding IsCompleted}">
+                                                <MenuItem.Icon>
+                                                    <PathIcon Data="{StaticResource IconFile}" Width="12" Height="12" Foreground="#38BDF8" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator IsVisible="{Binding IsCompleted}" />
                                             <MenuItem Header="İndirmeyi Duraklat" Command="{Binding PauseCommand}" IsVisible="{Binding CanPause}">
                                                 <MenuItem.Icon>
                                                     <PathIcon Data="{StaticResource IconPause}" Width="12" Height="12" Foreground="#F87171" />
@@ -417,8 +423,14 @@
                                                 </StackPanel>
                                             </StackPanel>
 
-                                            <!-- Right: Actions (Durdur/Devam et, Klasörde Aç, Sil) -->
+                                            <!-- Right: Actions (Dosyayı Aç, Durdur/Devam et, Klasörde Aç, Sil) -->
                                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                                <!-- Open File Action (Tamamlandığında doğrudan dosyayı açar) -->
+                                                <Button Command="{Binding OpenFileCommand}" IsVisible="{Binding IsCompleted}"
+                                                        Classes="row-action" ToolTip.Tip="Dosyayı Aç">
+                                                    <PathIcon Data="{StaticResource IconFile}" Width="13" Height="13" Foreground="#38BDF8" />
+                                                </Button>
+
                                                 <!-- Pause Action (Net kırmızı/turuncu belirgin duraklatma) -->
                                                 <Button Command="{Binding PauseCommand}" IsVisible="{Binding CanPause}"
                                                         Classes="row-action" ToolTip.Tip="İndirmeyi Duraklat">

@@ -103,6 +103,8 @@ public class FakeFileStorageService : IFileStorageService
     public long GetFileSize(string filePath) => Files.TryGetValue(filePath, out var data) ? data.Length : 0;
 
     public void DeleteFile(string filePath) => Files.Remove(filePath);
+
+    public void CloseHandle(string filePath) { }
 }
 
 public class FakeChunkDownloader : IChunkDownloader

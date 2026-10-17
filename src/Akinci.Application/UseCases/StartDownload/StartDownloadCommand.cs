@@ -126,6 +126,10 @@ public sealed class StartDownloadCommandHandler
 
             await Task.WhenAll(workerTasks);
 
+            // 1. Worker'lar bittiğinde dosya tanıtıcısını (handle) HEMEN KAPAT.
+            // Bu sayede Windows ve harici programlar (WinRAR, 7-Zip, oynatıcılar) dosyaya derhal erişebilir.
+            _fileStorage.CloseHandle(task.DestinationFilePath);
+
             task.Complete();
 
             // Dosya tamamlandı: SHA-256 hash hesaplama ve otomatik VirusTotal güvenlik taraması
@@ -146,16 +150,23 @@ public sealed class StartDownloadCommandHandler
         }
         catch (OperationCanceledException)
         {
+            _fileStorage.CloseHandle(task.DestinationFilePath);
             task.Pause();
             await _repository.UpdateAsync(task, CancellationToken.None);
             ReportProgress(DownloadSpeed.Zero);
         }
         catch (Exception ex)
         {
+            _fileStorage.CloseHandle(task.DestinationFilePath);
             task.Fail(ex.Message);
             await _repository.UpdateAsync(task, CancellationToken.None);
             ReportProgress(DownloadSpeed.Zero);
             throw;
+        }
+        finally
+        {
+            // İndirme nasıl sonlanırsa sonlansın dosya tanıtıcısının açık kalmamasını garanti et
+            _fileStorage.CloseHandle(task.DestinationFilePath);
         }
     }
 }

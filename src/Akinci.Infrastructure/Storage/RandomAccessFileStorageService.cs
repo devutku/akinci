@@ -28,7 +28,7 @@ public sealed class RandomAccessFileStorageService : IFileStorageService, IDispo
                 path,
                 FileMode.OpenOrCreate,
                 FileAccess.ReadWrite,
-                FileShare.ReadWrite,
+                FileShare.ReadWrite | FileShare.Delete,
                 FileOptions.Asynchronous);
         });
     }

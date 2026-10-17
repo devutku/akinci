@@ -156,4 +156,19 @@ public partial class MainWindow : Window
     {
         Close();
     }
+
+    private void OnRowDoubleTapped(object? sender, Avalonia.Input.TappedEventArgs e)
+    {
+        if (sender is Control { DataContext: DownloadItemViewModel item })
+        {
+            if (item.IsCompleted)
+            {
+                item.OpenFileCommand.Execute(null);
+            }
+            else
+            {
+                item.OpenFolderCommand.Execute(null);
+            }
+        }
+    }
 }

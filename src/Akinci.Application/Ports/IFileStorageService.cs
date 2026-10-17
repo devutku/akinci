@@ -29,4 +29,9 @@ public interface IFileStorageService
     /// Dosyayı diskten siler.
     /// </summary>
     void DeleteFile(string filePath);
+
+    /// <summary>
+    /// Dosya üzerinde açık tutulan dosya tanıtıcısını (handle) derhal kapatır ve serbest bırakır.
+    /// </summary>
+    void CloseHandle(string filePath);
 }

@@ -22,7 +22,7 @@ public sealed class StreamingFileHashCalculator : IFileHashCalculator
             filePath,
             FileMode.Open,
             FileAccess.Read,
-            FileShare.ReadWrite,
+            FileShare.ReadWrite | FileShare.Delete,
             ReadBufferSize,
             FileOptions.Asynchronous | FileOptions.SequentialScan);
 

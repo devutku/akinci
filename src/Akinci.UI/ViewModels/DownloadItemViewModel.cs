@@ -101,6 +101,9 @@ public partial class DownloadItemViewModel : ObservableObject
     [ObservableProperty]
     private bool _canResume;
 
+    [ObservableProperty]
+    private bool _isCompleted;
+
     public ObservableCollection<ChunkViewModel> Chunks { get; } = new();
 
     public event Action<DownloadItemViewModel>? Deleted;
@@ -236,6 +239,7 @@ public partial class DownloadItemViewModel : ObservableObject
         Status = status;
         CanPause = status == DownloadStatus.Downloading;
         CanResume = status is DownloadStatus.Paused or DownloadStatus.Failed;
+        IsCompleted = status == DownloadStatus.Completed;
         IsIndeterminate = (!Task.TotalBytes.HasValue || Task.TotalBytes.Value <= 0) && status == DownloadStatus.Downloading;
 
         (StatusText, StatusTextColor, StatusBgColor, StatusBorderColor, ProgressBarColor) = status switch
@@ -382,6 +386,33 @@ public partial class DownloadItemViewModel : ObservableObject
             _notificationService?.ShowNotification(
                 "İndirme Hatası",
                 $"{FileName}: {ex.Message}",
+                NotificationType.Error);
+        }
+    }
+
+    [RelayCommand]
+    public void OpenFile()
+    {
+        try
+        {
+            if (File.Exists(DestinationFilePath))
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = DestinationFilePath,
+                    UseShellExecute = true
+                });
+            }
+            else
+            {
+                OpenFolder();
+            }
+        }
+        catch (Exception ex)
+        {
+            _notificationService?.ShowNotification(
+                "Dosya Açılamadı",
+                $"Dosya çalıştırılamadı: {ex.Message}",
                 NotificationType.Error);
         }
     }
