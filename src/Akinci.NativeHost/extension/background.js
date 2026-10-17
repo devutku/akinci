@@ -92,6 +92,71 @@ if (chrome.downloads && chrome.downloads.onDeterminingFilename) {
   });
 }
 
+// 3. HLS (.m3u8), DASH (.mpd) ve Medya Akışlarını Koklama (IDM Tarzı Sniffer)
+if (chrome.webRequest && chrome.webRequest.onHeadersReceived) {
+  chrome.webRequest.onHeadersReceived.addListener(
+    (details) => {
+      if (!details.tabId || details.tabId < 0) return;
+
+      const url = details.url.toLowerCase().split("?")[0];
+      const isStreamUrl = url.endsWith(".m3u8") || url.endsWith(".mpd");
+
+      let isStreamMime = false;
+      if (details.responseHeaders) {
+        const ctHeader = details.responseHeaders.find(
+          (h) => h.name && h.name.toLowerCase() === "content-type"
+        );
+        const ct = (ctHeader?.value || "").toLowerCase();
+        isStreamMime =
+          ct.includes("application/vnd.apple.mpegurl") ||
+          ct.includes("application/x-mpegurl") ||
+          ct.includes("application/dash+xml") ||
+          ct.includes("audio/x-mpegurl");
+      }
+
+      if (isStreamUrl || isStreamMime) {
+        // Sekmedeki içerik scriptine medya bulundu bildirimi fırlat
+        try {
+          chrome.tabs.sendMessage(details.tabId, {
+            type: "AKINCI_MEDIA_DETECTED",
+            streamUrl: details.url,
+            tabTitle: details.initiator || ""
+          }, () => {
+            if (chrome.runtime.lastError) {
+              // Sekme henüz hazır değilse hata yoksayılır
+            }
+          });
+        } catch { }
+      }
+    },
+    { urls: ["<all_urls>"] },
+    ["responseHeaders"]
+  );
+}
+
+// 4. İçerik Scriptinden (Sayfadaki Butondan) Gelen İndirme İsteklerini Karşıla
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message && message.type === "AKINCI_DOWNLOAD_STREAM") {
+    (async () => {
+      const targetUrl = message.streamUrl;
+      const tabUrl = sender?.tab ? sender.tab.url : "";
+      const pageTitle = sender?.tab ? sender.tab.title : message.title;
+      const cookies = await getCookiesForUrl(targetUrl, tabUrl);
+
+      let customFileName = (pageTitle || "live_stream")
+        .replace(/[\\/:*?"<>|]/g, "_")
+        .trim();
+      if (!customFileName.endsWith(".ts") && !customFileName.endsWith(".mp4")) {
+        customFileName += ".ts";
+      }
+
+      await sendToAkinci(targetUrl, tabUrl, customFileName, cookies);
+      sendResponse({ status: "success" });
+    })();
+    return true; // Async yanıt için
+  }
+});
+
 // 3. Akıncı Motoruna İletme (Native Messaging Host veya HTTP IPC)
 async function sendToAkinci(url, referrer, customFileName, cookies) {
   const payload = {

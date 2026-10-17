@@ -31,6 +31,9 @@ public sealed record DownloadUrl
     public bool IsFtp => Uri.Scheme.Equals(Uri.UriSchemeFtp, StringComparison.OrdinalIgnoreCase) ||
                          Uri.Scheme.Equals("ftps", StringComparison.OrdinalIgnoreCase);
 
+    public bool IsHls => IsHttp && (Uri.AbsolutePath.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase) ||
+                                    Uri.Query.Contains(".m3u8", StringComparison.OrdinalIgnoreCase));
+
     public static DownloadUrl Create(string url)
     {
         if (string.IsNullOrWhiteSpace(url))
@@ -55,7 +58,17 @@ public sealed record DownloadUrl
     {
         var path = Uri.AbsolutePath;
         var fileName = Path.GetFileName(path);
-        return string.IsNullOrWhiteSpace(fileName) ? "download.bin" : fileName;
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            return IsHls ? "stream_recording.ts" : "download.bin";
+        }
+
+        if (IsHls && fileName.EndsWith(".m3u8", StringComparison.OrdinalIgnoreCase))
+        {
+            return Path.ChangeExtension(fileName, ".ts");
+        }
+
+        return fileName;
     }
 
     public override string ToString() => Value;

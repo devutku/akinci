@@ -1,9 +1,20 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+
+    <!-- NuGet Paketleme ve Lisanslama -->
+    <PackageId>Akinci.Domain</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Utku Berki Baysal</Authors>
+    <Company>Akıncı</Company>
+    <Description>Akıncı Çok Kanallı İndirme Motoru çekirdek domain varlıkları ve değer nesneleri.</Description>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/devutku/akinci</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/devutku/akinci.git</RepositoryUrl>
+    <PackageTags>download-manager;downloader;chunk;resilient;hls;domain</PackageTags>
   </PropertyGroup>
 
 </Project>

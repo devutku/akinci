@@ -7,11 +7,21 @@
     "contextMenus",
     "nativeMessaging",
     "downloads",
-    "cookies"
+    "cookies",
+    "webRequest"
   ],
   "host_permissions": [
     "<all_urls>",
     "http://127.0.0.1:49500/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content_script.js"],
+      "css": ["content_style.css"],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
   ],
   "background": {
     "service_worker": "background.js"

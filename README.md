@@ -71,5 +71,18 @@ publish.bat
 ## 🌐 Tarayıcı Entegrasyonu Kurulumu
 
 Chrome, Microsoft Edge ve Firefox ile sağ tık *"Akıncı ile İndir"* entegrasyonu için:
-1. `src\Akinci.NativeHost\install-host.bat` dosyasını çalıştırın.
+1. `src\Akinci.NativeHost\install-host.bat` dosyasını çalıştırın (veya Akıncı masaüstü uygulamasının otomatik kurulum bildirimini onaylayın).
 2. `src\Akinci.NativeHost\extension` klasörünü tarayıcınızın Geliştirici Modunda *"Paketlenmemiş Öğe Yükle"* seçeneğiyle ekleyin.
+
+---
+
+## ⚖️ Lisanslama (Dual Licensing)
+
+Akıncı, açık kaynak ekosistemini desteklerken nihai masaüstü uygulamasının klonlanıp kapatılmasını önleyen **çift lisanslama (dual licensing)** modelini benimser:
+
+* **Kütüphane & Çekirdek Katmanları (`Akinci.Domain`, `Akinci.Application`, `Akinci.Infrastructure`):**
+  .NET topluluğunun ve geliştiricilerin kendi projelerinde veya ticari yazılımlarında bir kütüphane/motor olarak özgürce kullanabilmesi için **[MIT Lisansı](LICENSE-MIT)** ile lisanslanmıştır.
+* **Masaüstü Uygulaması & Dağıtımlar (`Akinci.UI`, CLI ve Tümleşik İkili Paketler):**
+  Uygulamanın kendisi, kullanıcı arayüzü ve dağıtılabilir ikili paketleri **[GNU General Public License v3.0 (GPLv3)](LICENSE)** ile korunmaktadır.
+
+> Bu sayede indirme motorunu bağımsız bir NuGet paketi olarak projelerinizde serbestçe kullanabilirsiniz; ancak Akıncı masaüstü uygulamasının arayüzü ve bütünleşik türevleri daima açık kaynak kalmak zorundadır.
