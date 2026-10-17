@@ -15,17 +15,6 @@ Uygulamanın çekirdek iş kuralları (Domain ve Application katmanları); HTTP 
 
 ---
 
-## 🛡 Fark Yaratan Özellik (Killer Feature): Canlı VirusTotal Entegrasyonu
-
-Akıncı, indirme işlemi tamamlandığında dosyayı diskte bekletirken akış (stream) üzerinden eşzamanlı olarak SHA-256 özetini hesaplar ve otomatik olarak **VirusTotal API v3** (`GET /api/v3/files/{hash}`) sorgusu gerçekleştirir.
-
-* Dosya açılmadan önce **70+ antivirüs motorunun** analiz sonucu anında gösterilir:
-  * 🟢 `70/70 antivirüs motorundan geçti, güvenli`
-  * 🔴 `5/70 motor zararlı uyarısı verdi!`
-* Kullanıcı tek tıkla doğrudan ilgili VirusTotal web raporuna ulaşabilir.
-
----
-
 ## 🦅 Desteklenen Protokoller ve Kimlik Doğrulama
 
 | Protokol | Açıklama |
