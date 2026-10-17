@@ -20,6 +20,7 @@ public partial class DownloadItemViewModel : ObservableObject
     private readonly PauseDownloadCommandHandler _pauseHandler;
     private readonly ResumeDownloadCommandHandler _resumeHandler;
     private readonly IDownloadRepository _repository;
+    private readonly INotificationService? _notificationService;
     private CancellationTokenSource? _downloadCts;
 
     public DownloadTask Task { get; }
@@ -73,13 +74,15 @@ public partial class DownloadItemViewModel : ObservableObject
         StartDownloadCommandHandler startHandler,
         PauseDownloadCommandHandler pauseHandler,
         ResumeDownloadCommandHandler resumeHandler,
-        IDownloadRepository repository)
+        IDownloadRepository repository,
+        INotificationService? notificationService = null)
     {
         Task = task;
         _startHandler = startHandler;
         _pauseHandler = pauseHandler;
         _resumeHandler = resumeHandler;
         _repository = repository;
+        _notificationService = notificationService;
 
         _status = task.Status;
         _progressPercentage = task.ProgressPercentage;
@@ -172,6 +175,7 @@ public partial class DownloadItemViewModel : ObservableObject
             await _startHandler.HandleAsync(new StartDownloadCommand(Task.Id, progress), _downloadCts.Token);
             UpdateStatusState(Task.Status);
             UpdateSecurityDisplay(Task.SecurityVerdict);
+            OnDownloadFinished(true);
         }
         catch (OperationCanceledException)
         {
@@ -181,6 +185,7 @@ public partial class DownloadItemViewModel : ObservableObject
         {
             UpdateStatusState(DownloadStatus.Failed);
             StatusText = $"Hata: {ex.Message}";
+            OnDownloadFinished(false, ex);
         }
     }
 
@@ -207,6 +212,7 @@ public partial class DownloadItemViewModel : ObservableObject
             await _resumeHandler.HandleAsync(new ResumeDownloadCommand(Task.Id, progress), _downloadCts.Token);
             UpdateStatusState(Task.Status);
             UpdateSecurityDisplay(Task.SecurityVerdict);
+            OnDownloadFinished(true);
         }
         catch (OperationCanceledException)
         {
@@ -216,6 +222,43 @@ public partial class DownloadItemViewModel : ObservableObject
         {
             UpdateStatusState(DownloadStatus.Failed);
             StatusText = $"Hata: {ex.Message}";
+            OnDownloadFinished(false, ex);
+        }
+    }
+
+    private void OnDownloadFinished(bool isSuccess, Exception? ex = null)
+    {
+        if (isSuccess && Task.Status == DownloadStatus.Completed)
+        {
+            _notificationService?.ShowNotification(
+                "İndirme Tamamlandı",
+                $"{FileName} başarıyla indirildi.",
+                NotificationType.Success);
+
+            if (Task.SecurityVerdict != null)
+            {
+                if (Task.SecurityVerdict.HasThreat)
+                {
+                    _notificationService?.ShowNotification(
+                        "Güvenlik Uyarısı!",
+                        $"{FileName}: {Task.SecurityVerdict.FormatBadge()}",
+                        NotificationType.Warning);
+                }
+                else if (Task.SecurityVerdict.IsSafe)
+                {
+                    _notificationService?.ShowNotification(
+                        "Güvenlik Taraması Temiz",
+                        $"{FileName}: {Task.SecurityVerdict.FormatBadge()}",
+                        NotificationType.Success);
+                }
+            }
+        }
+        else if (!isSuccess && ex != null)
+        {
+            _notificationService?.ShowNotification(
+                "İndirme Hatası",
+                $"{FileName}: {ex.Message}",
+                NotificationType.Error);
         }
     }
 

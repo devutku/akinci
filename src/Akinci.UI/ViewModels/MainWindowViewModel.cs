@@ -21,6 +21,7 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly ResumeDownloadCommandHandler _resumeHandler;
     private readonly IDownloadRepository _repository;
     private readonly SettingsService _settingsService;
+    private readonly INotificationService? _notificationService;
 
     public ObservableCollection<DownloadItemViewModel> AllDownloads { get; } = new();
     public ObservableCollection<DownloadItemViewModel> FilteredDownloads { get; } = new();
@@ -49,7 +50,8 @@ public partial class MainWindowViewModel : ObservableObject
         PauseDownloadCommandHandler pauseHandler,
         ResumeDownloadCommandHandler resumeHandler,
         IDownloadRepository repository,
-        SettingsService settingsService)
+        SettingsService settingsService,
+        INotificationService? notificationService = null)
     {
         _createHandler = createHandler;
         _startHandler = startHandler;
@@ -57,6 +59,7 @@ public partial class MainWindowViewModel : ObservableObject
         _resumeHandler = resumeHandler;
         _repository = repository;
         _settingsService = settingsService;
+        _notificationService = notificationService;
 
         // Periyodik global hız ve sayaç güncelleme zamanlayıcısı (1 sn)
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
@@ -72,7 +75,7 @@ public partial class MainWindowViewModel : ObservableObject
             AllDownloads.Clear();
             foreach (var task in tasks)
             {
-                var itemVm = new DownloadItemViewModel(task, _startHandler, _pauseHandler, _resumeHandler, _repository);
+                var itemVm = new DownloadItemViewModel(task, _startHandler, _pauseHandler, _resumeHandler, _repository, _notificationService);
                 itemVm.Deleted += OnItemDeleted;
                 AllDownloads.Add(itemVm);
             }
@@ -99,7 +102,7 @@ public partial class MainWindowViewModel : ObservableObject
         var command = new CreateDownloadCommand(url, destinationDir, connections, customName, credentials);
         var task = await _createHandler.HandleAsync(command);
 
-        var itemVm = new DownloadItemViewModel(task, _startHandler, _pauseHandler, _resumeHandler, _repository);
+        var itemVm = new DownloadItemViewModel(task, _startHandler, _pauseHandler, _resumeHandler, _repository, _notificationService);
         itemVm.Deleted += OnItemDeleted;
 
         Dispatcher.UIThread.Post(() =>

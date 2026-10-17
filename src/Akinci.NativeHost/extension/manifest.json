@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Akıncı Downloader Entegrasyonu",
+  "version": "1.0.0",
+  "description": "Bağlantıları ve indirmeleri otomatik olarak Akıncı Çok Kanallı İndirme Motoruna aktarır.",
+  "permissions": [
+    "contextMenus",
+    "nativeMessaging",
+    "downloads"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:49500/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
+}

@@ -9,21 +9,45 @@ namespace Akinci.UI;
 public partial class MainWindow : Window
 {
     private readonly SettingsService? _settingsService;
+    private readonly DesktopNotificationService? _notificationService;
+
+    public bool AllowClose { get; set; } = false;
 
     public MainWindow()
     {
         InitializeComponent();
     }
 
-    public MainWindow(MainWindowViewModel viewModel, SettingsService settingsService) : this()
+    public MainWindow(
+        MainWindowViewModel viewModel,
+        SettingsService settingsService,
+        DesktopNotificationService notificationService) : this()
     {
         DataContext = viewModel;
         _settingsService = settingsService;
+        _notificationService = notificationService;
 
         Loaded += async (s, e) =>
         {
+            _notificationService.AttachWindow(this);
             await viewModel.InitializeAsync();
         };
+    }
+
+    protected override void OnClosing(WindowClosingEventArgs e)
+    {
+        if (!AllowClose)
+        {
+            e.Cancel = true;
+            Hide();
+            _notificationService?.ShowNotification(
+                "Akıncı Arka Planda Çalışıyor",
+                "İndirmeleriniz devam ediyor. Görev çubuğundan geri açabilirsiniz.",
+                Application.Ports.NotificationType.Information);
+            return;
+        }
+
+        base.OnClosing(e);
     }
 
     private async void OnAddDownloadClick(object? sender, RoutedEventArgs e)

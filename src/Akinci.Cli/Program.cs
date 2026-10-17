@@ -1,11 +1,13 @@
 using System.Diagnostics;
 using Akinci.Application.DTOs;
 using Akinci.Application.UseCases.CreateDownload;
+using Akinci.Application.UseCases.ResumeDownload;
 using Akinci.Application.UseCases.StartDownload;
 using Akinci.Domain.Enums;
 using Akinci.Domain.ValueObjects;
 using Akinci.Infrastructure.Adapters;
 using Akinci.Infrastructure.Persistence;
+using Akinci.Infrastructure.Security;
 using Akinci.Infrastructure.Storage;
 
 Console.OutputEncoding = System.Text.Encoding.UTF8;
