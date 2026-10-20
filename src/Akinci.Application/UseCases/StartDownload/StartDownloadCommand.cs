@@ -88,7 +88,7 @@ public sealed class StartDownloadCommandHandler
         {
             var unfinishedChunks = task.Chunks.Where(c => !c.IsCompleted).ToList();
 
-            var workerTasks = unfinishedChunks.Select(async chunk =>
+            async Task DownloadChunkInternalAsync(Chunk chunk)
             {
                 long lastPersistedOffset = chunk.CurrentOffset;
                 var lastPersistTime = Stopwatch.StartNew();
@@ -151,10 +151,41 @@ public sealed class StartDownloadCommandHandler
                         }
                     },
                     task.Credentials,
-                    cancellationToken);
-            });
+                    cancellationToken).ConfigureAwait(false);
+
+                await _repository.UpdateChunkOffsetAsync(task.Id, chunk.Index, chunk.CurrentOffset, cancellationToken);
+            }
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var workerTasks = unfinishedChunks.Select(async initialChunk =>
+            {
+                Chunk? current = initialChunk;
+                while (current != null)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    await DownloadChunkInternalAsync(current);
+
+                    // Dinamik Parça Dağıtımı (Work Stealing):
+                    // Bu bağlantı erken bitti; henüz bitmemiş ve çok kalan verisi olan başka bir parçayı bölüp devral
+                    if (task.SupportsRangeRequests && task.TotalBytes is > 0 && !cancellationToken.IsCancellationRequested)
+                    {
+                        current = task.TryStealChunk();
+                        if (current != null)
+                        {
+                            // Yeni bölünen parçayı veritabanına kaydet
+                            await _repository.UpdateAsync(task, cancellationToken);
+                        }
+                    }
+                    else
+                    {
+                        current = null;
+                    }
+                }
+            }).ToList();
 
             await Task.WhenAll(workerTasks);
+            cancellationToken.ThrowIfCancellationRequested();
 
             // 1. Worker'lar bittiğinde dosya tanıtıcısını (handle) HEMEN KAPAT.
             // Bu sayede Windows ve harici programlar (WinRAR, 7-Zip, oynatıcılar) dosyaya derhal erişebilir.

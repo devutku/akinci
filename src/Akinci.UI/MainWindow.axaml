@@ -31,6 +31,12 @@
         <StreamGeometry x:Key="IconRestart">M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67</StreamGeometry>
         <StreamGeometry x:Key="IconCopy">M9 9h13v13H9z M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1</StreamGeometry>
         <StreamGeometry x:Key="IconHash">M4 9h16M4 15h16M10 3L8 21M16 3l-2 18</StreamGeometry>
+        <StreamGeometry x:Key="IconGrid">M3 3h7v7H3z M14 3h7v7h-7z M14 14h7v7h-7z M3 14h7v7H3z</StreamGeometry>
+        <StreamGeometry x:Key="IconVideo">M23 7l-7 5 7 5V7z M14 5H3a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z</StreamGeometry>
+        <StreamGeometry x:Key="IconAudio">M9 18V5l12-2v13 M9 9l12-2 M6 21a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M18 19a3 3 0 1 0 0-6 3 3 0 0 0 0 6z</StreamGeometry>
+        <StreamGeometry x:Key="IconDocument">M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z M14 2v6h6 M16 13H8 M16 17H8 M10 9H8</StreamGeometry>
+        <StreamGeometry x:Key="IconProgram">M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M4 9h16 M8 6.5v.01 M11 6.5v.01 M14 6.5v.01</StreamGeometry>
+        <StreamGeometry x:Key="IconArchive">M21 8v13H3V8 M1 3h22v5H1z M10 12h4</StreamGeometry>
     </Window.Resources>
 
     <Window.Styles>
@@ -262,55 +268,138 @@
         </Border>
 
         <!-- Main Body: Sidebar + Content Area -->
-        <Grid Grid.Row="1" ColumnDefinitions="190,*">
+        <Grid Grid.Row="1" ColumnDefinitions="200,*">
             <!-- Left Sidebar Navigation (Strict Contrast: #131317 background, #1E1E24 border) -->
-            <Border Grid.Column="0" Background="#131317" BorderBrush="#1E1E24" BorderThickness="0,0,1,0" Padding="10,12">
-                <StackPanel Spacing="3">
-                    <TextBlock Text="İNDİRMELER" FontSize="10" FontWeight="SemiBold" Foreground="#475569" Margin="10,2,0,6" />
+            <Border Grid.Column="0" Background="#131317" BorderBrush="#1E1E24" BorderThickness="0,0,1,0" Padding="8,10">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Spacing="2">
+                        <TextBlock Text="İNDİRMELER" FontSize="10" FontWeight="SemiBold" Foreground="#475569" Margin="10,2,0,6" />
 
-                    <!-- Tümü -->
-                    <Button Click="OnFilterClicked" Tag="Tümü" Classes="nav-item" Classes.selected="{Binding IsAllSelected}">
-                        <Grid ColumnDefinitions="Auto,*,Auto">
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
-                                <PathIcon Data="{StaticResource IconInbox}" Width="14" Height="14" />
-                                <TextBlock Text="Tümü" FontSize="12" VerticalAlignment="Center" />
-                            </StackPanel>
-                            <TextBlock Grid.Column="2" Text="{Binding TotalCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
-                        </Grid>
-                    </Button>
+                        <!-- Tümü -->
+                        <Button Click="OnFilterClicked" Tag="Tümü" Classes="nav-item" Classes.selected="{Binding IsAllSelected}">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                    <PathIcon Data="{StaticResource IconInbox}" Width="13" Height="13" />
+                                    <TextBlock Text="Tümü" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding TotalCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
 
-                    <!-- İndirilenler -->
-                    <Button Click="OnFilterClicked" Tag="İndirilenler" Classes="nav-item" Classes.selected="{Binding IsDownloadingSelected}">
-                        <Grid ColumnDefinitions="Auto,*,Auto">
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
-                                <PathIcon Data="{StaticResource IconDownload}" Width="14" Height="14" />
-                                <TextBlock Text="İndirilenler" FontSize="12" VerticalAlignment="Center" />
-                            </StackPanel>
-                            <TextBlock Grid.Column="2" Text="{Binding ActiveCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
-                        </Grid>
-                    </Button>
+                        <!-- İndirilenler -->
+                        <Button Click="OnFilterClicked" Tag="İndirilenler" Classes="nav-item" Classes.selected="{Binding IsDownloadingSelected}">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                    <PathIcon Data="{StaticResource IconDownload}" Width="13" Height="13" />
+                                    <TextBlock Text="İndirilenler" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding ActiveCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
 
-                    <!-- Duraklatılanlar -->
-                    <Button Click="OnFilterClicked" Tag="Duraklatılanlar" Classes="nav-item" Classes.selected="{Binding IsPausedSelected}">
-                        <Grid ColumnDefinitions="Auto,*,Auto">
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
-                                <PathIcon Data="{StaticResource IconPause}" Width="14" Height="14" />
-                                <TextBlock Text="Duraklatılanlar" FontSize="12" VerticalAlignment="Center" />
-                            </StackPanel>
-                        </Grid>
-                    </Button>
+                        <!-- Duraklatılanlar -->
+                        <Button Click="OnFilterClicked" Tag="Duraklatılanlar" Classes="nav-item" Classes.selected="{Binding IsPausedSelected}">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                    <PathIcon Data="{StaticResource IconPause}" Width="13" Height="13" />
+                                    <TextBlock Text="Duraklatılanlar" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                            </Grid>
+                        </Button>
 
-                    <!-- Tamamlananlar -->
-                    <Button Click="OnFilterClicked" Tag="Tamamlananlar" Classes="nav-item" Classes.selected="{Binding IsCompletedSelected}">
-                        <Grid ColumnDefinitions="Auto,*,Auto">
-                            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
-                                <PathIcon Data="{StaticResource IconCheck}" Width="14" Height="14" />
-                                <TextBlock Text="Tamamlananlar" FontSize="12" VerticalAlignment="Center" />
-                            </StackPanel>
-                            <TextBlock Grid.Column="2" Text="{Binding CompletedCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
-                        </Grid>
-                    </Button>
-                </StackPanel>
+                        <!-- Tamamlananlar -->
+                        <Button Click="OnFilterClicked" Tag="Tamamlananlar" Classes="nav-item" Classes.selected="{Binding IsCompletedSelected}">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                    <PathIcon Data="{StaticResource IconCheck}" Width="13" Height="13" />
+                                    <TextBlock Text="Tamamlananlar" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding CompletedCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
+
+                        <Rectangle Height="1" Fill="#1E1E24" Margin="4,8" />
+
+                        <TextBlock Text="KATEGORİLER" FontSize="10" FontWeight="SemiBold" Foreground="#475569" Margin="10,2,0,6" />
+
+                        <!-- Tümü (Kategori) -->
+                        <Button Click="OnCategoryClicked" Tag="Tümü" Classes="nav-item" Classes.selected="{Binding IsCategoryAllSelected}">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                    <PathIcon Data="{StaticResource IconGrid}" Width="13" Height="13" />
+                                    <TextBlock Text="Tüm Türler" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding TotalCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
+
+                        <!-- Videolar -->
+                        <Button Click="OnCategoryClicked" Tag="Video" Classes="nav-item" Classes.selected="{Binding IsCategoryVideoSelected}">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                    <PathIcon Data="{StaticResource IconVideo}" Width="13" Height="13" />
+                                    <TextBlock Text="Videolar" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding CategoryVideoCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
+
+                        <!-- Müzik & Ses -->
+                        <Button Click="OnCategoryClicked" Tag="Ses" Classes="nav-item" Classes.selected="{Binding IsCategoryAudioSelected}">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                    <PathIcon Data="{StaticResource IconAudio}" Width="13" Height="13" />
+                                    <TextBlock Text="Müzik &amp; Ses" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding CategoryAudioCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
+
+                        <!-- Belgeler -->
+                        <Button Click="OnCategoryClicked" Tag="Belgeler" Classes="nav-item" Classes.selected="{Binding IsCategoryDocumentSelected}">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                    <PathIcon Data="{StaticResource IconDocument}" Width="13" Height="13" />
+                                    <TextBlock Text="Belgeler" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding CategoryDocumentCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
+
+                        <!-- Programlar -->
+                        <Button Click="OnCategoryClicked" Tag="Programlar" Classes="nav-item" Classes.selected="{Binding IsCategoryProgramSelected}">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                    <PathIcon Data="{StaticResource IconProgram}" Width="13" Height="13" />
+                                    <TextBlock Text="Programlar" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding CategoryProgramCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
+
+                        <!-- Arşivler -->
+                        <Button Click="OnCategoryClicked" Tag="Arşivler" Classes="nav-item" Classes.selected="{Binding IsCategoryArchiveSelected}">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                    <PathIcon Data="{StaticResource IconArchive}" Width="13" Height="13" />
+                                    <TextBlock Text="Sıkıştırılmış" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding CategoryArchiveCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
+
+                        <!-- Diğer -->
+                        <Button Click="OnCategoryClicked" Tag="Diğer" Classes="nav-item" Classes.selected="{Binding IsCategoryOtherSelected}">
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
+                                    <PathIcon Data="{StaticResource IconFile}" Width="13" Height="13" />
+                                    <TextBlock Text="Diğer" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Grid.Column="2" Text="{Binding CategoryOtherCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
+                            </Grid>
+                        </Button>
+                    </StackPanel>
+                </ScrollViewer>
             </Border>
 
             <!-- Right Content Area -->

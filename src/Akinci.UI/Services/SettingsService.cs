@@ -16,6 +16,8 @@ public sealed class AppSettings
     public int MaxConcurrentDownloads { get; set; } = 3;
 
     public long SpeedLimitBytesPerSecond { get; set; } = 0;
+
+    public bool EnableClipboardMonitor { get; set; } = true;
 }
 
 public sealed class SettingsService

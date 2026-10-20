@@ -24,6 +24,9 @@ public partial class SettingsDialogViewModel : ObservableObject
     [ObservableProperty]
     private string _virusTotalApiKey;
 
+    [ObservableProperty]
+    private bool _enableClipboardMonitor;
+
     public SettingsService SettingsService => _settingsService;
 
     public SettingsDialogViewModel(SettingsService settingsService, IBandwidthThrottler? throttler = null)
@@ -36,6 +39,7 @@ public partial class SettingsDialogViewModel : ObservableObject
         _maxConcurrentDownloads = current.MaxConcurrentDownloads;
         _speedLimitKbps = current.SpeedLimitBytesPerSecond > 0 ? current.SpeedLimitBytesPerSecond / 1024 : 0;
         _virusTotalApiKey = current.VirusTotalApiKey ?? "";
+        _enableClipboardMonitor = current.EnableClipboardMonitor;
     }
 
     public void Save()
@@ -46,6 +50,7 @@ public partial class SettingsDialogViewModel : ObservableObject
         current.MaxConcurrentDownloads = Math.Max(0, MaxConcurrentDownloads);
         current.SpeedLimitBytesPerSecond = SpeedLimitKbps > 0 ? SpeedLimitKbps * 1024 : 0;
         current.VirusTotalApiKey = string.IsNullOrWhiteSpace(VirusTotalApiKey) ? null : VirusTotalApiKey.Trim();
+        current.EnableClipboardMonitor = EnableClipboardMonitor;
         _settingsService.SaveSettings(current);
 
         if (_throttler != null)

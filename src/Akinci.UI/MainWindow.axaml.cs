@@ -12,6 +12,7 @@ public partial class MainWindow : Window
     private readonly SettingsService? _settingsService;
     private readonly DesktopNotificationService? _notificationService;
     private readonly Akinci.Application.Ports.IBandwidthThrottler? _throttler;
+    private ClipboardMonitorService? _clipboardMonitor;
 
     public bool AllowClose { get; set; } = false;
 
@@ -31,6 +32,21 @@ public partial class MainWindow : Window
         _notificationService = notificationService;
         _throttler = throttler;
 
+        if (_settingsService != null)
+        {
+            _clipboardMonitor = new ClipboardMonitorService(_settingsService);
+            _clipboardMonitor.UrlDetected += async (url) =>
+            {
+                if (WindowState == WindowState.Minimized)
+                {
+                    WindowState = WindowState.Normal;
+                }
+                Show();
+                Activate();
+                await PromptAddDownloadAsync(url);
+            };
+        }
+
         viewModel.ConfirmDeleteHandler = async (item) =>
         {
             var dialog = new DeleteDownloadDialog(item.FileName, item.DestinationFilePath);
@@ -40,8 +56,14 @@ public partial class MainWindow : Window
         Loaded += async (s, e) =>
         {
             _notificationService.AttachWindow(this);
+            _clipboardMonitor?.Start(this);
             await viewModel.InitializeAsync();
             CheckAndPromptExtensionInstallation();
+        };
+
+        Closed += (s, e) =>
+        {
+            _clipboardMonitor?.Dispose();
         };
 
         KeyDown += (s, e) =>
@@ -76,12 +98,22 @@ public partial class MainWindow : Window
 
     private async void OnAddDownloadClick(object? sender, RoutedEventArgs e)
     {
+        await PromptAddDownloadAsync();
+    }
+
+    public async Task PromptAddDownloadAsync(string? initialUrl = null)
+    {
         if (DataContext is MainWindowViewModel vm && _settingsService != null)
         {
             var settings = _settingsService.Current;
             var dialogVm = new AddDownloadDialogViewModel(
                 settings.DefaultDownloadDirectory,
                 settings.DefaultConnections);
+
+            if (!string.IsNullOrWhiteSpace(initialUrl))
+            {
+                dialogVm.Url = initialUrl;
+            }
 
             var dialog = new AddDownloadDialog
             {
@@ -135,6 +167,14 @@ public partial class MainWindow : Window
         if (sender is Control { Tag: string filter } && DataContext is MainWindowViewModel vm)
         {
             vm.SelectedFilter = filter;
+        }
+    }
+
+    private void OnCategoryClicked(object? sender, RoutedEventArgs e)
+    {
+        if (sender is Control { Tag: string category } && DataContext is MainWindowViewModel vm)
+        {
+            vm.SelectedCategory = category;
         }
     }
 

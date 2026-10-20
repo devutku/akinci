@@ -32,6 +32,7 @@ public partial class DownloadItemViewModel : ObservableObject
     public string DestinationFilePath => Task.DestinationFilePath;
     public string FileName => Path.GetFileName(Task.DestinationFilePath);
     public bool HasSha256 => !string.IsNullOrEmpty(Task.Sha256Hash);
+    public FileCategory Category => FileCategoryDetector.Detect(FileName);
 
     [ObservableProperty]
     private DownloadStatus _status;

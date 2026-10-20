@@ -39,6 +39,35 @@ public partial class MainWindowViewModel : ObservableObject
     public bool IsCompletedSelected => SelectedFilter == "Tamamlananlar";
 
     [ObservableProperty]
+    private string _selectedCategory = "Tümü";
+
+    public bool IsCategoryAllSelected => SelectedCategory == "Tümü";
+    public bool IsCategoryVideoSelected => SelectedCategory == "Video";
+    public bool IsCategoryAudioSelected => SelectedCategory == "Ses";
+    public bool IsCategoryDocumentSelected => SelectedCategory == "Belgeler";
+    public bool IsCategoryProgramSelected => SelectedCategory == "Programlar";
+    public bool IsCategoryArchiveSelected => SelectedCategory == "Arşivler";
+    public bool IsCategoryOtherSelected => SelectedCategory == "Diğer";
+
+    [ObservableProperty]
+    private int _categoryVideoCount;
+
+    [ObservableProperty]
+    private int _categoryAudioCount;
+
+    [ObservableProperty]
+    private int _categoryDocumentCount;
+
+    [ObservableProperty]
+    private int _categoryProgramCount;
+
+    [ObservableProperty]
+    private int _categoryArchiveCount;
+
+    [ObservableProperty]
+    private int _categoryOtherCount;
+
+    [ObservableProperty]
     private string _searchQuery = "";
 
     [ObservableProperty]
@@ -182,6 +211,19 @@ public partial class MainWindowViewModel : ObservableObject
         OnPropertyChanged(nameof(IsCompletedSelected));
         ApplyFilter();
     }
+
+    partial void OnSelectedCategoryChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsCategoryAllSelected));
+        OnPropertyChanged(nameof(IsCategoryVideoSelected));
+        OnPropertyChanged(nameof(IsCategoryAudioSelected));
+        OnPropertyChanged(nameof(IsCategoryDocumentSelected));
+        OnPropertyChanged(nameof(IsCategoryProgramSelected));
+        OnPropertyChanged(nameof(IsCategoryArchiveSelected));
+        OnPropertyChanged(nameof(IsCategoryOtherSelected));
+        ApplyFilter();
+    }
+
     partial void OnSearchQueryChanged(string value) => ApplyFilter();
 
     public void ApplyFilter()
@@ -205,7 +247,20 @@ public partial class MainWindowViewModel : ObservableObject
                 _ => true // "Tümü"
             };
 
-            if (matchesFilter)
+            if (!matchesFilter) continue;
+
+            bool matchesCategory = SelectedCategory switch
+            {
+                "Video" => item.Category == FileCategory.Video,
+                "Ses" => item.Category == FileCategory.Audio,
+                "Belgeler" => item.Category == FileCategory.Document,
+                "Programlar" => item.Category == FileCategory.Program,
+                "Arşivler" => item.Category == FileCategory.Archive,
+                "Diğer" => item.Category == FileCategory.Other,
+                _ => true // "Tümü"
+            };
+
+            if (matchesCategory)
             {
                 FilteredDownloads.Add(item);
             }
@@ -217,6 +272,13 @@ public partial class MainWindowViewModel : ObservableObject
         TotalCount = AllDownloads.Count;
         ActiveCount = AllDownloads.Count(d => d.Status == DownloadStatus.Downloading);
         CompletedCount = AllDownloads.Count(d => d.Status == DownloadStatus.Completed);
+
+        CategoryVideoCount = AllDownloads.Count(d => d.Category == FileCategory.Video);
+        CategoryAudioCount = AllDownloads.Count(d => d.Category == FileCategory.Audio);
+        CategoryDocumentCount = AllDownloads.Count(d => d.Category == FileCategory.Document);
+        CategoryProgramCount = AllDownloads.Count(d => d.Category == FileCategory.Program);
+        CategoryArchiveCount = AllDownloads.Count(d => d.Category == FileCategory.Archive);
+        CategoryOtherCount = AllDownloads.Count(d => d.Category == FileCategory.Other);
 
         // Hızları doğrudan sayısal değerlerden topla (Kültür bağımsız ve hatasız)
         double totalBps = AllDownloads

@@ -101,7 +101,19 @@
                 <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
                     <TextBlock Grid.Column="0" Text="Küresel Hız Sınırı (KB/s - 0 = Sınırsız)" Classes="label" VerticalAlignment="Center" />
                 </Grid>
-                <TextBox Text="{Binding SpeedLimitKbps}" Watermark="Örn: 2048 (2 MB/s) veya 0 (Sınırsız)" />
+                <TextBox Text="{Binding SpeedLimitKbps}" PlaceholderText="Örn: 2048 (2 MB/s) veya 0 (Sınırsız)" />
+
+                <!-- Akıllı Pano İzleyici Kartı -->
+                <Border Background="#18181C" BorderBrush="#22222A" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,6,0,0">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Text="📋 Akıllı Pano İzleyici" FontWeight="SemiBold" FontSize="12" Foreground="#38BDF8" />
+                            <TextBlock Text="Kopyaladığınız indirme bağlantılarını (URL) otomatik olarak algılar ve indirme penceresini açar."
+                                       FontSize="11" Foreground="#64748B" TextWrapping="Wrap" />
+                        </StackPanel>
+                        <ToggleSwitch Grid.Column="1" IsChecked="{Binding EnableClipboardMonitor}" OnContent="" OffContent="" Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </Grid>
+                </Border>
 
                 <!-- VirusTotal Kartı (Strict Monochrome) -->
                 <Border Background="#18181C" BorderBrush="#22222A" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,6,0,0">

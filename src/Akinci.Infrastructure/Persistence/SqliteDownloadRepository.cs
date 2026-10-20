@@ -225,18 +225,25 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
             await cmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        // Chunk ofsetlerini güncelle
+        // Chunk ofsetlerini ve dinamik olarak eklenen/bölünen parçaları güncelle (Work Stealing uyumluluğu)
         foreach (var chunk in task.Chunks)
         {
             await using var chunkCmd = connection.CreateCommand();
             chunkCmd.Transaction = transaction;
             chunkCmd.CommandText = @"
-                UPDATE chunks SET current_offset = $current_offset
-                WHERE task_id = $task_id AND chunk_index = $chunk_index;
+                INSERT INTO chunks (id, task_id, chunk_index, start_offset, end_offset, current_offset)
+                VALUES ($id, $task_id, $chunk_index, $start_offset, $end_offset, $current_offset)
+                ON CONFLICT(id) DO UPDATE SET
+                    start_offset = excluded.start_offset,
+                    end_offset = excluded.end_offset,
+                    current_offset = excluded.current_offset;
             ";
-            chunkCmd.Parameters.AddWithValue("$current_offset", chunk.CurrentOffset);
+            chunkCmd.Parameters.AddWithValue("$id", chunk.Id.ToString());
             chunkCmd.Parameters.AddWithValue("$task_id", task.Id.ToString());
             chunkCmd.Parameters.AddWithValue("$chunk_index", chunk.Index);
+            chunkCmd.Parameters.AddWithValue("$start_offset", chunk.Range.Start);
+            chunkCmd.Parameters.AddWithValue("$end_offset", chunk.Range.End);
+            chunkCmd.Parameters.AddWithValue("$current_offset", chunk.CurrentOffset);
 
             await chunkCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }

@@ -187,6 +187,62 @@ public sealed class DownloadTask
         _chunks.AddRange(chunks.OrderBy(c => c.Index));
     }
 
+    private readonly object _chunkLock = new();
+
+    /// <summary>
+    /// Erken biten paralel bağlantıların, henüz bitmemiş ve en çok kalan veriye sahip
+    /// parçayı ikiye bölerek iş yükünü devralmasını (Work Stealing) sağlar.
+    /// </summary>
+    /// <param name="minSplitThreshold">Bölme işlemi için gereken minimum kalan bayt miktarı (Varsayılan: 2 MB).</param>
+    /// <returns>Bölünerek oluşturulan yeni parça veya bölünecek parça yoksa null.</returns>
+    public Chunk? TryStealChunk(long minSplitThreshold = 2 * 1024 * 1024)
+    {
+        if (!SupportsRangeRequests || TotalBytes is null or <= 0)
+        {
+            return null;
+        }
+
+        lock (_chunkLock)
+        {
+            // Bitmemiş ve en çok kalan veriye sahip parçayı bul
+            var targetChunk = _chunks
+                .Where(c => !c.IsCompleted && c.RemainingBytes >= minSplitThreshold)
+                .OrderByDescending(c => c.RemainingBytes)
+                .FirstOrDefault();
+
+            if (targetChunk == null)
+            {
+                return null;
+            }
+
+            long currentOffset = targetChunk.CurrentOffset;
+            long endOffset = targetChunk.Range.End;
+            long remaining = endOffset - currentOffset + 1;
+
+            if (remaining < minSplitThreshold)
+            {
+                return null;
+            }
+
+            // Kalan aralığın tam ortasını bul
+            long mid = currentOffset + (remaining / 2);
+            if (mid <= currentOffset || mid >= endOffset)
+            {
+                return null;
+            }
+
+            // Mevcut parçanın bitişini orta noktaya daralt
+            targetChunk.UpdateEndOffset(mid);
+
+            // Yeni parçayı orta noktanın bir fazlasından orijinal bitişe kadar oluştur
+            int newIndex = _chunks.Count;
+            var newChunk = new Chunk(Id, newIndex, new ByteRange(mid + 1, endOffset));
+            _chunks.Add(newChunk);
+
+            return newChunk;
+        }
+    }
+
     /// <summary>
     /// İndirmeyi başlatır veya duraklatılmışsa devam ettirir.
     /// </summary>

@@ -11,7 +11,7 @@ public sealed class Chunk
     public Guid Id { get; }
     public Guid DownloadTaskId { get; }
     public int Index { get; }
-    public ByteRange Range { get; }
+    public ByteRange Range { get; private set; }
     public long CurrentOffset { get; private set; }
     private bool _isStreamCompleted;
 
@@ -120,5 +120,18 @@ public sealed class Chunk
     public void Reset()
     {
         CurrentOffset = Range.Start;
+    }
+
+    /// <summary>
+    /// Dinamik parça bölme (Work Stealing) sırasında bu parçanın bitiş ofsetini orta noktaya daraltır.
+    /// </summary>
+    public void UpdateEndOffset(long newEnd)
+    {
+        if (newEnd < CurrentOffset || newEnd >= Range.End)
+        {
+            throw new DomainException($"Geçersiz yeni bitiş ofseti: {newEnd}. Mevcut ofset: {CurrentOffset}, Mevcut bitiş: {Range.End}");
+        }
+
+        Range = new ByteRange(Range.Start, newEnd);
     }
 }

@@ -118,14 +118,17 @@ public sealed class HttpChunkDownloader : IChunkDownloader
                     }
                     else
                     {
-                        long totalBytesToRead = endOffset - startOffset + 1;
-                        long totalBytesReadSoFar = 0;
-
-                        while (totalBytesReadSoFar < totalBytesToRead)
+                        while (chunk.CurrentOffset <= chunk.Range.End)
                         {
                             cancellationToken.ThrowIfCancellationRequested();
 
-                            int maxRead = (int)Math.Min(BufferSize, totalBytesToRead - totalBytesReadSoFar);
+                            long remainingInChunk = chunk.Range.End - chunk.CurrentOffset + 1;
+                            if (remainingInChunk <= 0)
+                            {
+                                break;
+                            }
+
+                            int maxRead = (int)Math.Min(BufferSize, remainingInChunk);
                             int bytesRead = await stream.ReadAsync(rentedBuffer.AsMemory(0, maxRead), cancellationToken).ConfigureAwait(false);
 
                             if (bytesRead == 0)
@@ -136,13 +139,12 @@ public sealed class HttpChunkDownloader : IChunkDownloader
                             await onDataReceived(currentOffset, rentedBuffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
 
                             currentOffset += bytesRead;
-                            totalBytesReadSoFar += bytesRead;
                         }
 
-                        if (totalBytesReadSoFar < totalBytesToRead && response.StatusCode == HttpStatusCode.PartialContent)
+                        if (chunk.CurrentOffset <= chunk.Range.End && response.StatusCode == HttpStatusCode.PartialContent)
                         {
                             throw new IOException(
-                                $"Chunk #{chunk.Index} bağlantısı erken kesildi. İndirilen: {totalBytesReadSoFar}/{totalBytesToRead}. Yeniden bağlanılıyor...");
+                                $"Chunk #{chunk.Index} bağlantısı erken kesildi. İndirilen: {chunk.DownloadedBytes}/{chunk.Range.TotalBytes}. Yeniden bağlanılıyor...");
                         }
                     }
                 }
