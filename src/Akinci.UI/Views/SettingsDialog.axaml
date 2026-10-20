@@ -146,7 +146,7 @@
 
                         <StackPanel Grid.Row="1" Spacing="2">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="AKINCI İndirme Motoru v1.0.0" FontWeight="SemiBold" FontSize="12" Foreground="#F8FAFC" />
+                                <TextBlock Grid.Column="0" Text="AKINCI İndirme Motoru v1.0.1" FontWeight="SemiBold" FontSize="12" Foreground="#F8FAFC" />
                                 <TextBlock Grid.Column="1" Text=".NET 10 • Clean Core" FontSize="10" FontWeight="SemiBold" Foreground="#38BDF8" />
                             </Grid>
                             <TextBlock Text="Katı Clean Core mimarisi, SocketsHttpHandler, FluentFTP, SQLite WAL persistence ve VirusTotal v3 analizi."

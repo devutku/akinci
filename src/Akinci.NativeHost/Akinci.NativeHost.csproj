@@ -10,6 +10,7 @@
     <AssemblyName>Akinci-BrowserBridge</AssemblyName>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
 </Project>
