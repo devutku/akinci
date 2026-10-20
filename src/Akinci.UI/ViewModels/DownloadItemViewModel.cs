@@ -8,6 +8,8 @@ using Akinci.Application.UseCases.StartDownload;
 using Akinci.Domain.Entities;
 using Akinci.Domain.Enums;
 using Akinci.Domain.ValueObjects;
+using Avalonia.Input;
+using Avalonia.Input.Platform;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -21,6 +23,7 @@ public partial class DownloadItemViewModel : ObservableObject
     private readonly ResumeDownloadCommandHandler _resumeHandler;
     private readonly IDownloadRepository _repository;
     private readonly INotificationService? _notificationService;
+    private readonly IFileStorageService? _fileStorage;
     private CancellationTokenSource? _downloadCts;
 
     public DownloadTask Task { get; }
@@ -28,6 +31,7 @@ public partial class DownloadItemViewModel : ObservableObject
     public string Url => Task.Url.Value;
     public string DestinationFilePath => Task.DestinationFilePath;
     public string FileName => Path.GetFileName(Task.DestinationFilePath);
+    public bool HasSha256 => !string.IsNullOrEmpty(Task.Sha256Hash);
 
     [ObservableProperty]
     private DownloadStatus _status;
@@ -110,6 +114,7 @@ public partial class DownloadItemViewModel : ObservableObject
     public ObservableCollection<ChunkViewModel> Chunks { get; } = new();
 
     public event Action<DownloadItemViewModel>? Deleted;
+    public event Action<DownloadItemViewModel>? StateChanged;
 
     public DownloadItemViewModel(
         DownloadTask task,
@@ -117,7 +122,8 @@ public partial class DownloadItemViewModel : ObservableObject
         PauseDownloadCommandHandler pauseHandler,
         ResumeDownloadCommandHandler resumeHandler,
         IDownloadRepository repository,
-        INotificationService? notificationService = null)
+        INotificationService? notificationService = null,
+        IFileStorageService? fileStorage = null)
     {
         Task = task;
         _startHandler = startHandler;
@@ -125,6 +131,7 @@ public partial class DownloadItemViewModel : ObservableObject
         _resumeHandler = resumeHandler;
         _repository = repository;
         _notificationService = notificationService;
+        _fileStorage = fileStorage;
 
         _status = task.Status;
         _progressPercentage = task.ProgressPercentage;
@@ -306,6 +313,7 @@ public partial class DownloadItemViewModel : ObservableObject
     {
         _downloadCts = new CancellationTokenSource();
         UpdateStatusState(DownloadStatus.Downloading);
+        StateChanged?.Invoke(this);
 
         var progress = new Progress<DownloadProgressDto>(UpdateFromProgress);
         try
@@ -318,6 +326,7 @@ public partial class DownloadItemViewModel : ObservableObject
         catch (OperationCanceledException)
         {
             UpdateStatusState(DownloadStatus.Paused);
+            StateChanged?.Invoke(this);
         }
         catch (Exception ex)
         {
@@ -336,6 +345,7 @@ public partial class DownloadItemViewModel : ObservableObject
         }
         await _pauseHandler.HandleAsync(new PauseDownloadCommand(Task.Id));
         UpdateStatusState(DownloadStatus.Paused);
+        StateChanged?.Invoke(this);
     }
 
     [RelayCommand]
@@ -343,6 +353,7 @@ public partial class DownloadItemViewModel : ObservableObject
     {
         _downloadCts = new CancellationTokenSource();
         UpdateStatusState(DownloadStatus.Downloading);
+        StateChanged?.Invoke(this);
 
         var progress = new Progress<DownloadProgressDto>(UpdateFromProgress);
         try
@@ -355,6 +366,7 @@ public partial class DownloadItemViewModel : ObservableObject
         catch (OperationCanceledException)
         {
             UpdateStatusState(DownloadStatus.Paused);
+            StateChanged?.Invoke(this);
         }
         catch (Exception ex)
         {
@@ -364,8 +376,78 @@ public partial class DownloadItemViewModel : ObservableObject
         }
     }
 
+    public void MarkAsPending()
+    {
+        if (Status is DownloadStatus.Paused or DownloadStatus.Failed)
+        {
+            UpdateStatusState(DownloadStatus.Pending);
+            StateChanged?.Invoke(this);
+        }
+    }
+
+    [RelayCommand]
+    public async Task RestartAsync()
+    {
+        if (CanPause)
+        {
+            await PauseAsync();
+        }
+
+        try
+        {
+            _fileStorage?.DeleteFile(DestinationFilePath);
+            if (File.Exists(DestinationFilePath))
+            {
+                File.Delete(DestinationFilePath);
+            }
+        }
+        catch { }
+
+        Task.InitializeChunks(Math.Max(1, Task.Chunks.Count));
+        Chunks.Clear();
+        foreach (var chunk in Task.Chunks)
+        {
+            Chunks.Add(new ChunkViewModel(chunk.Index, chunk.Range.Start, chunk.Range.End, chunk.CurrentOffset));
+        }
+
+        await _repository.UpdateAsync(Task);
+        UpdateStatusState(DownloadStatus.Downloading);
+        _ = StartDownloadAsync();
+    }
+
+    [RelayCommand]
+    public async Task CopyUrlAsync()
+    {
+        if (Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop &&
+            desktop.MainWindow?.Clipboard != null)
+        {
+            await desktop.MainWindow.Clipboard.SetTextAsync(Url);
+            _notificationService?.ShowNotification(
+                "Bağlantı Kopyalandı",
+                "İndirme bağlantısı panoya kopyalandı.",
+                NotificationType.Information);
+        }
+    }
+
+    [RelayCommand]
+    public async Task CopySha256Async()
+    {
+        if (!string.IsNullOrEmpty(Task.Sha256Hash) &&
+            Avalonia.Application.Current?.ApplicationLifetime is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop &&
+            desktop.MainWindow?.Clipboard != null)
+        {
+            await desktop.MainWindow.Clipboard.SetTextAsync(Task.Sha256Hash);
+            _notificationService?.ShowNotification(
+                "SHA-256 Kopyalandı",
+                "Dosya hash değeri panoya kopyalandı.",
+                NotificationType.Information);
+        }
+    }
+
     private void OnDownloadFinished(bool isSuccess, Exception? ex = null)
     {
+        StateChanged?.Invoke(this);
+
         if (isSuccess && Task.Status == DownloadStatus.Completed)
         {
             _notificationService?.ShowNotification(

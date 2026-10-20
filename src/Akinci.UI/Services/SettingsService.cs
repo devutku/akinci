@@ -12,6 +12,10 @@ public sealed class AppSettings
     public string? VirusTotalApiKey { get; set; } = Environment.GetEnvironmentVariable("VIRUSTOTAL_API_KEY");
 
     public bool ExtensionPromptDismissed { get; set; } = false;
+
+    public int MaxConcurrentDownloads { get; set; } = 3;
+
+    public long SpeedLimitBytesPerSecond { get; set; } = 0;
 }
 
 public sealed class SettingsService

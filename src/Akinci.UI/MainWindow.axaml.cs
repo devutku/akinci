@@ -11,6 +11,7 @@ public partial class MainWindow : Window
 {
     private readonly SettingsService? _settingsService;
     private readonly DesktopNotificationService? _notificationService;
+    private readonly Akinci.Application.Ports.IBandwidthThrottler? _throttler;
 
     public bool AllowClose { get; set; } = false;
 
@@ -22,11 +23,13 @@ public partial class MainWindow : Window
     public MainWindow(
         MainWindowViewModel viewModel,
         SettingsService settingsService,
-        DesktopNotificationService notificationService) : this()
+        DesktopNotificationService notificationService,
+        Akinci.Application.Ports.IBandwidthThrottler? throttler = null) : this()
     {
         DataContext = viewModel;
         _settingsService = settingsService;
         _notificationService = notificationService;
+        _throttler = throttler;
 
         viewModel.ConfirmDeleteHandler = async (item) =>
         {
@@ -112,7 +115,7 @@ public partial class MainWindow : Window
         {
             try
             {
-                var dialogVm = new SettingsDialogViewModel(_settingsService);
+                var dialogVm = new SettingsDialogViewModel(_settingsService, _throttler);
                 var dialog = new SettingsDialog
                 {
                     DataContext = dialogVm

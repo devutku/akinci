@@ -92,6 +92,17 @@
                 </Grid>
                 <Slider Minimum="1" Maximum="32" Value="{Binding DefaultConnections}" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,2,0,4" />
 
+                <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
+                    <TextBlock Grid.Column="0" Text="Kuyruk: Eşzamanlı Maksimum Aktif İndirme" Classes="label" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="1" Text="{Binding MaxConcurrentDownloads}" FontWeight="Bold" Foreground="#38BDF8" FontSize="13" VerticalAlignment="Center" />
+                </Grid>
+                <Slider Minimum="1" Maximum="10" Value="{Binding MaxConcurrentDownloads}" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,2,0,4" />
+
+                <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
+                    <TextBlock Grid.Column="0" Text="Küresel Hız Sınırı (KB/s - 0 = Sınırsız)" Classes="label" VerticalAlignment="Center" />
+                </Grid>
+                <TextBox Text="{Binding SpeedLimitKbps}" Watermark="Örn: 2048 (2 MB/s) veya 0 (Sınırsız)" />
+
                 <!-- VirusTotal Kartı (Strict Monochrome) -->
                 <Border Background="#18181C" BorderBrush="#22222A" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,6,0,0">
                     <StackPanel Spacing="6">

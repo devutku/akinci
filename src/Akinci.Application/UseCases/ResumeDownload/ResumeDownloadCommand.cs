@@ -21,7 +21,8 @@ public sealed class ResumeDownloadCommandHandler
         IChunkDownloader chunkDownloader,
         IFileStorageService fileStorage,
         IFileHashCalculator? hashCalculator = null,
-        IFileSecurityScanner? securityScanner = null)
+        IFileSecurityScanner? securityScanner = null,
+        IBandwidthThrottler? throttler = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _startDownloadHandler = new StartDownloadCommandHandler(
@@ -29,7 +30,8 @@ public sealed class ResumeDownloadCommandHandler
             chunkDownloader,
             fileStorage,
             hashCalculator,
-            securityScanner);
+            securityScanner,
+            throttler);
     }
 
     public async Task HandleAsync(ResumeDownloadCommand command, CancellationToken cancellationToken = default)
@@ -42,7 +44,7 @@ public sealed class ResumeDownloadCommandHandler
             return;
         }
 
-        if (task.Status is not (DownloadStatus.Paused or DownloadStatus.Failed))
+        if (task.Status is not (DownloadStatus.Paused or DownloadStatus.Failed or DownloadStatus.Pending))
         {
             throw new InvalidStateTransitionException(task.Status, DownloadStatus.Downloading);
         }

@@ -28,6 +28,9 @@
         <StreamGeometry x:Key="IconMinimize">M4 11h16v2H4z</StreamGeometry>
         <StreamGeometry x:Key="IconMaximize">M4 4h16v16H4V4zm2 2v12h12V6H6z</StreamGeometry>
         <StreamGeometry x:Key="IconClose">M18.3 5.71a1 1 0 0 0-1.42 0L12 10.59 7.12 5.7a1 1 0 0 0-1.41 1.42L10.59 12l-4.88 4.88a1 1 0 1 0 1.41 1.42L12 13.41l4.88 4.89a1 1 0 0 0 1.42-1.42L13.41 12l4.89-4.88a1 1 0 0 0 0-1.41z</StreamGeometry>
+        <StreamGeometry x:Key="IconRestart">M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67</StreamGeometry>
+        <StreamGeometry x:Key="IconCopy">M9 9h13v13H9z M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1</StreamGeometry>
+        <StreamGeometry x:Key="IconHash">M4 9h16M4 15h16M10 3L8 21M16 3l-2 18</StreamGeometry>
     </Window.Resources>
 
     <Window.Styles>
@@ -338,7 +341,12 @@
                                                     <PathIcon Data="{StaticResource IconFile}" Width="12" Height="12" Foreground="#38BDF8" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
-                                            <Separator IsVisible="{Binding IsCompleted}" />
+                                            <MenuItem Header="Klasörde Göster" Command="{Binding OpenFolderCommand}">
+                                                <MenuItem.Icon>
+                                                    <PathIcon Data="{StaticResource IconFolder}" Width="12" Height="12" Foreground="#94A3B8" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator />
                                             <MenuItem Header="İndirmeyi Duraklat" Command="{Binding PauseCommand}" IsVisible="{Binding CanPause}">
                                                 <MenuItem.Icon>
                                                     <PathIcon Data="{StaticResource IconPause}" Width="12" Height="12" Foreground="#38BDF8" />
@@ -349,10 +357,25 @@
                                                     <PathIcon Data="{StaticResource IconResumeAll}" Width="12" Height="12" Foreground="#38BDF8" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
-                                            <Separator IsVisible="{Binding CanPause}" />
-                                            <MenuItem Header="Klasörde Göster" Command="{Binding OpenFolderCommand}">
+                                            <MenuItem Header="Yeniden Başlat" Command="{Binding RestartCommand}">
                                                 <MenuItem.Icon>
-                                                    <PathIcon Data="{StaticResource IconFolder}" Width="12" Height="12" Foreground="#94A3B8" />
+                                                    <PathIcon Data="{StaticResource IconRestart}" Width="12" Height="12" Foreground="#F59E0B" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <Separator />
+                                            <MenuItem Header="İndirme Adresini Kopyala" Command="{Binding CopyUrlCommand}">
+                                                <MenuItem.Icon>
+                                                    <PathIcon Data="{StaticResource IconCopy}" Width="12" Height="12" Foreground="#94A3B8" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="SHA-256 Değerini Kopyala" Command="{Binding CopySha256Command}" IsVisible="{Binding HasSha256}">
+                                                <MenuItem.Icon>
+                                                    <PathIcon Data="{StaticResource IconHash}" Width="12" Height="12" Foreground="#34D399" />
+                                                </MenuItem.Icon>
+                                            </MenuItem>
+                                            <MenuItem Header="Güvenlik Raporunu Aç" Command="{Binding OpenSecurityReportCommand}" IsVisible="{Binding SecurityVerdict, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                                <MenuItem.Icon>
+                                                    <PathIcon Data="{StaticResource IconShield}" Width="12" Height="12" Foreground="{Binding SecurityTextColor}" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
                                             <Separator />

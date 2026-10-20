@@ -6,6 +6,7 @@ using Akinci.Application.UseCases.ScanSecurity;
 using Akinci.Application.UseCases.StartDownload;
 using Akinci.Infrastructure.Adapters;
 using Akinci.Infrastructure.Persistence;
+using Akinci.Infrastructure.Resilience;
 using Akinci.Infrastructure.Security;
 using Akinci.Infrastructure.Storage;
 using Akinci.UI.Services;
@@ -41,7 +42,8 @@ public partial class App : Avalonia.Application
             var notificationService = Services.GetRequiredService<DesktopNotificationService>();
             var ipcServer = Services.GetRequiredService<IpcServerService>();
 
-            var mainWindow = new MainWindow(mainWindowVm, settingsService, notificationService);
+            var throttler = Services.GetRequiredService<IBandwidthThrottler>();
+            var mainWindow = new MainWindow(mainWindowVm, settingsService, notificationService, throttler);
             desktop.MainWindow = mainWindow;
 
             // Arka plan IPC HTTP sunucusunu başlat (Tarayıcı eklentisi ve NativeHost dinleyici)
@@ -135,11 +137,29 @@ public partial class App : Avalonia.Application
             return new VirusTotalSecurityScanner(apiKey: settings.Current.VirusTotalApiKey);
         });
 
+        services.AddSingleton<IBandwidthThrottler>(sp =>
+        {
+            var settings = sp.GetRequiredService<SettingsService>();
+            return new TokenBucketThrottler(settings.Current.SpeedLimitBytesPerSecond);
+        });
+
         // 3. Kullanım Senaryoları (Application Use Cases)
         services.AddTransient<CreateDownloadCommandHandler>();
-        services.AddTransient<StartDownloadCommandHandler>();
+        services.AddTransient<StartDownloadCommandHandler>(sp => new StartDownloadCommandHandler(
+            sp.GetRequiredService<IDownloadRepository>(),
+            sp.GetRequiredService<IChunkDownloader>(),
+            sp.GetRequiredService<IFileStorageService>(),
+            sp.GetRequiredService<IFileHashCalculator>(),
+            sp.GetRequiredService<IFileSecurityScanner>(),
+            sp.GetRequiredService<IBandwidthThrottler>()));
         services.AddTransient<PauseDownloadCommandHandler>();
-        services.AddTransient<ResumeDownloadCommandHandler>();
+        services.AddTransient<ResumeDownloadCommandHandler>(sp => new ResumeDownloadCommandHandler(
+            sp.GetRequiredService<IDownloadRepository>(),
+            sp.GetRequiredService<IChunkDownloader>(),
+            sp.GetRequiredService<IFileStorageService>(),
+            sp.GetRequiredService<IFileHashCalculator>(),
+            sp.GetRequiredService<IFileSecurityScanner>(),
+            sp.GetRequiredService<IBandwidthThrottler>()));
         services.AddTransient<ScanFileSecurityCommandHandler>();
 
         // 4. UI ve Bildirim Servisleri & ViewModels

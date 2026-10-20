@@ -4,6 +4,7 @@ using Akinci.Application.UseCases.CreateDownload;
 using Akinci.Application.UseCases.PauseDownload;
 using Akinci.Application.UseCases.ResumeDownload;
 using Akinci.Application.UseCases.StartDownload;
+using Akinci.Domain.Entities;
 using Akinci.Domain.Enums;
 using Akinci.Domain.ValueObjects;
 using Akinci.UI.Services;
@@ -22,6 +23,7 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly IDownloadRepository _repository;
     private readonly SettingsService _settingsService;
     private readonly INotificationService? _notificationService;
+    private readonly IFileStorageService? _fileStorage;
 
     public ObservableCollection<DownloadItemViewModel> AllDownloads { get; } = new();
     public ObservableCollection<DownloadItemViewModel> FilteredDownloads { get; } = new();
@@ -58,7 +60,8 @@ public partial class MainWindowViewModel : ObservableObject
         ResumeDownloadCommandHandler resumeHandler,
         IDownloadRepository repository,
         SettingsService settingsService,
-        INotificationService? notificationService = null)
+        INotificationService? notificationService = null,
+        IFileStorageService? fileStorage = null)
     {
         _createHandler = createHandler;
         _startHandler = startHandler;
@@ -67,6 +70,7 @@ public partial class MainWindowViewModel : ObservableObject
         _repository = repository;
         _settingsService = settingsService;
         _notificationService = notificationService;
+        _fileStorage = fileStorage;
 
         // Periyodik global hız ve sayaç güncelleme zamanlayıcısı (1 sn)
         var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
@@ -82,22 +86,41 @@ public partial class MainWindowViewModel : ObservableObject
             AllDownloads.Clear();
             foreach (var task in tasks)
             {
-                var itemVm = new DownloadItemViewModel(task, _startHandler, _pauseHandler, _resumeHandler, _repository, _notificationService);
-                itemVm.Deleted += OnItemDeleted;
-                itemVm.ConfirmDeleteHandler = ConfirmDeleteHandler;
+                var itemVm = CreateItemViewModel(task);
                 AllDownloads.Add(itemVm);
             }
             ApplyFilter();
             UpdateAggregateStatistics();
+            ProcessQueue();
+        });
+    }
+
+    private DownloadItemViewModel CreateItemViewModel(DownloadTask task)
+    {
+        var itemVm = new DownloadItemViewModel(task, _startHandler, _pauseHandler, _resumeHandler, _repository, _notificationService, _fileStorage);
+        itemVm.Deleted += OnItemDeleted;
+        itemVm.StateChanged += OnItemStateChanged;
+        itemVm.ConfirmDeleteHandler = ConfirmDeleteHandler;
+        return itemVm;
+    }
+
+    private void OnItemStateChanged(DownloadItemViewModel item)
+    {
+        Dispatcher.UIThread.Post(() =>
+        {
+            UpdateAggregateStatistics();
+            ProcessQueue();
         });
     }
 
     private void OnItemDeleted(DownloadItemViewModel item)
     {
         item.Deleted -= OnItemDeleted;
+        item.StateChanged -= OnItemStateChanged;
         AllDownloads.Remove(item);
         FilteredDownloads.Remove(item);
         UpdateAggregateStatistics();
+        ProcessQueue();
     }
 
     public async Task AddDownloadAsync(
@@ -110,19 +133,45 @@ public partial class MainWindowViewModel : ObservableObject
         var command = new CreateDownloadCommand(url, destinationDir, connections, customName, credentials);
         var task = await _createHandler.HandleAsync(command);
 
-        var itemVm = new DownloadItemViewModel(task, _startHandler, _pauseHandler, _resumeHandler, _repository, _notificationService);
-        itemVm.Deleted += OnItemDeleted;
-        itemVm.ConfirmDeleteHandler = ConfirmDeleteHandler;
+        var itemVm = CreateItemViewModel(task);
 
         Dispatcher.UIThread.Post(() =>
         {
             AllDownloads.Insert(0, itemVm);
             ApplyFilter();
             UpdateAggregateStatistics();
+            ProcessQueue();
         });
+    }
 
-        // Arka planda indirmeyi otomatik başlat
-        _ = itemVm.StartDownloadAsync();
+    public void ProcessQueue()
+    {
+        int maxConcurrent = _settingsService.Current.MaxConcurrentDownloads;
+        if (maxConcurrent <= 0)
+        {
+            var pending = AllDownloads.Where(d => d.Status == DownloadStatus.Pending).ToList();
+            foreach (var item in pending)
+            {
+                _ = item.StartDownloadAsync();
+            }
+            return;
+        }
+
+        int activeCount = AllDownloads.Count(d => d.Status == DownloadStatus.Downloading);
+        int availableSlots = maxConcurrent - activeCount;
+
+        if (availableSlots > 0)
+        {
+            var nextToRun = AllDownloads
+                .Where(d => d.Status == DownloadStatus.Pending)
+                .Take(availableSlots)
+                .ToList();
+
+            foreach (var item in nextToRun)
+            {
+                _ = item.StartDownloadAsync();
+            }
+        }
     }
 
     partial void OnSelectedFilterChanged(string value)
@@ -193,7 +242,9 @@ public partial class MainWindowViewModel : ObservableObject
         var pausedItems = AllDownloads.Where(d => d.CanResume).ToList();
         foreach (var item in pausedItems)
         {
-            _ = item.ResumeAsync();
+            item.MarkAsPending();
         }
+        ProcessQueue();
+        await Task.CompletedTask;
     }
 }

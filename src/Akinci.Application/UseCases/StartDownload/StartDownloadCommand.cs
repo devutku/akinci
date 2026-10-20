@@ -19,19 +19,22 @@ public sealed class StartDownloadCommandHandler
     private readonly IFileStorageService _fileStorage;
     private readonly IFileHashCalculator? _hashCalculator;
     private readonly IFileSecurityScanner? _securityScanner;
+    private readonly IBandwidthThrottler? _throttler;
 
     public StartDownloadCommandHandler(
         IDownloadRepository repository,
         IChunkDownloader chunkDownloader,
         IFileStorageService fileStorage,
         IFileHashCalculator? hashCalculator = null,
-        IFileSecurityScanner? securityScanner = null)
+        IFileSecurityScanner? securityScanner = null,
+        IBandwidthThrottler? throttler = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _chunkDownloader = chunkDownloader ?? throw new ArgumentNullException(nameof(chunkDownloader));
         _fileStorage = fileStorage ?? throw new ArgumentNullException(nameof(fileStorage));
         _hashCalculator = hashCalculator;
         _securityScanner = securityScanner;
+        _throttler = throttler;
     }
 
     public async Task HandleAsync(StartDownloadCommand command, CancellationToken cancellationToken = default)
@@ -96,6 +99,12 @@ public sealed class StartDownloadCommandHandler
                     chunk,
                     async (fileOffset, data, ct) =>
                     {
+                        // 0. Bant Genişliği / Hız Sınırlayıcı
+                        if (_throttler != null && _throttler.LimitBytesPerSecond > 0)
+                        {
+                            await _throttler.ThrottleAsync(data.Length, ct).ConfigureAwait(false);
+                        }
+
                         // 1. Veriyi sparse/in-place olarak diske yaz
                         await _fileStorage.WriteAtAsync(task.DestinationFilePath, fileOffset, data, ct);
 
