@@ -42,6 +42,9 @@ public partial class DownloadItemViewModel : ObservableObject
     private string _speedText = "0 B/s";
 
     [ObservableProperty]
+    private double _currentSpeedBytesPerSecond;
+
+    [ObservableProperty]
     private string _progressText = "";
 
     [ObservableProperty]
@@ -142,6 +145,7 @@ public partial class DownloadItemViewModel : ObservableObject
     {
         Dispatcher.UIThread.Post(() =>
         {
+            CurrentSpeedBytesPerSecond = dto.Speed.BytesPerSecond;
             ProgressPercentage = dto.ProgressPercentage;
             SpeedText = dto.Speed.FormatHumanReadable();
             UpdateProgressMetrics(dto.DownloadedBytes, dto.TotalBytes, dto.Speed.BytesPerSecond);
@@ -241,6 +245,12 @@ public partial class DownloadItemViewModel : ObservableObject
         CanResume = status is DownloadStatus.Paused or DownloadStatus.Failed or DownloadStatus.Pending;
         IsCompleted = status == DownloadStatus.Completed;
         IsIndeterminate = (!Task.TotalBytes.HasValue || Task.TotalBytes.Value <= 0) && status == DownloadStatus.Downloading;
+
+        if (status != DownloadStatus.Downloading)
+        {
+            CurrentSpeedBytesPerSecond = 0;
+            SpeedText = "0 B/s";
+        }
 
         (StatusText, StatusTextColor, StatusBgColor, StatusBorderColor, ProgressBarColor) = status switch
         {

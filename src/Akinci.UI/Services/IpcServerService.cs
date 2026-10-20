@@ -25,6 +25,7 @@ public sealed class IpcServerService : IAsyncDisposable
     private readonly MainWindowViewModel _mainViewModel;
     private readonly SettingsService _settingsService;
     private readonly DesktopNotificationService _notificationService;
+    private readonly string _ipcToken;
 
     public IpcServerService(
         MainWindowViewModel mainViewModel,
@@ -35,8 +36,40 @@ public sealed class IpcServerService : IAsyncDisposable
         _settingsService = settingsService;
         _notificationService = notificationService;
 
+        _ipcToken = EnsureIpcToken();
+
         _listener = new HttpListener();
         _listener.Prefixes.Add($"http://127.0.0.1:{IpcPort}/add-download/");
+    }
+
+    private static string EnsureIpcToken()
+    {
+        try
+        {
+            var appDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".akinci");
+            if (!Directory.Exists(appDir))
+            {
+                Directory.CreateDirectory(appDir);
+            }
+
+            var tokenPath = Path.Combine(appDir, "ipc.token");
+            if (File.Exists(tokenPath))
+            {
+                var existing = File.ReadAllText(tokenPath).Trim();
+                if (!string.IsNullOrEmpty(existing))
+                {
+                    return existing;
+                }
+            }
+
+            var newToken = Guid.NewGuid().ToString("N");
+            File.WriteAllText(tokenPath, newToken);
+            return newToken;
+        }
+        catch
+        {
+            return Guid.NewGuid().ToString("N");
+        }
     }
 
     public void Start()
@@ -72,20 +105,50 @@ public sealed class IpcServerService : IAsyncDisposable
         var request = context.Request;
         var response = context.Response;
 
-        // CORS başlıkları (tarayıcı eklentisinden doğrudan fetch yapılabilmesi için)
-        response.Headers.Add("Access-Control-Allow-Origin", "*");
-        response.Headers.Add("Access-Control-Allow-Methods", "POST, OPTIONS");
-        response.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
+        // 1. Origin Güvenlik Doğrulaması (CSRF & Drive-by Download Koruması)
+        var origin = request.Headers["Origin"];
+        bool hasOrigin = !string.IsNullOrEmpty(origin);
+        bool isExtensionOrigin = hasOrigin &&
+            (origin!.StartsWith("chrome-extension://", StringComparison.OrdinalIgnoreCase) ||
+             origin.StartsWith("moz-extension://", StringComparison.OrdinalIgnoreCase));
+
+        // Eğer bir web sayfası (http://, https://) yerel porta istek atıyorsa doğrudan reddet
+        if (hasOrigin && !isExtensionOrigin)
+        {
+            response.StatusCode = (int)HttpStatusCode.Forbidden;
+            response.Close();
+            return;
+        }
+
+        if (isExtensionOrigin)
+        {
+            response.Headers.Add("Access-Control-Allow-Origin", origin);
+            response.Headers.Add("Access-Control-Allow-Methods", "POST, OPTIONS");
+            response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, X-Akinci-Token");
+        }
 
         if (request.HttpMethod == "OPTIONS")
         {
-            response.StatusCode = (int)HttpStatusCode.NoContent;
+            response.StatusCode = isExtensionOrigin ? (int)HttpStatusCode.NoContent : (int)HttpStatusCode.Forbidden;
             response.Close();
             return;
         }
 
         if (request.HttpMethod == "POST")
         {
+            // 2. Token veya Extension Origin Doğrulaması
+            var providedToken = request.Headers["X-Akinci-Token"];
+            bool isTokenValid = !string.IsNullOrEmpty(_ipcToken) && string.Equals(providedToken, _ipcToken, StringComparison.Ordinal);
+
+            if (!isExtensionOrigin && !isTokenValid)
+            {
+                response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                await using var errWriter = new StreamWriter(response.OutputStream);
+                await errWriter.WriteAsync("{\"status\":\"error\",\"message\":\"Yetkisiz istek. Güvenlik doğrulaması başarısız.\"}");
+                response.Close();
+                return;
+            }
+
             try
             {
                 using var reader = new StreamReader(request.InputStream, request.ContentEncoding);

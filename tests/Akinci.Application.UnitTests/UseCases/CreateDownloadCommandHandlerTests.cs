@@ -88,4 +88,49 @@ public class CreateDownloadCommandHandlerTests
         Assert.Equal(0, task.Chunks[0].Range.Start);
         Assert.Equal(2047, task.Chunks[0].Range.End);
     }
+
+    [Fact]
+    public async Task HandleAsync_WhenFileAlreadyExists_GeneratesUniqueNumberedFileName()
+    {
+        _fileStorage.Files[@"C:\Downloads\document.pdf"] = new byte[100];
+
+        _metadataService.MetadataToReturn = new FileMetadataDto(
+            ContentLength: 500,
+            SupportsRangeRequests: true,
+            SuggestedFileName: "document.pdf",
+            ETag: null,
+            ContentType: "application/pdf");
+
+        var handler = new CreateDownloadCommandHandler(_metadataService, _repository, _fileStorage);
+        var command = new CreateDownloadCommand(
+            Url: "https://example.com/document.pdf",
+            DestinationDirectory: @"C:\Downloads",
+            RequestedConnections: 2);
+
+        var task = await handler.HandleAsync(command);
+
+        Assert.Equal(@"C:\Downloads\document (1).pdf", task.DestinationFilePath);
+    }
+
+    [Fact]
+    public async Task HandleAsync_WhenDiskSpaceInsufficient_ThrowsDomainException()
+    {
+        _fileStorage.AvailableFreeSpace = 500; // Sadece 500 bayt boş alan var
+
+        _metadataService.MetadataToReturn = new FileMetadataDto(
+            ContentLength: 2000, // 2000 bayt gerekli
+            SupportsRangeRequests: true,
+            SuggestedFileName: "large-file.bin",
+            ETag: null,
+            ContentType: "application/octet-stream");
+
+        var handler = new CreateDownloadCommandHandler(_metadataService, _repository, _fileStorage);
+        var command = new CreateDownloadCommand(
+            Url: "https://example.com/large-file.bin",
+            DestinationDirectory: @"C:\Downloads",
+            RequestedConnections: 2);
+
+        var ex = await Assert.ThrowsAsync<Akinci.Domain.Exceptions.DomainException>(() => handler.HandleAsync(command));
+        Assert.Contains("yetersiz disk alanı", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
 }

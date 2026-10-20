@@ -169,19 +169,10 @@ public partial class MainWindowViewModel : ObservableObject
         ActiveCount = AllDownloads.Count(d => d.Status == DownloadStatus.Downloading);
         CompletedCount = AllDownloads.Count(d => d.Status == DownloadStatus.Completed);
 
-        // Hızları topla
-        double totalBps = 0;
-        foreach (var item in AllDownloads.Where(d => d.Status == DownloadStatus.Downloading))
-        {
-            var speedStr = item.SpeedText.Trim();
-            // Basit B/s tahmini veya gösterimi
-            if (speedStr.EndsWith("MB/s", StringComparison.OrdinalIgnoreCase) && double.TryParse(speedStr[..^4].Trim(), out var mb))
-                totalBps += mb * 1024 * 1024;
-            else if (speedStr.EndsWith("KB/s", StringComparison.OrdinalIgnoreCase) && double.TryParse(speedStr[..^4].Trim(), out var kb))
-                totalBps += kb * 1024;
-            else if (speedStr.EndsWith("B/s", StringComparison.OrdinalIgnoreCase) && double.TryParse(speedStr[..^3].Trim(), out var b))
-                totalBps += b;
-        }
+        // Hızları doğrudan sayısal değerlerden topla (Kültür bağımsız ve hatasız)
+        double totalBps = AllDownloads
+            .Where(d => d.Status == DownloadStatus.Downloading)
+            .Sum(d => d.CurrentSpeedBytesPerSecond);
 
         TotalSpeedText = new DownloadSpeed(totalBps).FormatHumanReadable();
     }

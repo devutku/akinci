@@ -70,6 +70,14 @@ public sealed class HttpChunkDownloader : IChunkDownloader
                         response.StatusCode);
                 }
 
+                // Range Güvenlik Kontrolü: Ofset > 0 iken sunucu 200 OK (tüm dosya) dönerse veri bozulmasını engelle
+                if (startOffset > 0 && response.StatusCode == HttpStatusCode.OK)
+                {
+                    throw new InvalidOperationException(
+                        $"Sunucu kısmi içerik (HTTP 206 Partial Content) yerine dosyanın tamamını (HTTP 200 OK) döndürdü. " +
+                        $"Chunk #{chunk.Index} (Ofset: {startOffset}) için dosya bozulmasını önlemek amacıyla indirme durduruldu.");
+                }
+
                 // Web sayfası (HTML) koruması: Arşiv/Binary dosyası beklenirken HTML gelmesi durumu
                 var mediaType = response.Content.Headers.ContentType?.MediaType;
                 if (mediaType != null && mediaType.StartsWith("text/html", StringComparison.OrdinalIgnoreCase))

@@ -34,4 +34,9 @@ public interface IFileStorageService
     /// Dosya üzerinde açık tutulan dosya tanıtıcısını (handle) derhal kapatır ve serbest bırakır.
     /// </summary>
     void CloseHandle(string filePath);
+
+    /// <summary>
+    /// Belirtilen hedef dizinin bulunduğu sürücüdeki kullanılabilir boş alanı bayt cinsinden döner (erişilemezse null).
+    /// </summary>
+    long? GetAvailableFreeSpace(string directoryPath);
 }

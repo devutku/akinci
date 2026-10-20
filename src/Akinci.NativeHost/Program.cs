@@ -71,6 +71,21 @@ public static class Program
         try
         {
             using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+
+            var tokenPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+                ".akinci",
+                "ipc.token");
+
+            if (File.Exists(tokenPath))
+            {
+                var token = File.ReadAllText(tokenPath).Trim();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Add("X-Akinci-Token", token);
+                }
+            }
+
             using var content = new StringContent(jsonPayload, Encoding.UTF8, "application/json");
             var response = await client.PostAsync(IpcEndpoint, content);
             return response.IsSuccessStatusCode;

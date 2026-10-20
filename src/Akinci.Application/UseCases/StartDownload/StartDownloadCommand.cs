@@ -87,6 +87,10 @@ public sealed class StartDownloadCommandHandler
 
             var workerTasks = unfinishedChunks.Select(async chunk =>
             {
+                long lastPersistedOffset = chunk.CurrentOffset;
+                var lastPersistTime = Stopwatch.StartNew();
+                var chunkDbLock = new SemaphoreSlim(1, 1);
+
                 await _chunkDownloader.DownloadChunkAsync(
                     task.Url,
                     chunk,
@@ -98,8 +102,25 @@ public sealed class StartDownloadCommandHandler
                         // 2. Chunk ilerlemesini güncelle
                         chunk.AdvanceOffset(data.Length);
 
-                        // 3. Kalıcı depoya ofseti kaydet
-                        await _repository.UpdateChunkOffsetAsync(task.Id, chunk.Index, chunk.CurrentOffset, ct);
+                        // 3. Kalıcı depoya ofseti periyodik/kontrollü kaydet (Aşırı SQLite yazma yükünü önleme)
+                        // Her tamponda değil; en az 1.5 sn geçtiyse, 2 MB veri yazıldıysa veya parça bittiyse kaydet
+                        bool shouldPersist = lastPersistTime.ElapsedMilliseconds >= 1500 ||
+                                             (chunk.CurrentOffset - lastPersistedOffset >= 2 * 1024 * 1024) ||
+                                             chunk.IsCompleted;
+
+                        if (shouldPersist && chunkDbLock.Wait(0))
+                        {
+                            try
+                            {
+                                await _repository.UpdateChunkOffsetAsync(task.Id, chunk.Index, chunk.CurrentOffset, ct);
+                                lastPersistedOffset = chunk.CurrentOffset;
+                                lastPersistTime.Restart();
+                            }
+                            finally
+                            {
+                                chunkDbLock.Release();
+                            }
+                        }
 
                         // 4. Hız hesapla ve raporla
                         DownloadSpeed currentSpeed = DownloadSpeed.Zero;

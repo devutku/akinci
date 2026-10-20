@@ -75,6 +75,25 @@ public sealed class RandomAccessFileStorageService : IFileStorageService, IDispo
         }
     }
 
+    public long? GetAvailableFreeSpace(string directoryPath)
+    {
+        try
+        {
+            var fullPath = Path.GetFullPath(directoryPath);
+            var root = Path.GetPathRoot(fullPath);
+            if (!string.IsNullOrEmpty(root))
+            {
+                var drive = new DriveInfo(root);
+                return drive.AvailableFreeSpace;
+            }
+        }
+        catch
+        {
+            // Ağ yolları veya yetki kısıtlamalarında yoksay
+        }
+        return null;
+    }
+
     public void Dispose()
     {
         if (_disposed) return;

@@ -105,6 +105,8 @@ public class FakeFileStorageService : IFileStorageService
     public void DeleteFile(string filePath) => Files.Remove(filePath);
 
     public void CloseHandle(string filePath) { }
+    public long? AvailableFreeSpace { get; set; } = null;
+    public long? GetAvailableFreeSpace(string directoryPath) => AvailableFreeSpace;
 }
 
 public class FakeChunkDownloader : IChunkDownloader
