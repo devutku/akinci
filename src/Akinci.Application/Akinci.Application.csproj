@@ -11,7 +11,7 @@
 
     <!-- NuGet Paketleme ve Lisanslama -->
     <PackageId>Akinci.Application</PackageId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>Utku Berki Baysal</Authors>
     <Company>Akıncı</Company>
     <Description>Akıncı Çok Kanallı İndirme Motoru uygulama portları, DTO'ları ve use case orkestrasyonu.</Description>

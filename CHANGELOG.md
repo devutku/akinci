@@ -4,6 +4,19 @@ Bu projedeki tüm önemli değişiklikler bu dosyada belgelenmektedir.
 
 Biçimlendirme [Keep a Changelog](https://keepachangelog.com/tr/1.0.0/) standardına dayanmaktadır ve bu proje [Semantic Versioning](https://semver.org/lang/tr/) kurallarına uymaktadır.
 
+## [1.0.2] - 2026-10-21
+
+### ✨ Eklenenler (Added)
+- **Tarayıcı Eklentisi Sağ Üst Kopyalama Bildirimi (Copy Toast Overlay):** Web sayfalarında indirme bağlantısı kopyalandığında (metin seçip kopyalama veya sağ tık "Bağlantı adresini kopyala") sayfanın sağ üst köşesinde zarif, koyu cam efektli (glassmorphism) bir Akıncı pop-up kartı görüntülenir.
+  - Kart üzerinde dosya/bağlantı adı, *"Akıncı ile İndir"* butonu ve 6 saniyelik animasyonlu otomatik kapanma çubuğu yer alır.
+  - Fare üzerine getirildiğinde geri sayım duraklar; kullanıcı tıklarsa indirme Akıncı'ya aktarılır, tıklamazsa sessizce kaybolur ve kullanıcının akışını bölmez.
+- **Manifest v3 Pano Yetkisi:** Eklenti `manifest.json` dosyasına `clipboardRead` yetkisi eklenerek pano erişimi sağlandı.
+
+### ⚡ Değiştirilenler ve İyileştirmeler (Changed)
+- **Masaüstü Pano İzleyicisi Sakinleştirildi (Non-intrusive Clipboard Monitor):**
+  - Akıncı masaüstü uygulamasının arka planda veya simge durumundayken herhangi bir link kopyalandığında odağı zorla çalıp "Yeni İndirme Ekle" penceresi açması engellendi. Pano algılaması yalnızca Akıncı penceresi halihazırda açık ve odaktayken çalışacak şekilde sınırlandı.
+  - `EnableClipboardMonitor` ayarı varsayılan olarak `false` değerine çekildi.
+
 ---
 
 ## [1.0.1] - 2026-10-20
