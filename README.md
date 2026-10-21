@@ -6,7 +6,7 @@
 </p>
 
 <p align="center">
-  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/s%C3%BCr%C3%BCm-v1.0.1-38bdf8.svg" alt="Sürüm 1.0.2" /></a>
+  <a href="CHANGELOG.md"><img src="https://img.shields.io/badge/s%C3%BCr%C3%BCm-v1.0.2-38bdf8.svg" alt="Sürüm 1.0.2" /></a>
   <a href="LICENSE-MIT"><img src="https://img.shields.io/badge/Core-MIT-green.svg" alt="Core MIT" /></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/UI-GPLv3-orange.svg" alt="UI GPLv3" /></a>
 </p>
