@@ -37,13 +37,13 @@ public partial class MainWindow : Window
             _clipboardMonitor = new ClipboardMonitorService(_settingsService);
             _clipboardMonitor.UrlDetected += async (url) =>
             {
-                if (WindowState == WindowState.Minimized)
+                // Tarayıcı eklentisi etkinken veya kullanıcı başka bir uygulamada çalışırken
+                // link kopyalandığında ekranı zorla ele geçirip indirme penceresi açmamak için:
+                // Yalnızca Akıncı masaüstü penceresi zaten aktif/odaktaysa ve simge durumunda değilse sor.
+                if (IsActive && WindowState != WindowState.Minimized)
                 {
-                    WindowState = WindowState.Normal;
+                    await PromptAddDownloadAsync(url);
                 }
-                Show();
-                Activate();
-                await PromptAddDownloadAsync(url);
             };
         }
 

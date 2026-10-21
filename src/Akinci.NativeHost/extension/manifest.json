@@ -1,14 +1,15 @@
 {
   "manifest_version": 3,
   "name": "Akıncı Downloader Entegrasyonu",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Bağlantıları ve indirmeleri otomatik olarak Akıncı Çok Kanallı İndirme Motoruna aktarır.",
   "permissions": [
     "contextMenus",
     "nativeMessaging",
     "downloads",
     "cookies",
-    "webRequest"
+    "webRequest",
+    "clipboardRead"
   ],
   "host_permissions": [
     "<all_urls>",

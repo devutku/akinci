@@ -134,7 +134,7 @@ if (chrome.webRequest && chrome.webRequest.onHeadersReceived) {
   );
 }
 
-// 4. İçerik Scriptinden (Sayfadaki Butondan) Gelen İndirme İsteklerini Karşıla
+// 4. İçerik Scriptinden (Sayfadaki Butonlardan) Gelen İndirme İsteklerini Karşıla
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message && message.type === "AKINCI_DOWNLOAD_STREAM") {
     (async () => {
@@ -149,6 +149,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       if (!customFileName.endsWith(".ts") && !customFileName.endsWith(".mp4")) {
         customFileName += ".ts";
       }
+
+      await sendToAkinci(targetUrl, tabUrl, customFileName, cookies);
+      sendResponse({ status: "success" });
+    })();
+    return true; // Async yanıt için
+  }
+
+  if (message && message.type === "AKINCI_DOWNLOAD_URL") {
+    (async () => {
+      const targetUrl = message.url;
+      const tabUrl = sender?.tab ? sender.tab.url : (message.referrer || "");
+      const cookies = await getCookiesForUrl(targetUrl, tabUrl);
+      const customFileName = message.customFileName || null;
 
       await sendToAkinci(targetUrl, tabUrl, customFileName, cookies);
       sendResponse({ status: "success" });

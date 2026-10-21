@@ -17,7 +17,7 @@ public sealed class AppSettings
 
     public long SpeedLimitBytesPerSecond { get; set; } = 0;
 
-    public bool EnableClipboardMonitor { get; set; } = true;
+    public bool EnableClipboardMonitor { get; set; } = false;
 }
 
 public sealed class SettingsService

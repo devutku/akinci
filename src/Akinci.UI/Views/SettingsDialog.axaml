@@ -108,7 +108,7 @@
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
                             <TextBlock Text="📋 Akıllı Pano İzleyici" FontWeight="SemiBold" FontSize="12" Foreground="#38BDF8" />
-                            <TextBlock Text="Kopyaladığınız indirme bağlantılarını (URL) otomatik olarak algılar ve indirme penceresini açar."
+                            <TextBlock Text="Akıncı açık ve odaktayken panoya kopyalanan indirme bağlantılarını algılar."
                                        FontSize="11" Foreground="#64748B" TextWrapping="Wrap" />
                         </StackPanel>
                         <ToggleSwitch Grid.Column="1" IsChecked="{Binding EnableClipboardMonitor}" OnContent="" OffContent="" Margin="8,0,0,0" VerticalAlignment="Center" />
