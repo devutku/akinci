@@ -1,6 +1,7 @@
 using Akinci.Application.Ports;
 using Akinci.Application.UseCases.CreateDownload;
 using Akinci.Application.UseCases.PauseDownload;
+using Akinci.Application.UseCases.RecoverInterruptedDownloads;
 using Akinci.Application.UseCases.ResumeDownload;
 using Akinci.Application.UseCases.ScanSecurity;
 using Akinci.Application.UseCases.StartDownload;
@@ -161,6 +162,7 @@ public partial class App : Avalonia.Application
             sp.GetRequiredService<IFileSecurityScanner>(),
             sp.GetRequiredService<IBandwidthThrottler>()));
         services.AddTransient<ScanFileSecurityCommandHandler>();
+        services.AddTransient<RecoverInterruptedDownloadsCommandHandler>();
 
         // 4. UI ve Bildirim Servisleri & ViewModels
         services.AddSingleton<DesktopNotificationService>();

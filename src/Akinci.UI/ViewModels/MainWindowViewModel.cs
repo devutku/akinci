@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using Akinci.Application.Ports;
 using Akinci.Application.UseCases.CreateDownload;
 using Akinci.Application.UseCases.PauseDownload;
+using Akinci.Application.UseCases.RecoverInterruptedDownloads;
 using Akinci.Application.UseCases.ResumeDownload;
 using Akinci.Application.UseCases.StartDownload;
 using Akinci.Domain.Entities;
@@ -24,6 +25,7 @@ public partial class MainWindowViewModel : ObservableObject
     private readonly SettingsService _settingsService;
     private readonly INotificationService? _notificationService;
     private readonly IFileStorageService? _fileStorage;
+    private readonly RecoverInterruptedDownloadsCommandHandler _recoverHandler;
 
     public ObservableCollection<DownloadItemViewModel> AllDownloads { get; } = new();
     public ObservableCollection<DownloadItemViewModel> FilteredDownloads { get; } = new();
@@ -89,9 +91,11 @@ public partial class MainWindowViewModel : ObservableObject
         ResumeDownloadCommandHandler resumeHandler,
         IDownloadRepository repository,
         SettingsService settingsService,
+        RecoverInterruptedDownloadsCommandHandler recoverHandler,
         INotificationService? notificationService = null,
         IFileStorageService? fileStorage = null)
     {
+        _recoverHandler = recoverHandler;
         _createHandler = createHandler;
         _startHandler = startHandler;
         _pauseHandler = pauseHandler;
@@ -109,6 +113,9 @@ public partial class MainWindowViewModel : ObservableObject
 
     public async Task InitializeAsync()
     {
+        // Önceki oturumda "İndiriliyor" durumunda kalmış görevleri duraklatılmış olarak düzelt
+        await _recoverHandler.HandleAsync();
+
         var tasks = await _repository.GetAllAsync();
         Dispatcher.UIThread.Post(() =>
         {
