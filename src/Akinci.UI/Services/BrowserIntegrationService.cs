@@ -12,11 +12,13 @@ public static class BrowserIntegrationService
     /// Native Messaging Host'a bağlanmasına izin verilen eklenti kimlikleri.
     /// Chrome, allowed_origins içinde joker (chrome-extension://*/*) kabul etmez; kimlikler tek tek yazılmalıdır.
     /// Paketlenmemiş eklenti kimliği, extension/manifest.json içindeki "key" alanından türetilir.
-    /// Chrome Web Store'a yüklenirse mağazanın atadığı kimlik de bu listeye eklenmelidir.
+    /// Chrome Web Store sürümü mağazanın atadığı kimliği kullanır.
+    /// Değişirse src/Akinci.NativeHost/manifests/com.akinci.downloader.json da güncellenmelidir.
     /// </summary>
     public static readonly string[] AllowedExtensionIds =
     {
-        "dhnoabdpnfdkljiknkocppmaoijplgbd" // Paketlenmemiş (unpacked) geliştirme sürümü
+        "coeeghhijegibfhhodhnjhjffaipckok", // Chrome Web Store sürümü
+        "dhnoabdpnfdkljiknkocppmaoijplgbd"  // Paketlenmemiş (unpacked) geliştirme sürümü
     };
 
     public static bool IsNativeHostRegistered()
