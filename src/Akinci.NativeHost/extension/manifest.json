@@ -9,8 +9,7 @@
     "nativeMessaging",
     "downloads",
     "cookies",
-    "webRequest",
-    "clipboardRead"
+    "webRequest"
   ],
   "host_permissions": [
     "<all_urls>",
