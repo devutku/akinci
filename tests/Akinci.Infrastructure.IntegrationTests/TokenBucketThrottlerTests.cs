@@ -60,10 +60,29 @@ public class TokenBucketThrottlerTests
         // Kovayı boşalt
         await throttler.ThrottleAsync(1024);
 
+        // Limit içinde kalan bir istek (~1 sn bekleme gerektirir); 50 ms sonra iptal edilmeli
         using var cts = new CancellationTokenSource(50);
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
         {
-            await throttler.ThrottleAsync(100_000, cts.Token);
+            await throttler.ThrottleAsync(1024, cts.Token);
         });
+    }
+
+    [Fact]
+    public async Task ThrottleAsync_WhenRequestExceedsLimit_CompletesAtLimitedRate()
+    {
+        // HTTP/FTP indiricileri 128 KB'a kadar, HLS ise tüm segmenti tek seferde iletir.
+        // Saniyelik limitten büyük istekler sonsuza dek beklememeli, limit hızında tamamlanmalı.
+        long limitBps = 100 * 1024; // 100 KB/s
+        var throttler = new TokenBucketThrottler(limitBps);
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var sw = Stopwatch.StartNew();
+
+        // Kova dolu (100 KB) -> kalan 150 KB yaklaşık 1.5 sn bekleme gerektirir
+        await throttler.ThrottleAsync((int)(limitBps * 5 / 2), cts.Token);
+        sw.Stop();
+
+        Assert.True(sw.ElapsedMilliseconds >= 1000, $"İstek sınırlanmadan geçti: {sw.ElapsedMilliseconds}ms");
     }
 }
