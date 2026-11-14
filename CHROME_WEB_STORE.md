@@ -21,7 +21,9 @@ powershell -ExecutionPolicy Bypass -File pack-extension.ps1
 
 ### İlk yüklemeden sonra (önemli)
 
-Mağaza eklentiye kendi kimliğini (item ID) atar. Bu kimlik, masaüstü uygulamasının Native Messaging izin listesine eklenmelidir; yoksa mağazadan kurulan eklenti uygulamaya yalnızca `127.0.0.1` yedek yolu üzerinden ulaşır:
+Mağaza eklentiye kendi kimliğini (item ID) atar. Akıncı'nın mağaza kimliği: **`coeeghhijegibfhhodhnjhjffaipckok`**.
+
+Bu kimlik, masaüstü uygulamasının Native Messaging izin listesinde bulunmalıdır; yoksa mağazadan kurulan eklenti uygulamaya yalnızca `127.0.0.1` yedek yolu üzerinden ulaşır:
 
 - `src/Akinci.UI/Services/BrowserIntegrationService.cs` → `AllowedExtensionIds`
 - `src/Akinci.NativeHost/manifests/com.akinci.downloader.json` → `allowed_origins`
