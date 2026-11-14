@@ -4,6 +4,6 @@
   "path": "Akinci-BrowserBridge.exe",
   "type": "stdio",
   "allowed_origins": [
-    "chrome-extension://*/*"
+    "chrome-extension://dhnoabdpnfdkljiknkocppmaoijplgbd/"
   ]
 }

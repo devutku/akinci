@@ -20,8 +20,8 @@ public partial class InstallExtensionDialog : Window
 
     private void OnInstallClick(object? sender, RoutedEventArgs e)
     {
-        var success = BrowserIntegrationService.SetupIntegration();
-        if (success)
+        var result = BrowserIntegrationService.SetupIntegration();
+        if (result.Success)
         {
             // Eklenti klasörünü aç ve Chrome eklentiler sayfasına yönlendir
             BrowserIntegrationService.OpenExtensionFolder();
@@ -41,7 +41,7 @@ public partial class InstallExtensionDialog : Window
             var txt = this.FindControl<TextBlock>("TxtStatus");
             if (txt != null)
             {
-                txt.Text = "Kayıt defteri yazılırken yetki hatası oluştu. Lütfen Akıncı'yı yönetici olarak çalıştırın.";
+                txt.Text = result.Error ?? "Eklenti kurulamadı.";
                 txt.Foreground = Avalonia.Media.Brushes.Red;
             }
         }

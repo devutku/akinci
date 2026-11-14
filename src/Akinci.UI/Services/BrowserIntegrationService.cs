@@ -8,6 +8,17 @@ public static class BrowserIntegrationService
 {
     private const string HostName = "com.akinci.downloader";
 
+    /// <summary>
+    /// Native Messaging Host'a bağlanmasına izin verilen eklenti kimlikleri.
+    /// Chrome, allowed_origins içinde joker (chrome-extension://*/*) kabul etmez; kimlikler tek tek yazılmalıdır.
+    /// Paketlenmemiş eklenti kimliği, extension/manifest.json içindeki "key" alanından türetilir.
+    /// Chrome Web Store'a yüklenirse mağazanın atadığı kimlik de bu listeye eklenmelidir.
+    /// </summary>
+    public static readonly string[] AllowedExtensionIds =
+    {
+        "dhnoabdpnfdkljiknkocppmaoijplgbd" // Paketlenmemiş (unpacked) geliştirme sürümü
+    };
+
     public static bool IsNativeHostRegistered()
     {
         if (OperatingSystem.IsWindows())
@@ -54,7 +65,81 @@ public static class BrowserIntegrationService
         return Path.Combine(appDir, "host");
     }
 
-    public static bool SetupIntegration()
+    /// <summary>Kurulum sonucu; başarısızsa kullanıcıya gösterilecek hata mesajını taşır.</summary>
+    public sealed record IntegrationResult(bool Success, string? Error = null, bool NativeHostRegistered = false);
+
+    /// <summary>Eklenti klasörü ve Native Host çalıştırılabilir dosyasının bulunduğu konumlar.</summary>
+    public sealed record IntegrationSources(string? ExtensionDir, string? NativeHostExe);
+
+    private static string HostBinaryName => OperatingSystem.IsWindows() ? "Akinci-BrowserBridge.exe" : "Akinci-BrowserBridge";
+    private static string FallbackHostBinaryName => OperatingSystem.IsWindows() ? "Akinci.NativeHost.exe" : "Akinci.NativeHost";
+
+    /// <summary>
+    /// Uygulama klasöründen başlayıp üst klasörlere doğru eklenti ve Native Host kaynaklarını arar.
+    /// İki düzeni destekler:
+    ///  - Yayınlanmış paket (publish.bat): dist/Akinci/{extension, Akinci-BrowserBridge.exe}
+    ///  - Kaynak kodundan çalıştırma: src/Akinci.NativeHost/{extension, bin/**/Akinci-BrowserBridge.exe}
+    /// Derleme çıktısının derinliği (ör. bin/Debug/net10.0/win-x64) değişse de çalışır.
+    /// </summary>
+    public static IntegrationSources FindIntegrationSources(string baseDirectory)
+    {
+        string? extensionDir = null;
+        string? hostExe = null;
+
+        var dir = new DirectoryInfo(baseDirectory);
+        for (int depth = 0; dir != null && depth < 10; depth++, dir = dir.Parent)
+        {
+            foreach (var root in new[] { dir.FullName, Path.Combine(dir.FullName, "Akinci.NativeHost") })
+            {
+                var extCandidate = Path.Combine(root, "extension");
+                if (extensionDir == null && File.Exists(Path.Combine(extCandidate, "manifest.json")))
+                {
+                    extensionDir = extCandidate;
+                }
+
+                hostExe ??= FindHostBinary(root);
+            }
+
+            if (extensionDir != null && hostExe != null)
+            {
+                break;
+            }
+        }
+
+        return new IntegrationSources(extensionDir, hostExe);
+    }
+
+    private static string? FindHostBinary(string root)
+    {
+        foreach (var name in new[] { HostBinaryName, FallbackHostBinaryName })
+        {
+            var candidate = Path.Combine(root, name);
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
+        // Kaynak düzeni: en son derlenen bin/<Config>/<TFM>/[<RID>]/Akinci-BrowserBridge(.exe)
+        var binDir = Path.Combine(root, "bin");
+        if (!Directory.Exists(binDir))
+        {
+            return null;
+        }
+
+        try
+        {
+            return Directory.EnumerateFiles(binDir, HostBinaryName, SearchOption.AllDirectories)
+                .OrderByDescending(File.GetLastWriteTimeUtc)
+                .FirstOrDefault();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public static IntegrationResult SetupIntegration()
     {
         try
         {
@@ -63,52 +148,46 @@ public static class BrowserIntegrationService
             var extensionDir = Path.Combine(userAkinciDir, "extension");
             var manifestsDir = Path.Combine(hostDir, "manifests");
 
+            // 1. Kaynak dosyaları bul
+            var sources = FindIntegrationSources(AppDomain.CurrentDomain.BaseDirectory);
+            if (sources.ExtensionDir == null)
+            {
+                return new IntegrationResult(false,
+                    "Eklenti dosyaları bulunamadı. Akıncı klasöründe 'extension' klasörü olduğundan emin olun.");
+            }
+
             Directory.CreateDirectory(hostDir);
             Directory.CreateDirectory(extensionDir);
             Directory.CreateDirectory(manifestsDir);
 
-            // 1. Kaynak dosyaları bul
-            var currentExeDir = AppDomain.CurrentDomain.BaseDirectory;
-            var searchPaths = new List<string>
+            // Eklenti dosyalarını kopyala
+            foreach (var file in Directory.GetFiles(sources.ExtensionDir, "*.*", SearchOption.AllDirectories))
             {
-                currentExeDir,
-                Path.Combine(currentExeDir, "..", "Akinci.NativeHost"),
-                Path.Combine(currentExeDir, "Akinci.NativeHost"),
-                Path.Combine(currentExeDir, "..", "..", "..", "..", "Akinci.NativeHost"),
-                Path.Combine(currentExeDir, "..", "dist", "Akinci")
-            };
-
-            string? foundNativeHostExe = null;
-            string? foundExtensionSrc = null;
-
-            var binaryName = OperatingSystem.IsWindows() ? "Akinci-BrowserBridge.exe" : "Akinci-BrowserBridge";
-            var fallbackBinary = OperatingSystem.IsWindows() ? "Akinci.NativeHost.exe" : "Akinci.NativeHost";
-
-            foreach (var p in searchPaths)
-            {
-                var exeCandidate = Path.Combine(p, binaryName);
-                if (!File.Exists(exeCandidate))
-                {
-                    exeCandidate = Path.Combine(p, fallbackBinary);
-                }
-
-                if (File.Exists(exeCandidate) && foundNativeHostExe == null)
-                {
-                    foundNativeHostExe = exeCandidate;
-                }
-
-                var extCandidate = Path.Combine(p, "extension");
-                if (Directory.Exists(extCandidate) && foundExtensionSrc == null)
-                {
-                    foundExtensionSrc = extCandidate;
-                }
+                var rel = Path.GetRelativePath(sources.ExtensionDir, file);
+                var dest = Path.Combine(extensionDir, rel);
+                Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
+                File.Copy(file, dest, overwrite: true);
             }
 
-            // Host binary dosyasını kopyala
-            var targetHostExe = Path.Combine(hostDir, binaryName);
-            if (foundNativeHostExe != null && File.Exists(foundNativeHostExe))
+            // Native Host bulunamazsa eklenti yine de HTTP IPC (127.0.0.1) üzerinden çalışır;
+            // var olmayan bir dosyaya işaret eden manifest kaydetmiyoruz.
+            if (sources.NativeHostExe == null)
             {
-                File.Copy(foundNativeHostExe, targetHostExe, overwrite: true);
+                return new IntegrationResult(true);
+            }
+
+            // Host binary: Tek dosya yayınlanmış sürüm kalıcı klasöre kopyalanır. Kaynak derlemesinde
+            // exe yanındaki DLL'lere ihtiyaç duyduğundan yerinde kullanılır.
+            string targetHostExe;
+            var hostDll = Path.ChangeExtension(sources.NativeHostExe, ".dll");
+            if (File.Exists(hostDll))
+            {
+                targetHostExe = sources.NativeHostExe;
+            }
+            else
+            {
+                targetHostExe = Path.Combine(hostDir, HostBinaryName);
+                File.Copy(sources.NativeHostExe, targetHostExe, overwrite: true);
 
                 // Linux ve macOS için çalıştırma (execute) yetkisi ver
                 if (!OperatingSystem.IsWindows())
@@ -121,18 +200,6 @@ public static class BrowserIntegrationService
                 }
             }
 
-            // Eklenti dosyalarını kopyala
-            if (foundExtensionSrc != null && Directory.Exists(foundExtensionSrc))
-            {
-                foreach (var file in Directory.GetFiles(foundExtensionSrc, "*.*", SearchOption.AllDirectories))
-                {
-                    var rel = Path.GetRelativePath(foundExtensionSrc, file);
-                    var dest = Path.Combine(extensionDir, rel);
-                    Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
-                    File.Copy(file, dest, overwrite: true);
-                }
-            }
-
             // 2. Manifest nesnesi oluştur (Mutlak yol ile)
             var manifestObj = new
             {
@@ -140,10 +207,7 @@ public static class BrowserIntegrationService
                 description = "Akıncı Downloader Native Messaging Host for Chrome and Chromium-based browsers",
                 path = targetHostExe,
                 type = "stdio",
-                allowed_origins = new[]
-                {
-                    "chrome-extension://*/*"
-                }
+                allowed_origins = AllowedExtensionIds.Select(id => $"chrome-extension://{id}/").ToArray()
             };
             var json = JsonSerializer.Serialize(manifestObj, new JsonSerializerOptions { WriteIndented = true });
 
@@ -188,11 +252,15 @@ public static class BrowserIntegrationService
                 }
             }
 
-            return true;
+            return new IntegrationResult(true, NativeHostRegistered: true);
         }
-        catch (Exception)
+        catch (UnauthorizedAccessException ex)
         {
-            return false;
+            return new IntegrationResult(false, $"Yetki hatası: {ex.Message} Lütfen Akıncı'yı yönetici olarak çalıştırın.");
+        }
+        catch (Exception ex)
+        {
+            return new IntegrationResult(false, $"Eklenti kurulamadı: {ex.Message}");
         }
     }
 
