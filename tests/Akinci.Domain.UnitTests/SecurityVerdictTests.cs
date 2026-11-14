@@ -48,4 +48,35 @@ public class SecurityVerdictTests
         Assert.False(verdict.HasThreat);
         Assert.Contains("VirusTotal veritabanında kaydı yok", verdict.FormatBadge());
     }
+
+    [Fact]
+    public void NotFound_Verdict_IsNotConsideredSafe()
+    {
+        // VirusTotal'ın hiç görmediği bir dosya için hiçbir motor "temiz" demedi;
+        // bu durum güvenli olarak raporlanmamalı.
+        var verdict = SecurityVerdict.NotFound(SampleHash);
+
+        Assert.False(verdict.IsSafe);
+    }
+
+    [Fact]
+    public void ScannedVerdict_WithNoEngineResults_IsNotSafeAndDoesNotClaimSafety()
+    {
+        // Yanıt geldi ama hiçbir motor sonuç bildirmedi (tüm sayaçlar 0)
+        var verdict = new SecurityVerdict(SampleHash, isScanned: true);
+
+        Assert.Equal(0, verdict.TotalEngines);
+        Assert.False(verdict.HasThreat);
+        Assert.False(verdict.IsSafe);
+        Assert.DoesNotContain("güvenli", verdict.FormatBadge());
+    }
+
+    [Fact]
+    public void ScannedVerdict_WithOnlyUndetectedVotes_IsSafe()
+    {
+        // Motorlar dosyayı taradı ve hiçbiri tehdit bulmadı
+        var verdict = new SecurityVerdict(SampleHash, isScanned: true, undetectedVotes: 70);
+
+        Assert.True(verdict.IsSafe);
+    }
 }

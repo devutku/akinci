@@ -15,7 +15,11 @@ public sealed record SecurityVerdict
     public string? CustomMessage { get; }
 
     public int TotalEngines => MaliciousVotes + SuspiciousVotes + HarmlessVotes + UndetectedVotes;
-    public bool IsSafe => IsScanned && MaliciousVotes == 0 && SuspiciousVotes == 0;
+    /// <summary>
+    /// En az bir antivirüs motoru dosyayı taradıysa ve hiçbiri tehdit bildirmediyse güvenlidir.
+    /// VirusTotal'da kaydı olmayan (NotFound) veya hiçbir motorun sonuç vermediği dosyalar güvenli sayılmaz.
+    /// </summary>
+    public bool IsSafe => IsScanned && TotalEngines > 0 && MaliciousVotes == 0 && SuspiciousVotes == 0;
     public bool HasThreat => MaliciousVotes > 0 || SuspiciousVotes > 0;
 
     public SecurityVerdict(
@@ -71,7 +75,7 @@ public sealed record SecurityVerdict
 
         return TotalEngines > 0
             ? $"{HarmlessVotes}/{TotalEngines} antivirüs motorundan geçti, güvenli"
-            : $"{HarmlessVotes} antivirüs motorundan geçti, güvenli";
+            : "Hiçbir antivirüs motoru sonuç bildirmedi";
     }
 
     public override string ToString() => FormatBadge();

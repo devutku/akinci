@@ -40,15 +40,23 @@ public sealed class TokenBucketThrottler : IBandwidthThrottler
 
     public async ValueTask ThrottleAsync(int bytes, CancellationToken cancellationToken = default)
     {
-        var limit = LimitBytesPerSecond;
-        if (limit <= 0 || bytes <= 0)
-        {
-            return;
-        }
+        long remaining = bytes;
 
-        while (true)
+        while (remaining > 0)
         {
             cancellationToken.ThrowIfCancellationRequested();
+
+            // Limit çalışma sırasında değişebilir (ör. 0 = sınırsız yapılırsa hemen çık)
+            var limit = LimitBytesPerSecond;
+            if (limit <= 0)
+            {
+                return;
+            }
+
+            // Kova kapasitesi saniyelik limit kadardır; limitten büyük istekler (128 KB tampon,
+            // tüm HLS segmenti vb.) asla tek seferde karşılanamaz. Bu yüzden isteği en fazla
+            // kova kapasitesi kadar dilimlerle tüketiyoruz.
+            long portion = Math.Min(remaining, limit);
             int delayMs = 0;
 
             lock (_lock)
@@ -62,14 +70,15 @@ public sealed class TokenBucketThrottler : IBandwidthThrottler
                     _lastRefillTicks = now;
                 }
 
-                if (_availableTokens >= bytes)
+                if (_availableTokens >= portion)
                 {
-                    _availableTokens -= bytes;
-                    return;
+                    _availableTokens -= portion;
+                    remaining -= portion;
+                    continue;
                 }
 
                 // Yetersiz token: Ne kadar beklemeliyiz?
-                double needed = bytes - _availableTokens;
+                double needed = portion - _availableTokens;
                 delayMs = (int)Math.Ceiling(needed / limit * 1000.0);
                 delayMs = Math.Clamp(delayMs, 1, 500);
             }
