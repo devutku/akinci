@@ -78,8 +78,9 @@
                 </StackPanel>
             </Grid>
 
-            <!-- Form Content (No Scrollbar, Clean Fit) -->
-            <StackPanel Grid.Row="1" Spacing="6">
+            <!-- Form Content: ekran yüksekliğine sığmazsa kaydırılır; başlık ve alt düğmeler sabit kalır -->
+            <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <StackPanel Spacing="6" Margin="0,0,10,0">
                 <TextBlock Text="Varsayılan Kayıt Dizini" Classes="label" />
                 <Grid ColumnDefinitions="*,Auto">
                     <TextBox Grid.Column="0" Text="{Binding DefaultDirectory}" Margin="0,0,8,0" />
@@ -146,7 +147,7 @@
 
                         <StackPanel Grid.Row="1" Spacing="2">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" Text="AKINCI İndirme Motoru v1.0.1" FontWeight="SemiBold" FontSize="12" Foreground="#F8FAFC" />
+                                <TextBlock Grid.Column="0" x:Name="TxtVersion" Text="AKINCI İndirme Motoru" FontWeight="SemiBold" FontSize="12" Foreground="#F8FAFC" />
                                 <TextBlock Grid.Column="1" Text=".NET 10 • Clean Core" FontSize="10" FontWeight="SemiBold" Foreground="#38BDF8" />
                             </Grid>
                             <TextBlock Text="Katı Clean Core mimarisi, SocketsHttpHandler, FluentFTP, SQLite WAL persistence ve VirusTotal v3 analizi."
@@ -155,6 +156,7 @@
                     </Grid>
                 </Border>
             </StackPanel>
+            </ScrollViewer>
 
             <!-- Actions Footer -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,16,0,0">

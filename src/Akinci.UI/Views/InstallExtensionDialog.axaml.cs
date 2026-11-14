@@ -11,6 +11,7 @@ public partial class InstallExtensionDialog : Window
     public InstallExtensionDialog()
     {
         InitializeComponent();
+        DialogPlacement.KeepOnScreen(this);
     }
 
     public InstallExtensionDialog(SettingsService settingsService) : this()
