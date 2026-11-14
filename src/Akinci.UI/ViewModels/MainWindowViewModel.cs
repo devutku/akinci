@@ -180,8 +180,21 @@ public partial class MainWindowViewModel : ObservableObject
         });
     }
 
+    private bool _queueSuspended;
+
+    /// <summary>
+    /// Kuyruğun yeni indirme başlatmasını kalıcı olarak durdurur. Uygulama kapanırken kullanılır;
+    /// duraklatılan indirmelerin kapanış sırasında yeniden başlatılmasını engeller.
+    /// </summary>
+    public void SuspendQueue() => _queueSuspended = true;
+
     public void ProcessQueue()
     {
+        if (_queueSuspended)
+        {
+            return;
+        }
+
         int maxConcurrent = _settingsService.Current.MaxConcurrentDownloads;
         if (maxConcurrent <= 0)
         {

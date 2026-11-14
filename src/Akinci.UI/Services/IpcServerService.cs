@@ -40,7 +40,14 @@ public sealed class IpcServerService : IAsyncDisposable
 
         _listener = new HttpListener();
         _listener.Prefixes.Add($"http://127.0.0.1:{IpcPort}/add-download/");
+        _listener.Prefixes.Add($"http://127.0.0.1:{IpcPort}/control/");
     }
+
+    /// <summary>"shutdown" kontrol komutu geldiğinde çağrılır (kurulum programı / <c>Akinci.exe --shutdown</c>).</summary>
+    public Func<Task>? ShutdownRequested { get; set; }
+
+    /// <summary>"activate" kontrol komutu geldiğinde çağrılır (ikinci örnek açılmaya çalışıldığında).</summary>
+    public Action? ActivateRequested { get; set; }
 
     private static string EnsureIpcToken()
     {
@@ -104,6 +111,12 @@ public sealed class IpcServerService : IAsyncDisposable
     {
         var request = context.Request;
         var response = context.Response;
+
+        if (request.Url?.AbsolutePath.StartsWith("/control/", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            await ProcessControlRequestAsync(request, response);
+            return;
+        }
 
         // 1. Origin Güvenlik Doğrulaması (CSRF & Drive-by Download Koruması)
         var origin = request.Headers["Origin"];
@@ -203,6 +216,51 @@ public sealed class IpcServerService : IAsyncDisposable
 
         response.StatusCode = (int)HttpStatusCode.NotFound;
         response.Close();
+    }
+
+    /// <summary>
+    /// Yerel kontrol komutları (/control/shutdown/, /control/activate/).
+    /// Yalnızca tarayıcı dışı ve ipc.token ile doğrulanmış POST istekleri kabul edilir;
+    /// tarayıcı eklentileri dahil Origin başlığı taşıyan her istek reddedilir.
+    /// </summary>
+    private async Task ProcessControlRequestAsync(HttpListenerRequest request, HttpListenerResponse response)
+    {
+        var providedToken = request.Headers["X-Akinci-Token"];
+        bool isTokenValid = !string.IsNullOrEmpty(_ipcToken) &&
+                            string.Equals(providedToken, _ipcToken, StringComparison.Ordinal);
+
+        if (request.HttpMethod != "POST" ||
+            !string.IsNullOrEmpty(request.Headers["Origin"]) ||
+            !isTokenValid)
+        {
+            response.StatusCode = (int)HttpStatusCode.Forbidden;
+            response.Close();
+            return;
+        }
+
+        var command = request.Url!.AbsolutePath["/control/".Length..].Trim('/').ToLowerInvariant();
+        switch (command)
+        {
+            case "shutdown":
+                response.StatusCode = (int)HttpStatusCode.OK;
+                response.Close();
+                if (ShutdownRequested != null)
+                {
+                    await ShutdownRequested();
+                }
+                return;
+
+            case "activate":
+                response.StatusCode = (int)HttpStatusCode.OK;
+                response.Close();
+                ActivateRequested?.Invoke();
+                return;
+
+            default:
+                response.StatusCode = (int)HttpStatusCode.NotFound;
+                response.Close();
+                return;
+        }
     }
 
     public async ValueTask DisposeAsync()

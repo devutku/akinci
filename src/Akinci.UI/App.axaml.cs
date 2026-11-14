@@ -47,38 +47,80 @@ public partial class App : Avalonia.Application
             var mainWindow = new MainWindow(mainWindowVm, settingsService, notificationService, throttler);
             desktop.MainWindow = mainWindow;
 
+            _desktop = desktop;
+            _mainWindow = mainWindow;
+            _mainWindowVm = mainWindowVm;
+
+            // Kurulum programı / ikinci örnek tarafından gönderilen yerel kontrol komutları
+            ipcServer.ShutdownRequested = () => Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(RequestGracefulShutdownAsync);
+            ipcServer.ActivateRequested = () => Avalonia.Threading.Dispatcher.UIThread.Post(ShowMainWindow);
+
             // Arka plan IPC HTTP sunucusunu başlat (Tarayıcı eklentisi ve NativeHost dinleyici)
             ipcServer.Start();
             desktop.Exit += async (_, _) => await ipcServer.DisposeAsync();
 
             // Sistem Tepsisi (TrayIcon) Yapılandırması
-            SetupTrayIcon(desktop, mainWindow, mainWindowVm);
+            SetupTrayIcon(mainWindowVm);
         }
 
         base.OnFrameworkInitializationCompleted();
     }
 
-    private void SetupTrayIcon(
-        IClassicDesktopStyleApplicationLifetime desktop,
-        MainWindow mainWindow,
-        MainWindowViewModel mainWindowVm)
+    private IClassicDesktopStyleApplicationLifetime? _desktop;
+    private MainWindow? _mainWindow;
+    private MainWindowViewModel? _mainWindowVm;
+    private bool _shutdownInProgress;
+
+    /// <summary>
+    /// Devam eden indirmeleri duraklatıp kaydeder ve uygulamayı tamamen kapatır (tepsiye küçülmez).
+    /// Tepsideki "Çıkış" ve kurulum programının gönderdiği "shutdown" komutu bu yolu kullanır.
+    /// </summary>
+    public async Task RequestGracefulShutdownAsync()
+    {
+        if (_shutdownInProgress || _desktop == null || _mainWindow == null || _mainWindowVm == null)
+        {
+            return;
+        }
+
+        _shutdownInProgress = true;
+
+        // Kapanış sırasında kuyruk yeni indirme başlatmasın; ardından indirmeleri duraklat (en fazla 5 sn)
+        _mainWindowVm.SuspendQueue();
+        var pauseAll = _mainWindowVm.PauseAllAsync();
+        await Task.WhenAny(pauseAll, Task.Delay(TimeSpan.FromSeconds(5)));
+
+        // İptal edilen indirme işleyicilerinin son parça ofsetlerini kaydetmesine kısa bir süre tanı
+        await Task.Delay(500);
+
+        _mainWindow.AllowClose = true;
+        _desktop.Shutdown();
+    }
+
+    private void ShowMainWindow()
+    {
+        if (_mainWindow == null)
+        {
+            return;
+        }
+
+        _mainWindow.Show();
+        _mainWindow.WindowState = WindowState.Normal;
+        _mainWindow.Activate();
+    }
+
+    private void SetupTrayIcon(MainWindowViewModel mainWindowVm)
     {
         var trayIcon = new TrayIcon
         {
             ToolTipText = "Akıncı - Çok Kanallı İndirme Yöneticisi",
-            Icon = mainWindow.Icon,
+            Icon = _mainWindow!.Icon,
             IsVisible = true
         };
 
         var menu = new NativeMenu();
 
         var showItem = new NativeMenuItem("Göster");
-        showItem.Click += (_, _) =>
-        {
-            mainWindow.Show();
-            mainWindow.WindowState = WindowState.Normal;
-            mainWindow.Activate();
-        };
+        showItem.Click += (_, _) => ShowMainWindow();
         menu.Add(showItem);
 
         menu.Add(new NativeMenuItemSeparator());
@@ -94,20 +136,11 @@ public partial class App : Avalonia.Application
         menu.Add(new NativeMenuItemSeparator());
 
         var exitItem = new NativeMenuItem("Çıkış");
-        exitItem.Click += (_, _) =>
-        {
-            mainWindow.AllowClose = true;
-            desktop.Shutdown();
-        };
+        exitItem.Click += async (_, _) => await RequestGracefulShutdownAsync();
         menu.Add(exitItem);
 
         trayIcon.Menu = menu;
-        trayIcon.Clicked += (_, _) =>
-        {
-            mainWindow.Show();
-            mainWindow.WindowState = WindowState.Normal;
-            mainWindow.Activate();
-        };
+        trayIcon.Clicked += (_, _) => ShowMainWindow();
 
         var icons = new TrayIcons { trayIcon };
         TrayIcon.SetIcons(this, icons);
