@@ -39,10 +39,11 @@ CloseApplications=no
 Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
-
-[Setup]
+; Spec: sihirbaz "Hoş geldiniz" sayfasıyla başlar (Inno 6 varsayılanı bu sayfayı gizler)
+DisableWelcomePage=no
 ; Dil, Windows arayüz diline göre otomatik seçilir; eşleşme yoksa sorulur
 ShowLanguageDialog=auto
+
 
 [Languages]
 Name: "turkish"; MessagesFile: "compiler:Languages\Turkish.isl"
