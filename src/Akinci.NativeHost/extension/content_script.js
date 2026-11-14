@@ -9,9 +9,6 @@
     let lastPromptedUrl = null;
     let lastPromptedTime = 0;
 
-    let lastContextMenuUrl = null;
-    let lastContextMenuTime = 0;
-
     // Ortak Overlay Kök Kapsayıcısını Hazırla (Sağ Üst)
     function ensureOverlayRoot() {
         if (!overlayRoot || !document.body.contains(overlayRoot)) {
@@ -299,70 +296,13 @@
             .replace(/'/g, "&#039;");
     }
 
-    // 3. Tarayıcı Olaylarını Dinle: Kopyalama & Sağ Tık Bağlantı Kopyalama
-    // A) Metin Seçip Kopyalama (Ctrl+C / Menüden Kopyala)
+    // 3. Kullanıcının seçip kopyaladığı indirme bağlantısını yakala (Ctrl+C / Menüden Kopyala).
+    // Panonun içeriği okunmaz; yalnızca kullanıcının sayfada seçtiği metne bakılır.
+    // Sağ tıkla bağlantı indirme, eklentinin "Akıncı ile İndir" bağlam menüsüyle yapılır.
     document.addEventListener("copy", () => {
-        // 1. Önce seçili metni kontrol et
         const selectedText = window.getSelection()?.toString()?.trim();
         if (isValidDownloadUrl(selectedText)) {
             handleDetectedCopiedUrl(selectedText);
-            return;
-        }
-
-        // 2. Clipboard API desteği varsa kısa gecikmeyle panoyu kontrol et
-        if (navigator.clipboard && navigator.clipboard.readText) {
-            setTimeout(async () => {
-                try {
-                    const clipText = await navigator.clipboard.readText();
-                    if (isValidDownloadUrl(clipText)) {
-                        handleDetectedCopiedUrl(clipText);
-                    }
-                } catch {
-                    // Pano erişimi engellendiyse sessizce geç
-                }
-            }, 60);
         }
     }, true);
-
-    // B) Sağ Tık Menüsü ile Bağlantı Kopyalama ("Bağlantı adresini kopyala")
-    document.addEventListener("contextmenu", (e) => {
-        const anchor = e.target.closest("a");
-        if (anchor && anchor.href && isValidDownloadUrl(anchor.href)) {
-            lastContextMenuUrl = anchor.href;
-            lastContextMenuTime = Date.now();
-        }
-    }, true);
-
-    // Tarayıcı sağ tık menüsünden "Bağlantı adresini kopyala" seçilip sayfaya geri dönüldüğünde focus tetiklenir
-    window.addEventListener("focus", async () => {
-        const timeSinceRightClick = Date.now() - lastContextMenuTime;
-        if (lastContextMenuUrl && timeSinceRightClick < 4000) {
-            if (navigator.clipboard && navigator.clipboard.readText) {
-                try {
-                    const clipText = await navigator.clipboard.readText();
-                    if (clipText && (clipText.trim() === lastContextMenuUrl.trim() || isValidDownloadUrl(clipText))) {
-                        handleDetectedCopiedUrl(clipText.trim());
-                    }
-                } catch {
-                    // İzin gerekirse veya erişilemezse
-                }
-            }
-        }
-    });
-
-    // C) Sayfa içi Javascript ile panoya kopyalama yapıldığında yakalama
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        try {
-            const originalWriteText = navigator.clipboard.writeText.bind(navigator.clipboard);
-            navigator.clipboard.writeText = async function (text) {
-                const res = await originalWriteText(text);
-                if (isValidDownloadUrl(text)) {
-                    handleDetectedCopiedUrl(text);
-                }
-                return res;
-            };
-        } catch {
-            // Read-only prototype durumunda yoksay
-        }
-    }
 })();
