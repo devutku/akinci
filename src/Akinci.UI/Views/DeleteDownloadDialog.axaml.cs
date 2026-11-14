@@ -15,6 +15,7 @@ public partial class DeleteDownloadDialog : Window
     public DeleteDownloadDialog()
     {
         InitializeComponent();
+        DialogPlacement.KeepOnScreen(this);
     }
 
     public DeleteDownloadDialog(string fileName, string filePath) : this()

@@ -10,6 +10,7 @@ public partial class AddDownloadDialog : Window
     public AddDownloadDialog()
     {
         InitializeComponent();
+        DialogPlacement.KeepOnScreen(this);
     }
 
     private async void OnBrowseFolderClick(object? sender, RoutedEventArgs e)

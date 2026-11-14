@@ -10,6 +10,14 @@ public partial class SettingsDialog : Window
     public SettingsDialog()
     {
         InitializeComponent();
+        DialogPlacement.KeepOnScreen(this);
+
+        // Sürüm, proje dosyasındaki <Version> değerinden okunur (elle güncellemeye gerek kalmaz)
+        var version = typeof(SettingsDialog).Assembly.GetName().Version;
+        if (version != null && this.FindControl<TextBlock>("TxtVersion") is { } txtVersion)
+        {
+            txtVersion.Text = $"AKINCI İndirme Motoru v{version.ToString(3)}";
+        }
     }
 
     private async void OnBrowseFolderClick(object? sender, RoutedEventArgs e)
