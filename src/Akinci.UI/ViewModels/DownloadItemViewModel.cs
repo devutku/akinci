@@ -320,6 +320,10 @@ public partial class DownloadItemViewModel : ObservableObject
         try
         {
             await _startHandler.HandleAsync(new StartDownloadCommand(Task.Id, progress), _downloadCts.Token);
+            if (MarkPausedIfCanceled())
+            {
+                return;
+            }
             UpdateStatusState(Task.Status);
             UpdateSecurityDisplay(Task.SecurityVerdict);
             OnDownloadFinished(true);
@@ -360,6 +364,10 @@ public partial class DownloadItemViewModel : ObservableObject
         try
         {
             await _resumeHandler.HandleAsync(new ResumeDownloadCommand(Task.Id, progress), _downloadCts.Token);
+            if (MarkPausedIfCanceled())
+            {
+                return;
+            }
             UpdateStatusState(Task.Status);
             UpdateSecurityDisplay(Task.SecurityVerdict);
             OnDownloadFinished(true);
@@ -375,6 +383,23 @@ public partial class DownloadItemViewModel : ObservableObject
             StatusText = $"Hata: {ex.Message}";
             OnDownloadFinished(false, ex);
         }
+    }
+
+    /// <summary>
+    /// İndirme işleyicileri iptali kendi içinde yakalayıp (görevi duraklatıp) normal döner.
+    /// Bu durumda bu görünüm modelindeki <see cref="Task"/> nesnesi güncel değildir (ör. hâlâ "Bekliyor");
+    /// ona bakılırsa kuyruk görevi hemen yeniden başlatır. İptal istenmişse görev duraklatılmış sayılır.
+    /// </summary>
+    private bool MarkPausedIfCanceled()
+    {
+        if (_downloadCts?.IsCancellationRequested != true)
+        {
+            return false;
+        }
+
+        UpdateStatusState(DownloadStatus.Paused);
+        StateChanged?.Invoke(this);
+        return true;
     }
 
     public void MarkAsPending()
