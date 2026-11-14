@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Akinci.Infrastructure.Settings;
 
 namespace Akinci.UI.Services;
 
@@ -37,6 +38,14 @@ public sealed class SettingsService
 
         _settingsFilePath = Path.Combine(appDir, "settings.json");
         _currentSettings = LoadSettings();
+
+        // Kurulum programının bıraktığı VirusTotal API anahtarını (varsa) ayarlara al
+        var pendingKey = PendingSettingFile.TryConsume(Path.Combine(appDir, "pending-virustotal-key"));
+        if (pendingKey != null)
+        {
+            _currentSettings.VirusTotalApiKey = pendingKey;
+            SaveSettings(_currentSettings);
+        }
     }
 
     private AppSettings LoadSettings()
