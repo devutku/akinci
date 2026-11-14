@@ -54,6 +54,18 @@ Akinci/
     └── Akinci.Infrastructure.IntegrationTests/
 ```
 
+## 💿 Kurulum (Windows)
+
+1. [Sürümler](https://github.com/devutku/akinci/releases) sayfasından `Akinci-Setup-<sürüm>.exe` dosyasını indirip çalıştırın.
+2. Kurulum programı imzasız olduğu için Windows SmartScreen *"Windows bilgisayarınızı korudu"* uyarısı gösterebilir: **Ek bilgi → Yine de çalıştır** seçin.
+3. Sihirbazı izleyin. Yönetici izni gerekmez; Akıncı `%LOCALAPPDATA%\Programs\Akinci` altına yalnızca sizin kullanıcınız için kurulur. VirusTotal API anahtarınız varsa sihirbazda girebilir, yoksa daha sonra **Ayarlar**'dan ekleyebilirsiniz.
+
+Kaldırmak için **Denetim Masası → Programlar ve Özellikler** (veya **Ayarlar → Uygulamalar**) içinden *Akıncı*'yı seçin. Kaldırma, indirdiğiniz dosyalara dokunmaz; ayarların ve indirme geçmişinin de silinip silinmeyeceği sorulur.
+
+Kurulum programı istemeyenler için aynı sürümde taşınabilir bir `.zip` paketi de bulunur.
+
+---
+
 ## 🛠 Derleme ve Tek Dosya (Single-File) Dağıtım
 
 Tüm bağımlılıkları içeren tek parça çalıştırılabilir dosya üretmek için:
@@ -66,6 +78,7 @@ publish.bat
 * `dist\Akinci\Akinci.exe` (Masaüstü Uygulaması)
 * `dist\Akinci\Akinci-CLI.exe` (Terminal Sürümü)
 * `dist\Akinci\Akinci-BrowserBridge.exe` (Tarayıcı Köprüsü)
+* `dist\Akinci-Setup-<sürüm>.exe` (Kurulum programı; [Inno Setup 6](https://jrsoftware.org/isinfo.php) kuruluysa üretilir: `winget install --id JRSoftware.InnoSetup -e`)
 
 ### Linux & macOS:
 ```bash

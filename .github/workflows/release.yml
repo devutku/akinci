@@ -56,6 +56,19 @@ jobs:
           Copy-Item src/Akinci.NativeHost/uninstall-host.bat dist/win-x64/
           Compress-Archive -Path dist/win-x64/* -DestinationPath "akinci-${{ github.ref_name }}-win-x64.zip"
 
+      - name: Build Windows Installer (Inno Setup)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
+          if (-not (Get-Command ISCC.exe -ErrorAction SilentlyContinue) -and -not (Test-Path $iscc)) {
+            choco install innosetup -y --no-progress
+          }
+          ./installer/build-installer.ps1 -SourceDir dist/win-x64 -OutputDir .
+          if (-not (Get-ChildItem Akinci-Setup-*.exe -ErrorAction SilentlyContinue)) {
+            throw 'Akinci-Setup-*.exe üretilemedi.'
+          }
+
       - name: Package Linux Artifacts
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -75,7 +88,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: akinci-${{ matrix.rid }}
-          path: akinci-${{ github.ref_name }}-*.*
+          path: |
+            akinci-${{ github.ref_name }}-*.*
+            Akinci-Setup-*.exe
+          if-no-files-found: error
 
   create-github-release:
     name: Create GitHub Release
@@ -94,6 +110,7 @@ jobs:
           prerelease: false
           generate_release_notes: true
           files: |
+            Akinci-Setup-*.exe
             akinci-*-win-x64.zip
             akinci-*-linux-x64.tar.gz
             akinci-*-osx-arm64.tar.gz
