@@ -312,15 +312,16 @@ public partial class DownloadItemViewModel : ObservableObject
 
     public async Task StartDownloadAsync()
     {
-        _downloadCts = new CancellationTokenSource();
+        var runCts = new CancellationTokenSource();
+        _downloadCts = runCts;
         UpdateStatusState(DownloadStatus.Downloading);
         StateChanged?.Invoke(this);
 
         var progress = new Progress<DownloadProgressDto>(UpdateFromProgress);
         try
         {
-            await _startHandler.HandleAsync(new StartDownloadCommand(Task.Id, progress), _downloadCts.Token);
-            if (MarkPausedIfCanceled())
+            await _startHandler.HandleAsync(new StartDownloadCommand(Task.Id, progress), runCts.Token);
+            if (MarkPausedIfCanceled(runCts))
             {
                 return;
             }
@@ -356,15 +357,16 @@ public partial class DownloadItemViewModel : ObservableObject
     [RelayCommand]
     public async Task ResumeAsync()
     {
-        _downloadCts = new CancellationTokenSource();
+        var runCts = new CancellationTokenSource();
+        _downloadCts = runCts;
         UpdateStatusState(DownloadStatus.Downloading);
         StateChanged?.Invoke(this);
 
         var progress = new Progress<DownloadProgressDto>(UpdateFromProgress);
         try
         {
-            await _resumeHandler.HandleAsync(new ResumeDownloadCommand(Task.Id, progress), _downloadCts.Token);
-            if (MarkPausedIfCanceled())
+            await _resumeHandler.HandleAsync(new ResumeDownloadCommand(Task.Id, progress), runCts.Token);
+            if (MarkPausedIfCanceled(runCts))
             {
                 return;
             }
@@ -388,11 +390,13 @@ public partial class DownloadItemViewModel : ObservableObject
     /// <summary>
     /// İndirme işleyicileri iptali kendi içinde yakalayıp (görevi duraklatıp) normal döner.
     /// Bu durumda bu görünüm modelindeki <see cref="Task"/> nesnesi güncel değildir (ör. hâlâ "Bekliyor");
-    /// ona bakılırsa kuyruk görevi hemen yeniden başlatır. İptal istenmişse görev duraklatılmış sayılır.
+    /// ona bakılırsa kuyruk görevi hemen yeniden başlatır. Bu çalıştırmanın iptal kaynağı iptal edilmişse
+    /// görev duraklatılmış sayılır. Paylaşılan <c>_downloadCts</c> alanına bakılmaz: "Yeniden Başlat" veya
+    /// hızlı duraklat/devam sonrasında o alan yeni, iptal edilmemiş bir kaynağı gösterir.
     /// </summary>
-    private bool MarkPausedIfCanceled()
+    private bool MarkPausedIfCanceled(CancellationTokenSource runCts)
     {
-        if (_downloadCts?.IsCancellationRequested != true)
+        if (!runCts.IsCancellationRequested)
         {
             return false;
         }
