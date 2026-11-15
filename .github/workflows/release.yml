@@ -60,10 +60,12 @@ jobs:
         if: matrix.os == 'windows-latest'
         shell: pwsh
         run: |
+          # Runner'daki Inno Setup eski olabilir (PNG sihirbaz görselleri ve x64compatible yeni sürüm ister);
+          # her zaman güncel sürümü kur/yükselt.
+          choco upgrade innosetup -y --no-progress
+          if ($LASTEXITCODE -ne 0) { throw "Inno Setup kurulamadı (choco çıkış kodu $LASTEXITCODE)." }
           $iscc = Join-Path ${env:ProgramFiles(x86)} 'Inno Setup 6\ISCC.exe'
-          if (-not (Get-Command ISCC.exe -ErrorAction SilentlyContinue) -and -not (Test-Path $iscc)) {
-            choco install innosetup -y --no-progress
-          }
+          if (Test-Path $iscc) { (Get-Item $iscc).VersionInfo.ProductVersion | ForEach-Object { "Inno Setup $_" } }
           ./installer/build-installer.ps1 -SourceDir dist/win-x64 -OutputDir .
           if (-not (Get-ChildItem Akinci-Setup-*.exe -ErrorAction SilentlyContinue)) {
             throw 'Akinci-Setup-*.exe üretilemedi.'

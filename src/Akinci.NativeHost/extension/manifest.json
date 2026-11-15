@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Akıncı Downloader Entegrasyonu",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Bağlantıları ve indirmeleri otomatik olarak Akıncı Çok Kanallı İndirme Motoruna aktarır.",
   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAp3hYJkgRxz5toDcHyNS+W4gDAPmgUEWi5ej+O6At+ZKtAvtuzJrOYNNrPgyNdIZlMlS3gmocbKJhtf7pXkOrrphRNAoM5gnEr4iGxVlxq5jOiTqSfuhKFfXgmb5t8ouiHuc3xajr4uPFTCB49IulqvB0Zkj5/JNhV5zgbpKF/HyxONnejPdR9MUHsZ0cXvIHqXwyBlR3wg2PJ/eXaK/DzozpsX4xihcRg9jiT4J8IsFPzZuaP9/8jkqfKR1QVqofWd84EzkRXcMB7NSbt5cXdN+t6rbnJ/oI6OhoxQ6sU4bX2vyke9jx4E5Ys6NQUtjWGSj9dR0uLdnSP35BL+nK0wIDAQAB",
   "permissions": [
