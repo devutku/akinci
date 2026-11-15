@@ -4,6 +4,33 @@ Bu projedeki tüm önemli değişiklikler bu dosyada belgelenmektedir.
 
 Biçimlendirme [Keep a Changelog](https://keepachangelog.com/tr/1.0.0/) standardına dayanmaktadır ve bu proje [Semantic Versioning](https://semver.org/lang/tr/) kurallarına uymaktadır.
 
+## [1.1.0] - 2026-11-15
+
+### ✨ Eklenenler (Added)
+- **Windows Kurulum Programı (`Akinci-Setup-<sürüm>.exe`):** Inno Setup tabanlı, yönetici izni istemeyen (kullanıcı başına) kurulum sihirbazı.
+  - Türkçe arayüz, Akıncı logosu, lisans sayfası (MIT + GPLv3), isteğe bağlı masaüstü kısayolu ve kurulum sonunda Akıncı'yı başlatma seçeneği.
+  - **VirusTotal sayfası:** API anahtarı olanlar sihirbazda girer, Akıncı ilk açılışta anahtarı ayarlarına alır; olmayanlara kısa açıklama ve ücretsiz hesap bağlantısı gösterilir. Anahtar kurulum günlüğüne yazılmaz.
+  - **Denetim Masası'ndan kaldırma:** Program dosyaları, kısayollar ve tarayıcı köprüsü kayıtları silinir; ayarların ve indirme geçmişinin silinip silinmeyeceği sorulur. İndirilen dosyalara dokunulmaz.
+  - Akıncı açıkken kurulum/kaldırma yapılırsa uygulama kullanıcı onayıyla düzgünce kapatılır, devam eden indirmeler duraklatılıp kaydedilir.
+  - `publish.bat` ve GitHub sürüm iş akışı kurulum programını da üretir.
+- **Tek Örnek (Single Instance):** Akıncı ikinci kez açıldığında yeni pencere açılmaz, çalışan pencere öne getirilir. `Akinci.exe --shutdown` çalışan Akıncı'yı indirmeleri duraklatıp kapatır.
+- **Chrome Web Store Hazırlığı:** Mağaza paketi betiği (`pack-extension.ps1`), gizlilik politikası (`PRIVACY.md`) ve başvuru rehberi (`CHROME_WEB_STORE.md`); mağaza eklenti kimliği tarayıcı köprüsünün izin listesine eklendi.
+
+### ⚡ Değiştirilenler ve İyileştirmeler (Changed)
+- **Kapanışta İndirmeler Korunur:** Tepsideki "Çıkış" artık devam eden indirmeleri duraklatıp kaydettikten sonra uygulamayı kapatır. Açılışta "İndiriliyor" durumunda kalmış (çökme, zorla kapatma) indirmeler "Duraklatıldı" yapılır ve kuyruğu tıkamaz.
+- **Tarayıcı Eklentisi Pano Okumuyor:** İçerik betiği artık panoyu okumuyor ve `clipboardRead` izni kaldırıldı; kopyalanan indirme bağlantısı kullanıcının seçtiği metinden algılanır. Sağ tıkla indirme için "Akıncı ile İndir" menüsü kullanılır.
+- **Sabit Eklenti Kimliği:** Paketlenmemiş eklenti sabit bir kimlik alır; Native Messaging yalnızca Akıncı eklentilerine izin verir (Chrome joker kimliği kabul etmiyordu).
+- Eklenti simgeleri bildirilen boyutlara (16/48/128 px) getirildi.
+
+### 🐛 Düzeltilenler (Fixed)
+- **Hız Sınırı Açıkken Takılma:** Saniyelik limitten büyük okumalar (128 KB tampon, HLS segmentleri) bant genişliği sınırlayıcısında sonsuza dek bekliyordu.
+- **"Güvenli" Yanlış Gösterimi:** VirusTotal'da kaydı olmayan veya hiçbir motorun sonuç vermediği dosyalar artık "güvenli" olarak gösterilmiyor.
+- **Duraklatılan İndirmenin Yeniden Başlaması:** Duraklatılan yeni bir indirme kuyruk tarafından hemen yeniden başlatılabiliyordu; "Yeniden Başlat" sonrasında aynı dosya iki kez indirilebiliyordu.
+- **Eklenti Kurulumu:** "Eklentiyi Kur" düğmesi eklenti dosyalarını bulamadığı halde başarılı diyordu; artık kaynak dosyalar bulunup kopyalanıyor, bulunamazsa gerçek hata mesajı gösteriliyor.
+- **Ayarlar Penceresi:** Küçük ekranlarda pencere ekrandan taşıyor ve kapatma düğmesine ulaşılamıyordu; içerik artık kaydırılabilir ve pencere ekrana sığar.
+
+---
+
 ## [1.0.2] - 2026-10-21
 
 ### ✨ Eklenenler (Added)
