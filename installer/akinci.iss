@@ -5,6 +5,10 @@
 #ifndef AppVersion
   #define AppVersion "0.0.0"
 #endif
+; VersionInfoVersion yalnızca sayısal sürüm kabul eder (ör. 1.1.0-beta.1 → 1.1.0)
+#ifndef NumericVersion
+  #define NumericVersion AppVersion
+#endif
 #ifndef SourceDir
   #define SourceDir "..\dist\Akinci"
 #endif
@@ -22,7 +26,7 @@ AppPublisher=Akıncı
 AppPublisherURL=https://github.com/devutku/akinci
 AppSupportURL=https://github.com/devutku/akinci/issues
 AppUpdatesURL=https://github.com/devutku/akinci/releases
-VersionInfoVersion={#AppVersion}
+VersionInfoVersion={#NumericVersion}
 DefaultDirName={autopf}\Akinci
 DefaultGroupName=Akıncı
 DisableProgramGroupPage=yes
@@ -32,6 +36,9 @@ ArchitecturesInstallIn64BitMode=x64compatible
 UninstallDisplayName=Akıncı
 UninstallDisplayIcon={app}\Akinci.exe
 SetupIconFile=..\src\Akinci.UI\Assets\akinci.ico
+; Akıncı logosu (installer\make-wizard-images.ps1 ile banner'dan üretilir)
+WizardImageFile=assets\wizard-large-202x386.png,assets\wizard-large-336x643.png,assets\wizard-large-430x824.png
+WizardSmallImageFile=assets\wizard-small.png
 LicenseFile={#LicenseFile}
 OutputBaseFilename=Akinci-Setup-{#AppVersion}
 ; Açık uygulama [Code] içinde tek örnek kilidi ve --shutdown ile ele alınır
@@ -41,8 +48,10 @@ SolidCompression=yes
 WizardStyle=modern
 ; Spec: sihirbaz "Hoş geldiniz" sayfasıyla başlar (Inno 6 varsayılanı bu sayfayı gizler)
 DisableWelcomePage=no
-; Dil, Windows arayüz diline göre otomatik seçilir; eşleşme yoksa sorulur
-ShowLanguageDialog=auto
+; Akıncı yalnızca Türkçe olduğu için kurulum da Windows dilinden bağımsız olarak Türkçe açılır
+; ([Languages] içindeki ilk dil). İngilizce gerekirse: Akinci-Setup.exe /LANG=english
+LanguageDetectionMethod=none
+ShowLanguageDialog=no
 
 
 [Languages]
@@ -72,6 +81,14 @@ turkish.ForceClose=Akıncı kapanmadı. Zorla kapatılsın mı?%n%nSon birkaç s
 english.ForceClose=Akıncı did not close. Force it to close?%n%nThe last few seconds of download progress may be downloaded again.
 turkish.AppStillRunning=Akıncı açık olduğu için kurulum devam edemiyor. Akıncı'yı sistem tepsisindeki simgeden "Çıkış" ile kapatıp kurulumu yeniden başlatın.
 english.AppStillRunning=Setup can't continue while Akıncı is running. Close Akıncı with "Exit" from its system tray icon and run Setup again.
+turkish.UninstallAppStillRunning=Akıncı açık olduğu için kaldırma devam edemiyor. Akıncı'yı sistem tepsisindeki simgeden "Çıkış" ile kapatıp kaldırmayı yeniden başlatın.
+english.UninstallAppStillRunning=Uninstall can't continue while Akıncı is running. Close Akıncı with "Exit" from its system tray icon and run the uninstaller again.
+turkish.ClosingAppTitle=Akıncı kapatılıyor
+english.ClosingAppTitle=Closing Akıncı
+turkish.ClosingAppSubtitle=Devam eden indirmeler duraklatılıp kaydediliyor.
+english.ClosingAppSubtitle=Active downloads are being paused and saved.
+turkish.ClosingApp=Akıncı'nın kapanması bekleniyor...
+english.ClosingApp=Waiting for Akıncı to close...
 turkish.DeleteUserData=Ayarlarınız, indirme geçmişiniz ve VirusTotal anahtarınız da silinsin mi?%n%nİndirdiğiniz dosyalar silinmez.
 english.DeleteUserData=Also delete your settings, download history and VirusTotal key?%n%nYour downloaded files are not deleted.
 turkish.ExtensionRemovalHint=Tarayıcı eklentisini Chrome'un eklentiler sayfasından (chrome://extensions) kaldırabilirsiniz.
@@ -126,6 +143,12 @@ begin
   end;
 end;
 
+{ Kurulum sihirbazında Akıncı'nın kapanması beklenirken gösterilen ilerleme sayfası.
+  Kaldırıcıda (sihirbaz yok) nil kalır. SetProgress pencere mesajlarını işlediği için
+  bekleme sırasında sihirbaz "Yanıt vermiyor" durumuna düşmez. }
+var
+  WaitPage: TOutputProgressWizardPage;
+
 function WaitForAkinciExit(MaxWaitMs: Integer): Boolean;
 var
   Waited: Integer;
@@ -133,14 +156,16 @@ begin
   Waited := 0;
   while CheckForMutexes(MutexName) and (Waited < MaxWaitMs) do
   begin
+    if WaitPage <> nil then
+      WaitPage.SetProgress(Waited, MaxWaitMs);
     Sleep(250);
     Waited := Waited + 250;
   end;
   Result := not CheckForMutexes(MutexName);
 end;
 
-{ Akıncı açıksa kullanıcıya sorar, --shutdown ile düzgünce kapatır; olmazsa zorla kapatmayı sorar.
-  Akıncı kapalıysa veya kapatıldıysa True döner. }
+{ Akıncı açıksa kullanıcıya sorar, ExePath'teki Akinci.exe --shutdown ile düzgünce kapatır;
+  olmazsa zorla kapatmayı sorar. Akıncı kapalıysa veya kapatıldıysa True döner. }
 function CloseRunningAkinci(const ExePath: String; Silent: Boolean): Boolean;
 var
   ResultCode: Integer;
@@ -156,11 +181,22 @@ begin
       exit;
     end;
 
-  if (ExePath <> '') and FileExists(ExePath) then
-    Exec(ExePath, '--shutdown', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  if (WaitPage <> nil) and not Silent then
+  begin
+    WaitPage.SetText(CustomMessage('ClosingApp'), '');
+    WaitPage.SetProgress(0, 1);
+    WaitPage.Show;
+  end;
+  try
+    if (ExePath <> '') and FileExists(ExePath) then
+      Exec(ExePath, '--shutdown', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 
-  if WaitForAkinciExit(15000) then
-    exit;
+    if WaitForAkinciExit(15000) then
+      exit;
+  finally
+    if WaitPage <> nil then
+      WaitPage.Hide;
+  end;
 
   if Silent then
   begin
@@ -177,13 +213,12 @@ begin
     Result := False;
 end;
 
-function InstalledAkinciExe: String;
-var
-  Location: String;
+{ Kurulumda --shutdown için bu kurulum programının içindeki (yeni) Akinci.exe kullanılır.
+  Böylece Akıncı kurulu olmasa da (ör. zip sürümü açıkken) düzgün kapatma çalışır. }
+function SetupAkinciExe: String;
 begin
-  Result := '';
-  if RegQueryStringValue(HKCU, UninstallKey, 'InstallLocation', Location) and (Location <> '') then
-    Result := AddBackslash(Location) + 'Akinci.exe';
+  ExtractTemporaryFile('Akinci.exe');
+  Result := ExpandConstant('{tmp}\Akinci.exe');
 end;
 
 procedure VtLinkClick(Sender: TObject);
@@ -220,6 +255,8 @@ begin
   Link.Top := VtPage.Edits[0].Top + VtPage.Edits[0].Height + ScaleY(12);
   Link.Left := VtPage.Edits[0].Left;
   Link.OnClick := @VtLinkClick;
+
+  WaitPage := CreateOutputProgressPage(CustomMessage('ClosingAppTitle'), CustomMessage('ClosingAppSubtitle'));
 end;
 
 function NextButtonClick(CurPageID: Integer): Boolean;
@@ -238,7 +275,9 @@ end;
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 begin
   Result := '';
-  if not CloseRunningAkinci(InstalledAkinciExe, WizardSilent) then
+  if not CheckForMutexes(MutexName) then
+    exit;
+  if not CloseRunningAkinci(SetupAkinciExe, WizardSilent) then
     Result := CustomMessage('AppStillRunning');
 end;
 
@@ -258,12 +297,6 @@ begin
   end;
 end;
 
-function InitializeUninstall: Boolean;
-begin
-  Result := CloseRunningAkinci(ExpandConstant('{app}\Akinci.exe'), UninstallSilent);
-  if not Result and not UninstallSilent then
-    MsgBox(CustomMessage('AppStillRunning'), mbError, MB_OK);
-end;
 
 procedure DeleteUserDataFiles(const Dir: String);
 begin
@@ -280,6 +313,19 @@ var
   Dir: String;
   DeleteData: Boolean;
 begin
+  { Açık Akıncı, kullanıcı kaldırmayı onayladıktan SONRA kapatılır (usAppMutexCheck onaydan sonra gelir).
+    Kapatılamazsa Abort() kaldırmayı durdurur. }
+  if CurUninstallStep = usAppMutexCheck then
+  begin
+    if not CloseRunningAkinci(ExpandConstant('{app}\Akinci.exe'), UninstallSilent) then
+    begin
+      if not UninstallSilent then
+        MsgBox(CustomMessage('UninstallAppStillRunning'), mbError, MB_OK);
+      Abort;
+    end;
+    exit;
+  end;
+
   if CurUninstallStep <> usPostUninstall then
     exit;
 
