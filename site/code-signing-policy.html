@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Code signing policy — Akıncı</title>
+  <meta name="description" content="Akıncı kod imzalama politikası / code signing policy: SignPath.io ve SignPath Foundation, ekip rolleri ve gizlilik.">
+  <meta name="theme-color" content="#0B1120">
+  <link rel="icon" type="image/png" sizes="64x64" href="assets/akinci-mark-64.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#icerik">İçeriğe atla</a>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="./" aria-label="Akıncı ana sayfa">
+        <img src="assets/akinci-mark-64.png" width="32" height="32" alt="" class="brand-mark">
+        <span>Akıncı</span>
+      </a>
+      <nav aria-label="Sayfa bölümleri">
+        <ul class="nav-links">
+          <li><a href="./#ozellikler">Özellikler</a></li>
+          <li><a href="./#kurulum">Kurulum</a></li>
+          <li><a href="./#indir">İndir</a></li>
+          <li><a href="./#sss">SSS</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main id="icerik" class="section">
+    <div class="container narrow policy">
+      <h1>Code signing policy</h1>
+      <p class="section-lead">Kod imzalama politikası</p>
+
+      <section aria-labelledby="signing">
+        <h2 id="signing">Code signing</h2>
+        <p><strong>Free code signing provided by <a href="https://signpath.io">SignPath.io</a>, certificate by <a href="https://signpath.org">SignPath Foundation</a>.</strong></p>
+        <p>Windows binaries of Akıncı (<code>Akinci.exe</code>, <code>Akinci-CLI.exe</code>, <code>Akinci-BrowserBridge.exe</code>) and the installer (<code>Akinci-Setup-&lt;version&gt;.exe</code>) are built by <a href="https://github.com/devutku/akinci/actions/workflows/release.yml">GitHub Actions</a> from the public source code at <a href="https://github.com/devutku/akinci">github.com/devutku/akinci</a> and are signed through SignPath. Every signing request is approved manually by a project approver.</p>
+        <p><em>Status:</em> the application for a SignPath Foundation certificate is in progress. Releases published before code signing is active are not signed.</p>
+        <p lang="tr">Akıncı'nın Windows dosyaları ve kurulum programı, herkese açık kaynak kodundan GitHub Actions ile derlenir ve SignPath üzerinden imzalanır; her imzalama isteği proje onaylayıcısı tarafından elle onaylanır. <em>Durum:</em> SignPath Foundation sertifikası başvurusu sürüyor; imzalama etkinleşmeden önce yayınlanan sürümler imzasızdır.</p>
+      </section>
+
+      <section aria-labelledby="roles">
+        <h2 id="roles">Team roles</h2>
+        <ul>
+          <li><strong>Committers and reviewers:</strong> <a href="https://github.com/devutku">devutku</a></li>
+          <li><strong>Approvers:</strong> <a href="https://github.com/devutku">devutku</a></li>
+        </ul>
+        <p lang="tr">Ekip rolleri: Kod yazma, inceleme ve imzalama onayı rolleri proje sahibi <a href="https://github.com/devutku">devutku</a> tarafından yürütülür. Proje dışından gelen her değişiklik (pull request) birleştirilmeden önce incelenir.</p>
+      </section>
+
+      <section aria-labelledby="privacy">
+        <h2 id="privacy">Privacy policy</h2>
+        <p>This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it. Downloads are made only from addresses the user requests; the optional VirusTotal check sends only the SHA-256 hash of a finished file and only if the user enters a VirusTotal API key; the browser extension sends download details only to the Akıncı app on the same computer.</p>
+        <p>Full privacy policy: <a href="https://github.com/devutku/akinci/blob/main/PRIVACY.md">PRIVACY.md</a></p>
+        <p lang="tr">Bu program, kullanıcı ya da onu kuran/çalıştıran kişi açıkça istemedikçe hiçbir bilgiyi başka ağ sistemlerine aktarmaz. Ayrıntılar: <a href="https://github.com/devutku/akinci/blob/main/PRIVACY.md">Gizlilik politikası</a>.</p>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="brand footer-brand">
+        <img src="assets/akinci-mark-64.png" width="28" height="28" alt="" class="brand-mark">
+        <span>Akıncı</span>
+      </div>
+      <ul class="footer-links">
+        <li><a href="https://github.com/devutku/akinci">GitHub</a></li>
+        <li><a href="https://github.com/devutku/akinci/blob/main/PRIVACY.md">Gizlilik</a></li>
+        <li><a href="code-signing-policy.html">Code signing policy</a></li>
+      </ul>
+    </div>
+  </footer>
+</body>
+</html>

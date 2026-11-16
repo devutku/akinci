@@ -129,3 +129,6 @@ jobs:
             * **Avalonia UI Koyu Tema:** Modern koyu arayüz, gerçek zamanlı parça ilerleme grafiği ve hız sayaçları.
             * **Sistem Tepsisi & Bildirimler:** Arka planda çalışma (minimize-to-tray) ve yerel toast masaüstü bildirimleri.
             * **Tarayıcı Entegrasyonu:** Chrome, Microsoft Edge ve Firefox için Native Messaging Host ve sağ tık *"Akıncı ile İndir"* eklentisi.
+            
+            ### 🔏 Kod imzalama
+            [Code signing policy](https://devutku.github.io/akinci/code-signing-policy.html) · Free code signing provided by SignPath.io, certificate by SignPath Foundation (başvuru sürüyor).
