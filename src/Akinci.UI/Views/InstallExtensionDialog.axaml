@@ -97,8 +97,9 @@
             </Border>
 
             <!-- Status Info -->
-            <TextBlock x:Name="TxtStatus" Text="Kayıt defteri ve yerel ana bilgisayar (Native Host) otomatik yapılandırılacaktır."
-                       FontSize="11" Foreground="#64748B" HorizontalAlignment="Center" />
+            <TextBlock x:Name="TxtStatus" Text="Tarayıcı köprüsü otomatik yapılandırılacak, ardından eklentinin Chrome Web Mağazası sayfası açılacak. Orada 'Chrome'a ekle' demeniz yeterli."
+                       FontSize="11" Foreground="#64748B" HorizontalAlignment="Center"
+                       TextWrapping="Wrap" TextAlignment="Center" />
 
             <!-- Action Buttons -->
             <Grid ColumnDefinitions="Auto,*,Auto">

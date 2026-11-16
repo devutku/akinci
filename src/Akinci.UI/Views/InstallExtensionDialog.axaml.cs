@@ -24,9 +24,8 @@ public partial class InstallExtensionDialog : Window
         var result = BrowserIntegrationService.SetupIntegration();
         if (result.Success)
         {
-            // Eklenti klasörünü aç ve Chrome eklentiler sayfasına yönlendir
-            BrowserIntegrationService.OpenExtensionFolder();
-            BrowserIntegrationService.OpenChromeExtensionsPage();
+            // Tarayıcı köprüsü kaydedildi; eklentiyi tek tıkla kurmak için Chrome Web Mağazası sayfasını aç
+            BrowserIntegrationService.OpenChromeWebStorePage();
 
             if (_settingsService != null)
             {
