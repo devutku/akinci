@@ -32,6 +32,8 @@ Bu kimlik, masaüstü uygulamasının Native Messaging izin listesinde bulunmal�
 
 ## 3. Store listing
 
+Eklenti 1.2.0'dan itibaren çok dillidir: ad, açıklama ve arayüz metinleri `extension/_locales/<dil>/messages.json` dosyalarından gelir (`default_locale` İngilizce; tarayıcı dili Türkçe ise Türkçe). Mağazada görünen ad da kullanıcının diline göre bu dosyalardan seçilir; panelde dil başına ayrı açıklama girilebiliyorsa aşağıdaki metnin Türkçesi eklenebilir.
+
 **Summary (kısa açıklama, en fazla 132 karakter):**
 
 > Send downloads from Chrome to the Akıncı desktop download manager for faster, resumable, multi-connection downloads.
@@ -42,7 +44,8 @@ Bu kimlik, masaüstü uygulamasının Native Messaging izin listesinde bulunmal�
 >
 > What it does:
 > • Automatically hands over downloads of common file types (archives, installers, disk images, videos, audio, PDFs) to Akıncı instead of Chrome's built-in downloader.
-> • Adds a "Akıncı ile İndir" (Download with Akıncı) item to the right-click menu for links, images, video and audio.
+> • Adds a "Download with Akıncı" item to the right-click menu for links, images, video and audio.
+> • Available in English and Turkish (follows the browser language).
 > • Detects HLS (.m3u8) and DASH (.mpd) video streams on the page and shows a download button.
 > • Shows a download button when you select and copy a download link.
 > • Forwards the site's cookies with the download so downloads that require you to be signed in keep working.

@@ -9,6 +9,9 @@
     let lastPromptedUrl = null;
     let lastPromptedTime = 0;
 
+    // Arayüz metinleri _locales/<dil>/messages.json içinden gelir (tarayıcı dili Türkçe değilse İngilizce)
+    const t = (key) => escapeHtml(chrome.i18n.getMessage(key));
+
     // Ortak Overlay Kök Kapsayıcısını Hazırla (Sağ Üst)
     function ensureOverlayRoot() {
         if (!overlayRoot || !document.body.contains(overlayRoot)) {
@@ -37,7 +40,7 @@
 
         detectedStreams.set(streamUrl, {
             url: streamUrl,
-            title: title || document.title || "Canlı Akış",
+            title: title || document.title || chrome.i18n.getMessage("liveStream"),
             detectedAt: Date.now()
         });
 
@@ -55,19 +58,19 @@
         container.id = "akinci-stream-overlay";
 
         const isLive = !streamUrl.includes(".mp4") && (streamUrl.includes(".m3u8") || streamUrl.includes(".mpd"));
-        const displayTitle = (title || document.title || "Canlı Yayın").trim();
+        const displayTitle = (title || document.title || chrome.i18n.getMessage("liveStream")).trim();
 
         container.innerHTML = `
             <div class="akinci-media-badge">
-                ${isLive ? '<span class="akinci-pulse-dot" title="Canlı Akış Algılandı"></span>' : ''}
-                <button class="akinci-media-btn" id="akinci-trigger-download" title="Bu medyayı Akıncı ile İndir">
+                ${isLive ? `<span class="akinci-pulse-dot" title="${t("liveStreamDetected")}"></span>` : ''}
+                <button class="akinci-media-btn" id="akinci-trigger-download" title="${t("downloadThisMedia")}">
                     <svg class="akinci-media-icon" viewBox="0 0 24 24">
                         <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/>
                     </svg>
-                    <span>${isLive ? "Yayını İndir" : "Videoyu İndir"}</span>
+                    <span>${isLive ? t("downloadStream") : t("downloadVideo")}</span>
                 </button>
                 <span class="akinci-media-title" title="${escapeHtml(displayTitle)}">${escapeHtml(displayTitle)}</span>
-                <button class="akinci-close-btn" id="akinci-dismiss-btn" title="Kapat">✕</button>
+                <button class="akinci-close-btn" id="akinci-dismiss-btn" title="${t("close")}">✕</button>
             </div>
         `;
 
@@ -83,7 +86,7 @@
                 <svg class="akinci-media-icon" viewBox="0 0 24 24">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                 </svg>
-                <span>Akıncı'ya Aktarıldı</span>
+                <span>${t("sentToAkinci")}</span>
             `;
 
             chrome.runtime.sendMessage({
@@ -186,13 +189,13 @@
                     </svg>
                 </div>
                 <div class="akinci-copy-details">
-                    <span class="akinci-copy-tag">Bağlantı Algılandı</span>
+                    <span class="akinci-copy-tag">${t("linkDetected")}</span>
                     <span class="akinci-media-title" title="${escapeHtml(url)}">${escapeHtml(displayFileName)}</span>
                 </div>
-                <button class="akinci-media-btn" id="akinci-trigger-copy-download" title="Bu bağlantıyı Akıncı ile İndir">
-                    <span>Akıncı ile İndir</span>
+                <button class="akinci-media-btn" id="akinci-trigger-copy-download" title="${t("downloadThisLink")}">
+                    <span>${t("downloadWithAkinci")}</span>
                 </button>
-                <button class="akinci-close-btn" id="akinci-dismiss-copy-btn" title="Kapat">✕</button>
+                <button class="akinci-close-btn" id="akinci-dismiss-copy-btn" title="${t("close")}">✕</button>
                 <div class="akinci-progress-track">
                     <div class="akinci-progress-bar"></div>
                 </div>
@@ -242,7 +245,7 @@
                 <svg class="akinci-media-icon" viewBox="0 0 24 24">
                     <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
                 </svg>
-                <span>Akıncı'ya Aktarıldı</span>
+                <span>${t("sentToAkinci")}</span>
             `;
 
             chrome.runtime.sendMessage({

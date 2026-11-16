@@ -1,0 +1,54 @@
+{
+  "extName": {
+    "message": "Akıncı Downloader Entegrasyonu",
+    "description": "Tarayıcıda ve Chrome Web Mağazası'nda görünen eklenti adı."
+  },
+  "extDescription": {
+    "message": "Bağlantıları ve indirmeleri otomatik olarak Akıncı Çok Kanallı İndirme Motoruna aktarır.",
+    "description": "Eklenti açıklaması (en fazla 132 karakter)."
+  },
+  "actionTitle": {
+    "message": "Akıncı Downloader",
+    "description": "Araç çubuğu düğmesinin ipucu."
+  },
+  "downloadWithAkinci": {
+    "message": "Akıncı ile İndir",
+    "description": "Sağ tık menüsü ve kopyalama bildirimi düğmesi."
+  },
+  "liveStream": {
+    "message": "Canlı Yayın",
+    "description": "Sayfanın başlığı yoksa algılanan akış için kullanılan başlık."
+  },
+  "liveStreamDetected": {
+    "message": "Canlı Akış Algılandı",
+    "description": "Medya rozetindeki yanıp sönen noktanın ipucu."
+  },
+  "downloadThisMedia": {
+    "message": "Bu medyayı Akıncı ile İndir",
+    "description": "Medya rozeti indirme düğmesinin ipucu."
+  },
+  "downloadStream": {
+    "message": "Yayını İndir",
+    "description": "Canlı (HLS/DASH) akış için medya rozeti düğmesi."
+  },
+  "downloadVideo": {
+    "message": "Videoyu İndir",
+    "description": "Video dosyası için medya rozeti düğmesi."
+  },
+  "sentToAkinci": {
+    "message": "Akıncı'ya Aktarıldı",
+    "description": "İndirme Akıncı'ya aktarıldıktan sonra düğmede gösterilir."
+  },
+  "linkDetected": {
+    "message": "Bağlantı Algılandı",
+    "description": "Kullanıcı bir indirme bağlantısı kopyaladığında çıkan bildirimin etiketi."
+  },
+  "downloadThisLink": {
+    "message": "Bu bağlantıyı Akıncı ile İndir",
+    "description": "Kopyalama bildirimi indirme düğmesinin ipucu."
+  },
+  "close": {
+    "message": "Kapat",
+    "description": "Kapat (✕) düğmesinin ipucu."
+  }
+}
