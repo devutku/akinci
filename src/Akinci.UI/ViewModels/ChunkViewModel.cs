@@ -21,7 +21,7 @@ public partial class ChunkViewModel : ObservableObject
     [ObservableProperty]
     private bool _isCompleted;
 
-    public string Title => $"Parça #{Index + 1}";
+    public string Title => Localization.Strings.ChunkTitle(Index + 1);
     public string RangeText => $"{Start / 1024.0:F0} KB - {End / 1024.0:F0} KB";
 
     public ChunkViewModel(int index, long start, long end, long currentOffset)

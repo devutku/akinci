@@ -134,6 +134,60 @@ public class SqliteRepositoryIntegrationTests : IAsyncLifetime
         Assert.Equal("Mozilla/5.0 TestBrowser/1.0", loaded.Credentials.UserAgent);
     }
 
+    private static DownloadTask CreateScannedTask(SecurityVerdict verdict)
+    {
+        var task = DownloadTask.Create(
+            DownloadUrl.Create("https://example.com/scan.zip"),
+            @"C:\Downloads\scan.zip",
+            totalBytes: 1000,
+            supportsRangeRequests: true);
+        task.SetSha256(verdict.Sha256Hash);
+        task.SetSecurityVerdict(verdict);
+        return task;
+    }
+
+    [Fact]
+    public async Task SecurityVerdictReason_IsPersisted()
+    {
+        var task = CreateScannedTask(SecurityVerdict.RateLimited("hash-rate"));
+        await _repository.AddAsync(task);
+
+        var loaded = await _repository.GetByIdAsync(task.Id);
+
+        Assert.NotNull(loaded?.SecurityVerdict);
+        Assert.Equal(SecurityVerdictReason.RateLimited, loaded.SecurityVerdict.Reason);
+    }
+
+    [Theory]
+    [InlineData("VirusTotal API anahtarı girilmedi (Tarama atlandı)", false, SecurityVerdictReason.NoApiKey)]
+    [InlineData("VirusTotal veritabanında kaydı yok (Bilinmeyen/Yeni dosya)", true, SecurityVerdictReason.NotFound)]
+    [InlineData("VirusTotal bağlantı hatası: No such host is known.", false, SecurityVerdictReason.ConnectionError)]
+    [InlineData("VirusTotal API istek limiti aşıldı (Rate limit)", false, SecurityVerdictReason.RateLimited)]
+    [InlineData("Yanıt formatı çözümlenemedi", false, SecurityVerdictReason.InvalidResponse)]
+    [InlineData("Henüz taranmadı", false, SecurityVerdictReason.None)]
+    public async Task SecurityVerdictReason_IsInferredForRowsSavedBeforeTheReasonColumn(
+        string legacyMessage, bool isScanned, SecurityVerdictReason expected)
+    {
+        var task = CreateScannedTask(new SecurityVerdict("legacy-hash", isScanned, customMessage: legacyMessage));
+        await _repository.AddAsync(task);
+
+        // Eski sürümün kaydettiği satırı taklit et: vt_reason kolonu boş
+        await using (var connection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source={_tempDbPath}"))
+        {
+            await connection.OpenAsync();
+            await using var cmd = connection.CreateCommand();
+            cmd.CommandText = "UPDATE downloads SET vt_reason = NULL WHERE id = $id;";
+            cmd.Parameters.AddWithValue("$id", task.Id.ToString());
+            Assert.Equal(1, await cmd.ExecuteNonQueryAsync());
+        }
+
+        var loaded = await _repository.GetByIdAsync(task.Id);
+
+        Assert.NotNull(loaded?.SecurityVerdict);
+        Assert.Equal(expected, loaded.SecurityVerdict.Reason);
+        Assert.Equal(legacyMessage, loaded.SecurityVerdict.CustomMessage);
+    }
+
     public async Task DisposeAsync()
     {
         await _repository.DisposeAsync();

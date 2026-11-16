@@ -1,3 +1,5 @@
+using Akinci.Domain.Enums;
+
 namespace Akinci.Domain.ValueObjects;
 
 /// <summary>
@@ -13,6 +15,12 @@ public sealed record SecurityVerdict
     public int UndetectedVotes { get; }
     public string? ScanUrl { get; }
     public string? CustomMessage { get; }
+
+    /// <summary>
+    /// Sonucun motor sayılarıyla ifade edilemediği durumların dil bağımsız kodu.
+    /// Arayüzler kullanıcı metnini <see cref="CustomMessage"/> yerine bu koddan üretmelidir.
+    /// </summary>
+    public SecurityVerdictReason Reason { get; }
 
     public int TotalEngines => MaliciousVotes + SuspiciousVotes + HarmlessVotes + UndetectedVotes;
     /// <summary>
@@ -30,7 +38,8 @@ public sealed record SecurityVerdict
         int harmlessVotes = 0,
         int undetectedVotes = 0,
         string? scanUrl = null,
-        string? customMessage = null)
+        string? customMessage = null,
+        SecurityVerdictReason reason = SecurityVerdictReason.None)
     {
         Sha256Hash = sha256Hash ?? throw new ArgumentNullException(nameof(sha256Hash));
         IsScanned = isScanned;
@@ -40,13 +49,31 @@ public sealed record SecurityVerdict
         UndetectedVotes = Math.Max(0, undetectedVotes);
         ScanUrl = scanUrl;
         CustomMessage = customMessage;
+        Reason = reason;
     }
 
     public static SecurityVerdict Unscanned(string sha256Hash) =>
         new(sha256Hash, isScanned: false, customMessage: "Henüz taranmadı");
 
     public static SecurityVerdict NotFound(string sha256Hash) =>
-        new(sha256Hash, isScanned: true, customMessage: "VirusTotal veritabanında kaydı yok (Bilinmeyen/Yeni dosya)");
+        new(sha256Hash, isScanned: true, customMessage: "VirusTotal veritabanında kaydı yok (Bilinmeyen/Yeni dosya)",
+            reason: SecurityVerdictReason.NotFound);
+
+    public static SecurityVerdict NoApiKey(string sha256Hash) =>
+        new(sha256Hash, isScanned: false, customMessage: "VirusTotal API anahtarı girilmedi (Tarama atlandı)",
+            reason: SecurityVerdictReason.NoApiKey);
+
+    public static SecurityVerdict RateLimited(string sha256Hash) =>
+        new(sha256Hash, isScanned: false, customMessage: "VirusTotal API istek limiti aşıldı (Rate limit)",
+            reason: SecurityVerdictReason.RateLimited);
+
+    public static SecurityVerdict InvalidResponse(string sha256Hash) =>
+        new(sha256Hash, isScanned: false, customMessage: "Yanıt formatı çözümlenemedi",
+            reason: SecurityVerdictReason.InvalidResponse);
+
+    public static SecurityVerdict ConnectionError(string sha256Hash, string detail) =>
+        new(sha256Hash, isScanned: false, customMessage: $"VirusTotal bağlantı hatası: {detail}",
+            reason: SecurityVerdictReason.ConnectionError);
 
     public static SecurityVerdict Clean(string sha256Hash, int harmlessVotes, int totalEngines, string? scanUrl = null) =>
         new(sha256Hash, isScanned: true, 0, 0, harmlessVotes, totalEngines - harmlessVotes, scanUrl);

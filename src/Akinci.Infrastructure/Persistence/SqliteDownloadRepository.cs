@@ -86,7 +86,8 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
                         vt_harmless INTEGER,
                         vt_undetected INTEGER,
                         vt_scan_url TEXT,
-                        vt_custom_message TEXT
+                        vt_custom_message TEXT,
+                        vt_reason INTEGER
                     );
 
                     CREATE TABLE IF NOT EXISTS chunks (
@@ -120,6 +121,18 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
                 // Kolonlar zaten mevcutsa SQLite hata fırlatır, yoksay
             }
 
+            // Ayrı komut: yukarıdaki toplu ALTER ilk kolonda hata verip durduğu için orada çalışmazdı
+            try
+            {
+                await using var alterReasonCmd = connection.CreateCommand();
+                alterReasonCmd.CommandText = "ALTER TABLE downloads ADD COLUMN vt_reason INTEGER;";
+                await alterReasonCmd.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
+            }
+            catch
+            {
+                // Kolon zaten mevcut
+            }
+
             _initialized = true;
         }
         finally
@@ -146,14 +159,14 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
                     sha256_hash, auth_type, auth_username, auth_password, auth_domain,
                     auth_use_default_credentials, session_cookies, session_referer, session_user_agent,
                     vt_is_scanned, vt_malicious, vt_suspicious,
-                    vt_harmless, vt_undetected, vt_scan_url, vt_custom_message
+                    vt_harmless, vt_undetected, vt_scan_url, vt_custom_message, vt_reason
                 ) VALUES (
                     $id, $url, $destination_file_path, $total_bytes, $supports_range, $status,
                     $created_at, $started_at, $paused_at, $completed_at, $failure_reason,
                     $sha256_hash, $auth_type, $auth_username, $auth_password, $auth_domain,
                     $auth_use_default_credentials, $session_cookies, $session_referer, $session_user_agent,
                     $vt_is_scanned, $vt_malicious, $vt_suspicious,
-                    $vt_harmless, $vt_undetected, $vt_scan_url, $vt_custom_message
+                    $vt_harmless, $vt_undetected, $vt_scan_url, $vt_custom_message, $vt_reason
                 );
             ";
             BindTaskParameters(cmd, task);
@@ -218,7 +231,8 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
                     vt_harmless = $vt_harmless,
                     vt_undetected = $vt_undetected,
                     vt_scan_url = $vt_scan_url,
-                    vt_custom_message = $vt_custom_message
+                    vt_custom_message = $vt_custom_message,
+                    vt_reason = $vt_reason
                 WHERE id = $id;
             ";
             BindTaskParameters(cmd, task);
@@ -427,6 +441,7 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
             cmd.Parameters.AddWithValue("$vt_undetected", v.UndetectedVotes);
             cmd.Parameters.AddWithValue("$vt_scan_url", (object?)v.ScanUrl ?? DBNull.Value);
             cmd.Parameters.AddWithValue("$vt_custom_message", (object?)v.CustomMessage ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("$vt_reason", (int)v.Reason);
         }
         else
         {
@@ -437,6 +452,7 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
             cmd.Parameters.AddWithValue("$vt_undetected", DBNull.Value);
             cmd.Parameters.AddWithValue("$vt_scan_url", DBNull.Value);
             cmd.Parameters.AddWithValue("$vt_custom_message", DBNull.Value);
+            cmd.Parameters.AddWithValue("$vt_reason", DBNull.Value);
         }
     }
 
@@ -512,11 +528,55 @@ public sealed class SqliteDownloadRepository : IDownloadRepository, IAsyncDispos
             var scanUrl = reader.IsDBNull(reader.GetOrdinal("vt_scan_url")) ? null : reader.GetString(reader.GetOrdinal("vt_scan_url"));
             var customMsg = reader.IsDBNull(reader.GetOrdinal("vt_custom_message")) ? null : reader.GetString(reader.GetOrdinal("vt_custom_message"));
 
-            var verdict = new SecurityVerdict(task.Sha256Hash, isScanned, mal, susp, harm, undet, scanUrl, customMsg);
+            var reasonOrdinal = reader.GetOrdinal("vt_reason");
+            var reason = reader.IsDBNull(reasonOrdinal)
+                ? InferLegacyReason(isScanned, customMsg)
+                : (SecurityVerdictReason)reader.GetInt32(reasonOrdinal);
+
+            var verdict = new SecurityVerdict(task.Sha256Hash, isScanned, mal, susp, harm, undet, scanUrl, customMsg, reason);
             task.SetSecurityVerdict(verdict);
         }
 
         return task;
+    }
+
+    /// <summary>
+    /// vt_reason kolonundan önce kaydedilmiş sonuçlar yalnızca Türkçe mesaj içerir.
+    /// Arayüzün bunları seçilen dilde gösterebilmesi için mesajdan durum kodunu çıkarır.
+    /// </summary>
+    private static SecurityVerdictReason InferLegacyReason(bool isScanned, string? customMessage)
+    {
+        if (string.IsNullOrEmpty(customMessage))
+        {
+            return SecurityVerdictReason.None;
+        }
+
+        if (isScanned && customMessage.StartsWith("VirusTotal veritabanında kaydı yok", StringComparison.Ordinal))
+        {
+            return SecurityVerdictReason.NotFound;
+        }
+
+        if (customMessage.StartsWith("VirusTotal API anahtarı girilmedi", StringComparison.Ordinal))
+        {
+            return SecurityVerdictReason.NoApiKey;
+        }
+
+        if (customMessage.StartsWith("VirusTotal API istek limiti", StringComparison.Ordinal))
+        {
+            return SecurityVerdictReason.RateLimited;
+        }
+
+        if (customMessage.StartsWith("Yanıt formatı çözümlenemedi", StringComparison.Ordinal))
+        {
+            return SecurityVerdictReason.InvalidResponse;
+        }
+
+        if (customMessage.StartsWith("VirusTotal bağlantı hatası", StringComparison.Ordinal))
+        {
+            return SecurityVerdictReason.ConnectionError;
+        }
+
+        return SecurityVerdictReason.None;
     }
 
     private static int GetOrdinalOrDefault(SqliteDataReader reader, string columnName)

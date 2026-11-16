@@ -28,10 +28,7 @@ public sealed class VirusTotalSecurityScanner : IFileSecurityScanner
 
         if (string.IsNullOrWhiteSpace(_apiKey))
         {
-            return new SecurityVerdict(
-                sha256Hash,
-                isScanned: false,
-                customMessage: "VirusTotal API anahtarı girilmedi (Tarama atlandı)");
+            return SecurityVerdict.NoApiKey(sha256Hash);
         }
 
         using var request = new HttpRequestMessage(HttpMethod.Get, $"api/v3/files/{sha256Hash}");
@@ -49,10 +46,7 @@ public sealed class VirusTotalSecurityScanner : IFileSecurityScanner
 
             if (response.StatusCode == (HttpStatusCode)429)
             {
-                return new SecurityVerdict(
-                    sha256Hash,
-                    isScanned: false,
-                    customMessage: "VirusTotal API istek limiti aşıldı (Rate limit)");
+                return SecurityVerdict.RateLimited(sha256Hash);
             }
 
             response.EnsureSuccessStatusCode();
@@ -65,7 +59,7 @@ public sealed class VirusTotalSecurityScanner : IFileSecurityScanner
                 !data.TryGetProperty("attributes", out var attributes) ||
                 !attributes.TryGetProperty("last_analysis_stats", out var stats))
             {
-                return new SecurityVerdict(sha256Hash, isScanned: false, customMessage: "Yanıt formatı çözümlenemedi");
+                return SecurityVerdict.InvalidResponse(sha256Hash);
             }
 
             int malicious = stats.TryGetProperty("malicious", out var malProp) ? malProp.GetInt32() : 0;
@@ -86,10 +80,7 @@ public sealed class VirusTotalSecurityScanner : IFileSecurityScanner
         }
         catch (HttpRequestException ex)
         {
-            return new SecurityVerdict(
-                sha256Hash,
-                isScanned: false,
-                customMessage: $"VirusTotal bağlantı hatası: {ex.Message}");
+            return SecurityVerdict.ConnectionError(sha256Hash, ex.Message);
         }
     }
 }

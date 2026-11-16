@@ -1,3 +1,4 @@
+using Akinci.UI.Localization;
 using Akinci.UI.Services;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -41,7 +42,7 @@ public partial class InstallExtensionDialog : Window
             var txt = this.FindControl<TextBlock>("TxtStatus");
             if (txt != null)
             {
-                txt.Text = result.Error ?? "Eklenti kurulamadı.";
+                txt.Text = result.Error ?? Strings.ExtensionInstallFailedGeneric;
                 txt.Foreground = Avalonia.Media.Brushes.Red;
             }
         }

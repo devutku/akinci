@@ -1,3 +1,4 @@
+using Akinci.UI.Localization;
 using Akinci.UI.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -16,7 +17,7 @@ public partial class SettingsDialog : Window
         var version = typeof(SettingsDialog).Assembly.GetName().Version;
         if (version != null && this.FindControl<TextBlock>("TxtVersion") is { } txtVersion)
         {
-            txtVersion.Text = $"AKINCI İndirme Motoru v{version.ToString(3)}";
+            txtVersion.Text = Strings.AboutNameWithVersion(version.ToString(3));
         }
     }
 
@@ -26,7 +27,7 @@ public partial class SettingsDialog : Window
         {
             var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = "Varsayılan İndirme Konumu Seçin",
+                Title = Strings.ChooseDefaultFolder,
                 AllowMultiple = false
             });
 

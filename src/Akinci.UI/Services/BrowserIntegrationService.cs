@@ -155,7 +155,7 @@ public static class BrowserIntegrationService
             if (sources.ExtensionDir == null)
             {
                 return new IntegrationResult(false,
-                    "Eklenti dosyaları bulunamadı. Akıncı klasöründe 'extension' klasörü olduğundan emin olun.");
+                    Localization.Strings.ExtensionFilesNotFound);
             }
 
             Directory.CreateDirectory(hostDir);
@@ -258,11 +258,11 @@ public static class BrowserIntegrationService
         }
         catch (UnauthorizedAccessException ex)
         {
-            return new IntegrationResult(false, $"Yetki hatası: {ex.Message} Lütfen Akıncı'yı yönetici olarak çalıştırın.");
+            return new IntegrationResult(false, Localization.Strings.ExtensionPermissionError(ex.Message));
         }
         catch (Exception ex)
         {
-            return new IntegrationResult(false, $"Eklenti kurulamadı: {ex.Message}");
+            return new IntegrationResult(false, Localization.Strings.ExtensionInstallFailed(ex.Message));
         }
     }
 

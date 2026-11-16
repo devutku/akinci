@@ -1,4 +1,5 @@
 using Akinci.Domain.ValueObjects;
+using Akinci.UI.Localization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Akinci.UI.ViewModels;
@@ -9,10 +10,13 @@ public partial class AddDownloadDialogViewModel : ObservableObject
     private string _url = "";
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(DetectedUrlText))]
     private int _detectedUrlCount;
 
+    public string DetectedUrlText => Strings.LinksDetected(DetectedUrlCount);
+
     [ObservableProperty]
-    private string _submitButtonText = "İndirmeyi Başlat";
+    private string _submitButtonText = Strings.StartDownload;
 
     [ObservableProperty]
     private string _destinationDirectory;
@@ -24,7 +28,7 @@ public partial class AddDownloadDialogViewModel : ObservableObject
     private string? _customFileName;
 
     [ObservableProperty]
-    private string _selectedAuthType = "Yok";
+    private string _selectedAuthType = Strings.AuthNone;
 
     [ObservableProperty]
     private string? _userName;
@@ -38,9 +42,9 @@ public partial class AddDownloadDialogViewModel : ObservableObject
     [ObservableProperty]
     private bool _useDefaultCredentials;
 
-    public string[] AvailableAuthTypes { get; } = ["Yok", "Basic", "NTLM", "Kerberos", "Negotiate"];
+    public string[] AvailableAuthTypes { get; } = [Strings.AuthNone, "Basic", "NTLM", "Kerberos", "Negotiate"];
 
-    public bool IsAuthRequired => SelectedAuthType != "Yok";
+    public bool IsAuthRequired => SelectedAuthType != Strings.AuthNone;
     public bool ShowDomainField => SelectedAuthType is "NTLM" or "Kerberos" or "Negotiate";
 
     public AddDownloadDialogViewModel(string defaultDirectory, int defaultConnections = 8, string? initialUrl = null)
@@ -57,7 +61,7 @@ public partial class AddDownloadDialogViewModel : ObservableObject
     {
         var count = GetValidUrls().Count;
         DetectedUrlCount = count;
-        SubmitButtonText = count > 1 ? $"{count} İndirmeyi Başlat" : "İndirmeyi Başlat";
+        SubmitButtonText = count > 1 ? Strings.StartDownloads(count) : Strings.StartDownload;
     }
 
     public List<string> GetValidUrls()
@@ -87,7 +91,7 @@ public partial class AddDownloadDialogViewModel : ObservableObject
 
     public DownloadCredentials? BuildCredentials()
     {
-        if (SelectedAuthType == "Yok") return null;
+        if (SelectedAuthType == Strings.AuthNone) return null;
 
         if (UseDefaultCredentials)
         {
