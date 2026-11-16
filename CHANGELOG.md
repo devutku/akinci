@@ -4,6 +4,13 @@ Bu projedeki tüm önemli değişiklikler bu dosyada belgelenmektedir.
 
 Biçimlendirme [Keep a Changelog](https://keepachangelog.com/tr/1.0.0/) standardına dayanmaktadır ve bu proje [Semantic Versioning](https://semver.org/lang/tr/) kurallarına uymaktadır.
 
+## [1.1.1] - 2026-11-16
+
+### ⚡ Değiştirilenler ve İyileştirmeler (Changed)
+- **Tarayıcı Eklentisi Chrome Web Mağazası'nda:** Eklenti artık [Chrome Web Mağazası](https://chromewebstore.google.com/detail/coeeghhijegibfhhodhnjhjffaipckok)'nda yayında. "Eklentiyi Kur" adımı tarayıcı köprüsünü yapılandırdıktan sonra Geliştirici modu ve eklenti klasörü yerine mağaza sayfasını açar; "Chrome'a ekle" demek yeterli. Chrome kurulu değilse sayfa varsayılan tarayıcıda açılır (Edge, diğer mağazalardaki uzantılara izin vererek kurabilir).
+
+---
+
 ## [1.1.0] - 2026-11-15
 
 ### ✨ Eklenenler (Added)
