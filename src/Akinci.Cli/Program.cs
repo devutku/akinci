@@ -3,6 +3,7 @@ using Akinci.Application.DTOs;
 using Akinci.Application.UseCases.CreateDownload;
 using Akinci.Application.UseCases.ResumeDownload;
 using Akinci.Application.UseCases.StartDownload;
+using Akinci.Cli;
 using Akinci.Domain.Enums;
 using Akinci.Domain.ValueObjects;
 using Akinci.Infrastructure.Adapters;
@@ -19,25 +20,14 @@ Console.WriteLine(@"
   / /| | / // / / / /  |/ // /    / /  
  / ___ |/ // /_/ / / /|  // /___ _/ /   
 /_/  |_/_//_//___//_/ |_/ \____//___/   
-Clean Core Çok Kanallı İndirme Motoru
 ");
+Console.WriteLine(CliText.Tagline);
+Console.WriteLine();
 Console.ResetColor();
 
 if (args.Length == 0 || args[0] is "-h" or "--help")
 {
-    Console.WriteLine("Kullanım: akinci <URL> [seçenekler]");
-    Console.WriteLine();
-    Console.WriteLine("Seçenekler:");
-    Console.WriteLine("  -o, --output <dizin>       Hedef indirme dizini (Varsayılan: mevcut dizin)");
-    Console.WriteLine("  -c, --connections <sayı>   Paralel bağlantı/parça sayısı (Varsayılan: 8)");
-    Console.WriteLine("  -n, --name <isim>          Özel dosya adı");
-    Console.WriteLine("  -u, --user <kullanıcı>     Kimlik doğrulama kullanıcı adı");
-    Console.WriteLine("  -p, --pass <şifre>         Kimlik doğrulama parolası");
-    Console.WriteLine("  -a, --auth <tür>           Kimlik doğrulama türü: basic, ntlm, kerberos, negotiate");
-    Console.WriteLine("  --vt-key <key>             VirusTotal API anahtarı (Varsayılan: $VIRUSTOTAL_API_KEY)");
-    Console.WriteLine();
-    Console.WriteLine("Örnek:");
-    Console.WriteLine("  akinci https://speed.hetzner.de/100MB.bin -c 8 -o downloads");
+    Console.WriteLine(CliText.Help);
     return 0;
 }
 
@@ -107,14 +97,14 @@ using var cts = new CancellationTokenSource();
 Console.CancelKeyPress += (sender, eventArgs) =>
 {
     eventArgs.Cancel = true;
-    Console.WriteLine("\n[DURAKLATILIYOR] İndirme duraklatılıyor...");
+    Console.WriteLine("\n" + CliText.Pausing);
     cts.Cancel();
 };
 
 try
 {
     Console.ForegroundColor = ConsoleColor.Yellow;
-    Console.WriteLine($"[1/3] Sunucu sorgulanıyor: {url}");
+    Console.WriteLine(CliText.QueryingServer(url));
     Console.ResetColor();
 
     var createCommand = new CreateDownloadCommand(
@@ -127,13 +117,13 @@ try
     var task = await createHandler.HandleAsync(createCommand, cts.Token);
 
     Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine($"[2/3] Hedef Dosya: {task.DestinationFilePath}");
-    Console.WriteLine($"      Toplam Boyut: {(task.TotalBytes.HasValue ? $"{task.TotalBytes.Value / (1024.0 * 1024.0):F2} MB" : "Bilinmiyor")}");
-    Console.WriteLine($"      Range Desteği: {(task.SupportsRangeRequests ? "VAR (Çok Kanallı)" : "YOK (Tek Kanal)")}");
-    Console.WriteLine($"      Parça Sayısı: {task.Chunks.Count}");
+    Console.WriteLine(CliText.TargetFile(task.DestinationFilePath));
+    Console.WriteLine(CliText.TotalSize(task.TotalBytes.HasValue ? $"{task.TotalBytes.Value / (1024.0 * 1024.0):F2} MB" : CliText.Unknown));
+    Console.WriteLine(CliText.RangeSupport(task.SupportsRangeRequests));
+    Console.WriteLine(CliText.ChunkCount(task.Chunks.Count));
     Console.ResetColor();
 
-    Console.WriteLine($"[3/3] İndirme başlatılıyor...\n");
+    Console.WriteLine(CliText.Starting + "\n");
 
     var lastReport = Stopwatch.StartNew();
     var progress = new Progress<DownloadProgressDto>(report =>
@@ -146,7 +136,7 @@ try
         string progressBar = new string('█', filled) + new string('░', barWidth - filled);
 
         string downloadedMb = $"{report.DownloadedBytes / (1024.0 * 1024.0):F2}";
-        string totalMb = report.TotalBytes.HasValue ? $"{report.TotalBytes.Value / (1024.0 * 1024.0):F2} MB" : "Bilinmiyor";
+        string totalMb = report.TotalBytes.HasValue ? $"{report.TotalBytes.Value / (1024.0 * 1024.0):F2} MB" : CliText.Unknown;
 
         Console.Write($"\r[{progressBar}] {report.ProgressPercentage,5:F1}% | {downloadedMb} / {totalMb} | {report.Speed.FormatHumanReadable(),10}  ");
     });
@@ -161,8 +151,8 @@ try
     if (task.Status == DownloadStatus.Completed)
     {
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"✔ İNDİRME TAMAMLANDI! Süre: {stopwatch.Elapsed.TotalSeconds:F2} sn");
-        Console.WriteLine($"  Kaydedilen Konum: {task.DestinationFilePath}");
+        Console.WriteLine(CliText.Completed(stopwatch.Elapsed.TotalSeconds));
+        Console.WriteLine(CliText.SavedTo(task.DestinationFilePath));
         Console.ResetColor();
 
         if (!string.IsNullOrEmpty(task.Sha256Hash))
@@ -173,25 +163,26 @@ try
         if (task.SecurityVerdict != null)
         {
             var v = task.SecurityVerdict;
+            var verdictText = CliText.SecurityVerdictText(v);
             if (v.HasThreat)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"  [GÜVENLİK TEHLİKESİ] ⚠ {v.FormatBadge()}");
+                Console.WriteLine($"  [{CliText.SecurityThreatTag}] ⚠ {verdictText}");
             }
             else if (v.IsSafe)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine($"  [GÜVENLİK] ✔ {v.FormatBadge()}");
+                Console.WriteLine($"  [{CliText.SecurityTag}] ✔ {verdictText}");
             }
             else
             {
                 Console.ForegroundColor = ConsoleColor.Cyan;
-                Console.WriteLine($"  [GÜVENLİK] ℹ {v.FormatBadge()}");
+                Console.WriteLine($"  [{CliText.SecurityTag}] ℹ {verdictText}");
             }
 
             if (!string.IsNullOrEmpty(v.ScanUrl))
             {
-                Console.WriteLine($"  Rapor: {v.ScanUrl}");
+                Console.WriteLine(CliText.Report(v.ScanUrl));
             }
             Console.ResetColor();
         }
@@ -199,7 +190,7 @@ try
     else if (task.Status == DownloadStatus.Paused)
     {
         Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine($"⏸ İndirme duraklatıldı. Kaldığı bayt: {task.DownloadedBytes}");
+        Console.WriteLine(CliText.Paused(task.DownloadedBytes));
         Console.ResetColor();
     }
 
@@ -207,13 +198,13 @@ try
 }
 catch (OperationCanceledException)
 {
-    Console.WriteLine("\nİndirme kullanıcı tarafından iptal edildi veya duraklatıldı.");
+    Console.WriteLine("\n" + CliText.Cancelled);
     return 130;
 }
 catch (Exception ex)
 {
     Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine($"\n❌ HATA: {ex.Message}");
+    Console.WriteLine("\n" + CliText.Error(ex.Message));
     Console.ResetColor();
     return 1;
 }

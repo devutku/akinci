@@ -48,15 +48,17 @@ SolidCompression=yes
 WizardStyle=modern
 ; Spec: sihirbaz "Hoş geldiniz" sayfasıyla başlar (Inno 6 varsayılanı bu sayfayı gizler)
 DisableWelcomePage=no
-; Akıncı yalnızca Türkçe olduğu için kurulum da Windows dilinden bağımsız olarak Türkçe açılır
-; ([Languages] içindeki ilk dil). İngilizce gerekirse: Akinci-Setup.exe /LANG=english
-LanguageDetectionMethod=none
+; Kurulum Windows arayüz dilini izler: Türkçe Windows'ta Türkçe, diğer dillerde İngilizce açılır.
+; Eşleşen dil yoksa [Languages] içindeki ilk dil (english) kullanılır.
+; Elle seçmek için: Akinci-Setup.exe /LANG=turkish veya /LANG=english
+LanguageDetectionMethod=uilanguage
 ShowLanguageDialog=no
 
 
 [Languages]
-Name: "turkish"; MessagesFile: "compiler:Languages\Turkish.isl"
+; Sıra önemli: Windows dili hiçbiriyle eşleşmezse ilk dil (english) seçilir
 Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "turkish"; MessagesFile: "compiler:Languages\Turkish.isl"
 
 [CustomMessages]
 turkish.VtTitle=VirusTotal ile güvenlik taraması (isteğe bağlı)

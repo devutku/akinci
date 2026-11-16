@@ -1,0 +1,54 @@
+{
+  "extName": {
+    "message": "Akıncı Downloader Integration",
+    "description": "Extension name shown in the browser and the Chrome Web Store."
+  },
+  "extDescription": {
+    "message": "Automatically hands links and downloads over to the Akıncı multi-connection download manager.",
+    "description": "Extension description (max 132 characters)."
+  },
+  "actionTitle": {
+    "message": "Akıncı Downloader",
+    "description": "Tooltip of the toolbar button."
+  },
+  "downloadWithAkinci": {
+    "message": "Download with Akıncı",
+    "description": "Right-click menu item and copy toast button."
+  },
+  "liveStream": {
+    "message": "Live stream",
+    "description": "Fallback title for a detected media stream when the page has no title."
+  },
+  "liveStreamDetected": {
+    "message": "Live stream detected",
+    "description": "Tooltip of the pulsing dot on the media badge."
+  },
+  "downloadThisMedia": {
+    "message": "Download this media with Akıncı",
+    "description": "Tooltip of the media badge download button."
+  },
+  "downloadStream": {
+    "message": "Download stream",
+    "description": "Media badge button for a live (HLS/DASH) stream."
+  },
+  "downloadVideo": {
+    "message": "Download video",
+    "description": "Media badge button for a video file."
+  },
+  "sentToAkinci": {
+    "message": "Sent to Akıncı",
+    "description": "Shown on a button after the download was handed to Akıncı."
+  },
+  "linkDetected": {
+    "message": "Link detected",
+    "description": "Label of the toast shown after the user copies a download link."
+  },
+  "downloadThisLink": {
+    "message": "Download this link with Akıncı",
+    "description": "Tooltip of the copy toast download button."
+  },
+  "close": {
+    "message": "Close",
+    "description": "Tooltip of the close (✕) button."
+  }
+}

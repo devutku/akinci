@@ -63,16 +63,18 @@ foreach ($required in @('Akinci.exe', 'Akinci-CLI.exe', 'Akinci-BrowserBridge.ex
 New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
 $outputFull = (Resolve-Path $OutputDir).Path
 
-# Lisans sayfası: çekirdek (MIT) + arayüz (GPLv3) birlikte
+# Lisans sayfası: çekirdek (MIT) + arayüz (GPLv3) birlikte; kurulum iki dilde açıldığı için başlıklar iki dilli
 $objDir = Join-Path $PSScriptRoot 'obj'
 New-Item -ItemType Directory -Force -Path $objDir | Out-Null
 $licensePath = Join-Path $objDir 'license.txt'
 $utf8Bom = New-Object System.Text.UTF8Encoding $true
 $separator = "`r`n`r`n" + ('=' * 72) + "`r`n`r`n"
 $licenseText =
+    "Akıncı core libraries (Domain, Application, Infrastructure): MIT License`r`n" +
     "Akıncı çekirdek kütüphaneleri (Domain, Application, Infrastructure): MIT Lisansı`r`n`r`n" +
     (Get-Content -Raw -Encoding UTF8 (Join-Path $root 'LICENSE-MIT')) +
     $separator +
+    "Akıncı desktop app: GNU GPL v3`r`n" +
     "Akıncı masaüstü arayüzü: GNU GPL v3`r`n`r`n" +
     (Get-Content -Raw -Encoding UTF8 (Join-Path $root 'LICENSE'))
 [System.IO.File]::WriteAllText($licensePath, $licenseText, $utf8Bom)

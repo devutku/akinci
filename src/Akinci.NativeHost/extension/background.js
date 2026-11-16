@@ -44,7 +44,7 @@ async function getCookiesForUrl(targetUrl, referrerUrl) {
 chrome.runtime.onInstalled.addListener(() => {
   chrome.contextMenus.create({
     id: "akinci-download-link",
-    title: "Akıncı ile İndir",
+    title: chrome.i18n.getMessage("downloadWithAkinci"),
     contexts: ["link", "image", "video", "audio"]
   });
 });

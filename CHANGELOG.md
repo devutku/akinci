@@ -11,6 +11,10 @@ Biçimlendirme [Keep a Changelog](https://keepachangelog.com/tr/1.0.0/) standard
   - Yeni kurulumlar Windows'un görüntüleme dilini izler: Windows Türkçe ise Türkçe, değilse İngilizce açılır.
   - Önceki sürümlerden güncelleyenlerde arayüz, Windows dili farklı olsa bile Türkçe kalır.
   - Tepsi menüsü, bildirimler, durum ve kalan süre metinleri ile VirusTotal rozeti de seçilen dilde gösterilir.
+- **Tarayıcı Eklentisi, Kurulum Programı ve CLI İngilizce:** Türkçe kullanıcılar için her şey Türkçe kalır; diğer dillerde İngilizce gösterilir.
+  - **Tarayıcı eklentisi (1.2.0):** Eklenti adı, açıklaması, sağ tık menüsü ("Download with Akıncı") ve sayfadaki indirme düğmeleri tarayıcının dilini izler: tarayıcı Türkçe ise Türkçe, değilse İngilizce. Metinler Chrome'un `_locales` dosyalarındadır.
+  - **Kurulum programı:** Windows arayüz dili Türkçe ise Türkçe, değilse İngilizce açılır (önceden her zaman Türkçe açılıyordu). Elle seçmek için `Akinci-Setup.exe /LANG=turkish` veya `/LANG=english`. Lisans sayfasının başlıkları iki dilli.
+  - **Komut satırı (CLI):** Yardım metni ve durum satırları Windows dili Türkçe ise Türkçe, değilse İngilizce. `AKINCI_LANG=tr` veya `AKINCI_LANG=en` ortam değişkeniyle değiştirilebilir. VirusTotal sonucu da seçilen dilde yazılır.
 
 ### ⚡ Değiştirilenler ve İyileştirmeler (Changed)
 - **VirusTotal Rozeti Taramanın Neden Yapılamadığını Gösterir:** API anahtarı girilmemişse, istek limiti aşılmışsa veya bağlantı kurulamamışsa rozet artık bunu söylüyor. Önceden bu durumların hepsinde "Tarama Bekleniyor" yazıyordu.
@@ -18,7 +22,7 @@ Biçimlendirme [Keep a Changelog](https://keepachangelog.com/tr/1.0.0/) standard
 
 ### 📌 Bilinen Sınırlamalar
 - İndirme hatası mesajları (ör. sunucunun dosya yerine web sayfası döndürmesi) çekirdek katmandan geldiği için İngilizce arayüzde de Türkçe görünür.
-- Tarayıcı eklentisi, kurulum programı ve komut satırı (CLI) henüz yalnızca Türkçe.
+- CLI'daki hata mesajları (ör. sunucuya bağlanılamaması) .NET'ten veya çekirdek katmandan geldiği için çevrilmez.
 
 ---
 
