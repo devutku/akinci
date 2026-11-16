@@ -38,17 +38,17 @@ public sealed record DownloadUrl
     {
         if (string.IsNullOrWhiteSpace(url))
         {
-            throw new DomainException("İndirme URL'i boş olamaz.");
+            throw InvalidDownloadUrlException.Empty();
         }
 
         if (!Uri.TryCreate(url.Trim(), UriKind.Absolute, out var uri))
         {
-            throw new DomainException($"Geçersiz URL formatı: '{url}'.");
+            throw InvalidDownloadUrlException.InvalidFormat(url);
         }
 
         if (!SupportedSchemes.Contains(uri.Scheme))
         {
-            throw new DomainException($"Desteklenmeyen URL şeması: '{uri.Scheme}'. Yalnızca HTTP, HTTPS, FTP ve FTPS desteklenir.");
+            throw InvalidDownloadUrlException.UnsupportedScheme(url, uri.Scheme);
         }
 
         return new DownloadUrl(uri);

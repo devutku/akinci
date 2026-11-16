@@ -79,7 +79,7 @@ public sealed record DownloadCredentials
     {
         if (string.IsNullOrWhiteSpace(userName))
         {
-            throw new DomainException("Basic kimlik doğrulama için kullanıcı adı boş olamaz.");
+            throw new MissingCredentialUserNameException(AuthenticationType.Basic);
         }
 
         return new DownloadCredentials(AuthenticationType.Basic, userName.Trim(), password ?? string.Empty, null, false);
@@ -92,7 +92,7 @@ public sealed record DownloadCredentials
     {
         if (string.IsNullOrWhiteSpace(userName))
         {
-            throw new DomainException("NTLM kimlik doğrulama için kullanıcı adı boş olamaz.");
+            throw new MissingCredentialUserNameException(AuthenticationType.Ntlm);
         }
 
         return new DownloadCredentials(AuthenticationType.Ntlm, userName.Trim(), password ?? string.Empty, domain?.Trim(), false);
@@ -105,7 +105,7 @@ public sealed record DownloadCredentials
     {
         if (string.IsNullOrWhiteSpace(userName))
         {
-            throw new DomainException("Kerberos kimlik doğrulama için kullanıcı adı veya kullanıcı anahtarı boş olamaz.");
+            throw new MissingCredentialUserNameException(AuthenticationType.Kerberos);
         }
 
         return new DownloadCredentials(AuthenticationType.Kerberos, userName.Trim(), password ?? string.Empty, domain?.Trim(), false);
@@ -118,7 +118,7 @@ public sealed record DownloadCredentials
     {
         if (string.IsNullOrWhiteSpace(userName))
         {
-            throw new DomainException("Negotiate kimlik doğrulama için kullanıcı adı boş olamaz.");
+            throw new MissingCredentialUserNameException(AuthenticationType.Negotiate);
         }
 
         return new DownloadCredentials(AuthenticationType.Negotiate, userName.Trim(), password ?? string.Empty, domain?.Trim(), false);

@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Net;
 using System.Net.Http.Headers;
+using Akinci.Application.Exceptions;
 using Akinci.Application.Ports;
 using Akinci.Domain.Entities;
 using Akinci.Domain.Exceptions;
@@ -64,18 +65,13 @@ public sealed class HttpChunkDownloader : IChunkDownloader
 
                 if (response.StatusCode is not (HttpStatusCode.PartialContent or HttpStatusCode.OK))
                 {
-                    throw new HttpRequestException(
-                        $"Chunk #{chunk.Index} indirilemedi. Sunucu HTTP {(int)response.StatusCode} ({response.ReasonPhrase}) döndü.",
-                        null,
-                        response.StatusCode);
+                    throw new ServerErrorStatusException(chunk.Index, response.StatusCode, response.ReasonPhrase);
                 }
 
                 // Range Güvenlik Kontrolü: Ofset > 0 iken sunucu 200 OK (tüm dosya) dönerse veri bozulmasını engelle
                 if (startOffset > 0 && response.StatusCode == HttpStatusCode.OK)
                 {
-                    throw new InvalidOperationException(
-                        $"Sunucu kısmi içerik (HTTP 206 Partial Content) yerine dosyanın tamamını (HTTP 200 OK) döndürdü. " +
-                        $"Chunk #{chunk.Index} (Ofset: {startOffset}) için dosya bozulmasını önlemek amacıyla indirme durduruldu.");
+                    throw new RangeNotHonoredException(chunk.Index, startOffset);
                 }
 
                 // Web sayfası (HTML) koruması: Arşiv/Binary dosyası beklenirken HTML gelmesi durumu
@@ -87,8 +83,7 @@ public sealed class HttpChunkDownloader : IChunkDownloader
                         fn.EndsWith(".iso") || fn.EndsWith(".exe") || fn.EndsWith(".bin") ||
                         fn.EndsWith(".tar") || fn.EndsWith(".gz") || fn.EndsWith(".mp4"))
                     {
-                        throw new InvalidOperationException(
-                            "Sunucu doğrudan dosya yerine bir web sayfası (HTML) döndürdü. Yapıştırdığınız bağlantı doğrudan dosya indirme linki (Direct Download Link) değil, bir web sayfasıdır.");
+                        throw new HtmlInsteadOfFileException();
                     }
                 }
 
