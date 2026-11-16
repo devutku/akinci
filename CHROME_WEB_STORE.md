@@ -23,7 +23,7 @@ powershell -ExecutionPolicy Bypass -File pack-extension.ps1
 
 Mağaza eklentiye kendi kimliğini (item ID) atar. Akıncı'nın mağaza kimliği: **`coeeghhijegibfhhodhnjhjffaipckok`**.
 
-**Durum:** Yayında — <https://chromewebstore.google.com/detail/coeeghhijegibfhhodhnjhjffaipckok> (ilk yayınlanan sürüm 1.0.2). Masaüstü uygulamasının "Eklentiyi Kur" adımı bu sayfayı açar (`BrowserIntegrationService.ChromeWebStoreUrl`). Yeni sürüm göndermek için `pack-extension.ps1` ile paketi üretip panelden **Paket → Yeni paket yükle** yapın; `manifest.json` sürümü artırılmış olmalıdır.
+**Durum:** Yayında — <https://chromewebstore.google.com/detail/coeeghhijegibfhhodhnjhjffaipckok> (ilk yayınlanan sürüm 1.0.2). Masaüstü uygulamasının "Eklentiyi Kur" adımı bu sayfayı açar (`BrowserIntegrationService.ChromeWebStoreUrl`). Yeni sürümler [6. bölümdeki](#6-otomatik-yayınlama-github-actions) iş akışıyla otomatik yüklenir; kurulum yapılmadıysa `pack-extension.ps1` ile paketi üretip panelden **Paket → Yeni paket yükle** yapın. Her iki durumda da `manifest.json` sürümü artırılmış olmalıdır.
 
 Bu kimlik, masaüstü uygulamasının Native Messaging izin listesinde bulunmalıdır; yoksa mağazadan kurulan eklenti uygulamaya yalnızca `127.0.0.1` yedek yolu üzerinden ulaşır:
 
@@ -88,3 +88,49 @@ Ve şu beyanları onayla: veriler satılmıyor, eklentinin tek amacı dışında
 - Mağaza açıklaması, eklentinin gerçekte yaptığı her şeyi (özellikle indirmeleri otomatik olarak devralmayı ve çerezleri iletmeyi) açıkça söylemeli. Açıklama ile davranış arasındaki fark en sık ret nedenidir.
 - Yeni izin eklenirse gerekçesi panelde ve `PRIVACY.md` içinde güncellenmeli.
 - Eklenti uzaktan kod yüklememeli; tüm kod paketin içinde olmalı.
+
+## 6. Otomatik yayınlama (GitHub Actions)
+
+Kurulumdan sonra yeni bir eklenti sürümünü yayınlamak için tek yapmanız gereken `src/Akinci.NativeHost/extension/manifest.json` içindeki `version` değerini artırıp her zamanki gibi `v*` sürüm etiketini atmaktır. `.github/workflows/extension.yml` paketi `pack-extension.ps1` ile üretir, `publish-extension.mjs` ile Chrome Web Store API (v2) üzerinden yükler ve incelemeye gönderir. Bu sürüm mağazada zaten yayında veya incelemedeyse hiçbir şey yüklemeden geçer; bu yüzden eklentiyi değiştirmeyen masaüstü sürümleri mağazaya dokunmaz.
+
+Kimlik bilgileri tanımlanmadıysa iş akışı başarısız olmaz, "atlandı" notu bırakır.
+
+### Bir kerelik kurulum (yaklaşık 10-15 dakika)
+
+Bu adımlar mağaza hesabının sahibi tarafından yapılır.
+
+1. **Google Cloud projesi ve API**
+   - <https://console.cloud.google.com/> adresinde yeni bir proje oluşturun (ör. `akinci-cws`).
+   - Üstteki arama çubuğuna **Chrome Web Store API** yazın ve **Etkinleştir**'e tıklayın.
+2. **Hizmet hesabı**
+   - **IAM ve Yönetici → Hizmet Hesapları → Hizmet hesabı oluştur**. Ad: `akinci-cws-publisher`. Rol vermeyin, **Bitti** deyin.
+   - Oluşan hesabın e-posta adresini kopyalayın (ör. `akinci-cws-publisher@akinci-cws.iam.gserviceaccount.com`).
+   - Hesaba tıklayın → **Anahtarlar → Anahtar ekle → Yeni anahtar oluştur → JSON**. Bir `.json` dosyası iner.
+3. **Chrome Web Store geliştirici paneli**
+   - **Hesap** bölümünde hizmet hesabı alanına 2. adımdaki e-postayı ekleyip kaydedin. (Bir yayıncıya şu an yalnızca bir hizmet hesabı eklenebiliyor.)
+   - **Yayıncı → Ayarlar** bölümündeki **Yayıncı kimliği**'ni (Publisher ID) kopyalayın.
+4. **GitHub gizli değişkenleri**
+   - <https://github.com/devutku/akinci/settings/secrets/actions> → **New repository secret**:
+     - `CWS_SERVICE_ACCOUNT_KEY`: indirdiğiniz `.json` dosyasının **tam içeriği** (Not Defteri ile açıp hepsini yapıştırın).
+     - `CWS_PUBLISHER_ID`: 3. adımdaki yayıncı kimliği.
+   - Ardından bilgisayarınıza inen `.json` anahtar dosyasını silin; anahtar yalnızca GitHub'da şifreli olarak durmalı.
+5. **Deneyin**
+   - <https://github.com/devutku/akinci/actions/workflows/extension.yml> → **Run workflow**. Mağazadaki sürümden yeni bir sürüm varsa yüklenip incelemeye gönderilir; günlükte "Yayında / İncelemede" sürümleri ve sonuç yazar.
+
+### Yerelde kullanım
+
+```powershell
+powershell -ExecutionPolicy Bypass -File pack-extension.ps1
+$env:CWS_SERVICE_ACCOUNT_KEY = Get-Content -Raw anahtar.json
+$env:CWS_PUBLISHER_ID = '<yayıncı kimliği>'
+node publish-extension.mjs --status                                        # yalnızca durumu göster
+node publish-extension.mjs dist\akinci-extension-1.1.0.zip --version 1.1.0 # yükle + incelemeye gönder
+```
+
+### Sorun giderme
+
+- **`Erişim jetonu alınamadı`**: Anahtar yanlış veya silinmiş; yeni bir JSON anahtar oluşturup gizli değişkeni güncelleyin.
+- **HTTP 403 / `PERMISSION_DENIED`**: Hizmet hesabı e-postası geliştirici panelinde **Hesap** bölümüne eklenmemiş ya da Chrome Web Store API projede etkin değil.
+- **HTTP 400 sürüm hatası**: `manifest.json` sürümü mağazadakinden büyük değil; sürümü artırın.
+- **"Anahtar oluşturma devre dışı"**: Google Workspace kuruluşuna bağlı projelerde `iam.disableServiceAccountKeyCreation` ilkesi açık olabilir; kişisel bir Google hesabıyla proje oluşturun veya ilkeyi kuruluş yöneticisine açtırın.
+- Mağaza açıklaması, görseller ve izin gerekçeleri API ile değişmez; bunlar için panel kullanılır.

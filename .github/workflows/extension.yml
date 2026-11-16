@@ -1,0 +1,60 @@
+name: Publish Extension (Chrome Web Store)
+
+# Sürüm etiketinde, eklentinin manifest sürümü mağazada henüz yoksa paketi yükler ve incelemeye gönderir.
+# Kurulum: CHROME_WEB_STORE.md → "Otomatik yayınlama".
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: chrome-web-store
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Upload & submit for review
+    runs-on: windows-latest
+    env:
+      CWS_SERVICE_ACCOUNT_KEY: ${{ secrets.CWS_SERVICE_ACCOUNT_KEY }}
+      CWS_PUBLISHER_ID: ${{ secrets.CWS_PUBLISHER_ID }}
+    steps:
+      - name: Check credentials
+        id: creds
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:CWS_SERVICE_ACCOUNT_KEY) -or [string]::IsNullOrWhiteSpace($env:CWS_PUBLISHER_ID)) {
+            "::notice::CWS_SERVICE_ACCOUNT_KEY / CWS_PUBLISHER_ID tanımlı değil; Chrome Web Store yayını atlandı. Kurulum için CHROME_WEB_STORE.md'ye bakın."
+            "configured=false" >> $env:GITHUB_OUTPUT
+          } else {
+            "configured=true" >> $env:GITHUB_OUTPUT
+          }
+
+      - name: Checkout Code
+        if: steps.creds.outputs.configured == 'true'
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        if: steps.creds.outputs.configured == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Pack extension
+        id: pack
+        if: steps.creds.outputs.configured == 'true'
+        shell: pwsh
+        run: |
+          $version = (Get-Content -Raw src/Akinci.NativeHost/extension/manifest.json | ConvertFrom-Json).version
+          powershell -NoProfile -ExecutionPolicy Bypass -File pack-extension.ps1
+          if ($LASTEXITCODE -ne 0) { throw 'pack-extension.ps1 başarısız oldu.' }
+          "version=$version" >> $env:GITHUB_OUTPUT
+          "zip=dist/akinci-extension-$version.zip" >> $env:GITHUB_OUTPUT
+
+      - name: Upload to Chrome Web Store and submit for review
+        if: steps.creds.outputs.configured == 'true'
+        run: node publish-extension.mjs "${{ steps.pack.outputs.zip }}" --version "${{ steps.pack.outputs.version }}"
