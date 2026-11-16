@@ -1,4 +1,5 @@
 using System.Globalization;
+using Akinci.Domain.Enums;
 using Akinci.Domain.ValueObjects;
 
 namespace Akinci.Cli;
@@ -84,38 +85,39 @@ internal static class CliText
     public static string Error(string message) => T($"❌ HATA: {message}", $"❌ ERROR: {message}");
 
     /// <summary>
-    /// VirusTotal sonucunu CLI dilinde yazar. Türkçede çekirdekteki <see cref="SecurityVerdict.FormatBadge"/> kullanılır;
-    /// İngilizcede metin oy sayılarından ve API anahtarı olup olmadığından üretilir, çünkü çekirdeğin özel mesajları Türkçedir.
+    /// VirusTotal sonucunu CLI dilinde yazar. Çekirdekteki <see cref="SecurityVerdict.FormatBadge"/> yalnızca Türkçe olduğu için
+    /// metin, masaüstü uygulamasındaki <c>SecurityVerdictText</c> gibi dil bağımsız <see cref="SecurityVerdictReason"/> ve oy sayılarından üretilir.
     /// </summary>
-    public static string SecurityVerdictText(SecurityVerdict verdict, bool hasApiKey)
+    public static string SecurityVerdictText(SecurityVerdict verdict)
     {
-        if (IsTurkish)
+        switch (verdict.Reason)
         {
-            return verdict.FormatBadge();
+            case SecurityVerdictReason.NotFound:
+                return T("VirusTotal veritabanında kaydı yok (Bilinmeyen/Yeni dosya)", "Not in VirusTotal database (unknown/new file)");
+            case SecurityVerdictReason.NoApiKey:
+                return T("VirusTotal API anahtarı girilmedi (Tarama atlandı)", "No VirusTotal API key (scan skipped)");
+            case SecurityVerdictReason.RateLimited:
+                return T("VirusTotal API istek limiti aşıldı (Rate limit)", "VirusTotal API rate limit reached");
+            case SecurityVerdictReason.InvalidResponse:
+                return T("VirusTotal yanıtı çözümlenemedi", "Could not read the VirusTotal response");
+            case SecurityVerdictReason.ConnectionError:
+                return T("VirusTotal bağlantı hatası", "VirusTotal connection error");
+        }
+
+        if (!verdict.IsScanned)
+        {
+            return T("Tarama Bekleniyor", "Awaiting scan");
         }
 
         if (verdict.HasThreat)
         {
             return verdict.TotalEngines > 0
-                ? $"{verdict.MaliciousVotes}/{verdict.TotalEngines} engines flagged this file as malicious!"
-                : $"{verdict.MaliciousVotes} engines flagged this file as malicious!";
+                ? T($"{verdict.MaliciousVotes}/{verdict.TotalEngines} motor zararlı uyarısı verdi!", $"{verdict.MaliciousVotes}/{verdict.TotalEngines} engines flagged this file!")
+                : T($"{verdict.MaliciousVotes} motor zararlı uyarısı verdi!", $"{verdict.MaliciousVotes} engines flagged this file!");
         }
 
-        if (verdict.IsSafe)
-        {
-            return $"Passed {verdict.HarmlessVotes}/{verdict.TotalEngines} antivirus engines, safe";
-        }
-
-        if (verdict.IsScanned)
-        {
-            // Taranmış ama motor sonucu yok: özel mesaj varsa dosya VirusTotal'da bulunamamıştır
-            return verdict.CustomMessage != null
-                ? "Not in the VirusTotal database (unknown or new file)"
-                : "No antivirus engine reported a result";
-        }
-
-        return hasApiKey
-            ? "VirusTotal scan could not be completed"
-            : "No VirusTotal API key given (scan skipped)";
+        return verdict.TotalEngines > 0
+            ? T($"{verdict.HarmlessVotes}/{verdict.TotalEngines} antivirüs motorundan geçti, güvenli", $"Passed {verdict.HarmlessVotes}/{verdict.TotalEngines} antivirus engines, safe")
+            : T("Hiçbir antivirüs motoru sonuç bildirmedi", "No antivirus engine reported a result");
     }
 }

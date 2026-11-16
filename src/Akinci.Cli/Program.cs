@@ -88,8 +88,6 @@ var dbPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Us
 var repository = new SqliteDownloadRepository(dbPath);
 var hashCalculator = new StreamingFileHashCalculator();
 var securityScanner = new VirusTotalSecurityScanner(apiKey: virusTotalKey);
-// Tarayıcı, anahtar verilmezse VIRUSTOTAL_API_KEY değişkenine bakar; sonucu yazarken CLI de aynısını bilmeli
-bool hasVirusTotalKey = !string.IsNullOrWhiteSpace(virusTotalKey ?? Environment.GetEnvironmentVariable("VIRUSTOTAL_API_KEY"));
 
 var createHandler = new CreateDownloadCommandHandler(metadataService, repository, fileStorage);
 var startHandler = new StartDownloadCommandHandler(repository, chunkDownloader, fileStorage, hashCalculator, securityScanner);
@@ -165,7 +163,7 @@ try
         if (task.SecurityVerdict != null)
         {
             var v = task.SecurityVerdict;
-            var verdictText = CliText.SecurityVerdictText(v, hasVirusTotalKey);
+            var verdictText = CliText.SecurityVerdictText(v);
             if (v.HasThreat)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
