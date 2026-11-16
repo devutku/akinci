@@ -11,13 +11,17 @@ Biçimlendirme [Keep a Changelog](https://keepachangelog.com/tr/1.0.0/) standard
   - Yeni kurulumlar Windows'un görüntüleme dilini izler: Windows Türkçe ise Türkçe, değilse İngilizce açılır.
   - Önceki sürümlerden güncelleyenlerde arayüz, Windows dili farklı olsa bile Türkçe kalır.
   - Tepsi menüsü, bildirimler, durum ve kalan süre metinleri ile VirusTotal rozeti de seçilen dilde gösterilir.
+  - Sık görülen indirme hataları da seçilen dilde gösterilir: geçersiz veya desteklenmeyen bağlantı, dosya yerine web sayfası gelmesi, sunucunun hata kodu döndürmesi, yetersiz disk alanı ve eksik kullanıcı adı.
 
 ### ⚡ Değiştirilenler ve İyileştirmeler (Changed)
 - **VirusTotal Rozeti Taramanın Neden Yapılamadığını Gösterir:** API anahtarı girilmemişse, istek limiti aşılmışsa veya bağlantı kurulamamışsa rozet artık bunu söylüyor. Önceden bu durumların hepsinde "Tarama Bekleniyor" yazıyordu.
 - Güvenlik sonucunun nedeni veritabanına dil bağımsız bir kod olarak kaydedilir (`vt_reason`). Eski kayıtlar açılışta mevcut mesajlarından tanınır.
 
+### 🐛 Düzeltilenler (Fixed)
+- Yeni indirme penceresinden eklenen bir bağlantı eklenemediğinde (ör. hedef sürücüde yetersiz disk alanı) artık bir hata bildirimi gösterilir ve listedeki diğer bağlantılar eklenmeye devam eder. Önceden hata yakalanmıyordu.
+
 ### 📌 Bilinen Sınırlamalar
-- İndirme hatası mesajları (ör. sunucunun dosya yerine web sayfası döndürmesi) çekirdek katmandan geldiği için İngilizce arayüzde de Türkçe görünür.
+- Daha seyrek indirme hataları (ör. bağlantının yarıda kopması, dosya sistemi hataları) İngilizce arayüzde hâlâ Türkçe, sistemden gelenler ise sistemin dilinde görünür. Hata nedeni veritabanına (`failure_reason`) Türkçe kaydedilmeye devam eder; bu alan arayüzde gösterilmez.
 - Tarayıcı eklentisi, kurulum programı ve komut satırı (CLI) henüz yalnızca Türkçe.
 
 ---

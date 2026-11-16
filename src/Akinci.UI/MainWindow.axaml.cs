@@ -131,12 +131,23 @@ public partial class MainWindow : Window
                 {
                     // Tek link ise özel dosya adı geçerli; çoklu link ise her biri kendi adını otomatik alır
                     string? customName = validUrls.Count == 1 ? dialogVm.CustomFileName : null;
-                    await vm.AddDownloadAsync(
-                        url,
-                        dialogVm.DestinationDirectory,
-                        dialogVm.Connections,
-                        customName,
-                        creds);
+                    try
+                    {
+                        await vm.AddDownloadAsync(
+                            url,
+                            dialogVm.DestinationDirectory,
+                            dialogVm.Connections,
+                            customName,
+                            creds);
+                    }
+                    catch (Exception ex)
+                    {
+                        // Ör. yetersiz disk alanı veya sunucuya ulaşılamaması: diğer bağlantıları eklemeye devam et
+                        _notificationService?.ShowNotification(
+                            Strings.AddDownloadFailedTitle,
+                            $"{url}: {DownloadErrorText.Format(ex)}",
+                            Application.Ports.NotificationType.Error);
+                    }
                 }
             }
         }

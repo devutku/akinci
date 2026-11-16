@@ -104,6 +104,34 @@ public static class Strings
     public static string SecurityClean(int harmless, int total) =>
         T($"{harmless}/{total} antivirüs motorundan geçti, güvenli", $"Passed {harmless}/{total} antivirus engines, safe");
 
+    // ── İndirme hataları (DownloadErrorText) ────────────────────────────────
+    // Türkçe metinler çekirdek katmandaki istisna mesajlarıyla birebir aynıdır.
+    public static string ErrorUrlEmpty => T("İndirme URL'i boş olamaz.", "The download URL is empty.");
+    public static string ErrorUrlInvalid(string url) => T($"Geçersiz URL formatı: '{url}'.", $"Not a valid URL: '{url}'.");
+    public static string ErrorUrlUnsupportedScheme(string scheme) => T(
+        $"Desteklenmeyen URL şeması: '{scheme}'. Yalnızca HTTP, HTTPS, FTP ve FTPS desteklenir.",
+        $"Unsupported URL scheme: '{scheme}'. Only HTTP, HTTPS, FTP and FTPS are supported.");
+    public static string ErrorUserNameRequired(string authType) => T(
+        $"{authType} kimlik doğrulama için kullanıcı adı boş olamaz.",
+        $"{authType} authentication needs a user name.");
+    public static string ErrorKerberosUserNameRequired => T(
+        "Kerberos kimlik doğrulama için kullanıcı adı veya kullanıcı anahtarı boş olamaz.",
+        "Kerberos authentication needs a user name or principal.");
+    public static string ErrorInsufficientDiskSpace(string required, string available) => T(
+        $"Hedef sürücüde yetersiz disk alanı. Gerekli: {required}, Kullanılabilir: {available}.",
+        $"Not enough disk space on the target drive. Needed: {required}, available: {available}.");
+    public static string ErrorHtmlInsteadOfFile => T(
+        "Sunucu doğrudan dosya yerine bir web sayfası (HTML) döndürdü. Yapıştırdığınız bağlantı doğrudan dosya indirme linki (Direct Download Link) değil, bir web sayfasıdır.",
+        "The server returned a web page (HTML) instead of the file. The link you pasted is a web page, not a direct download link.");
+    public static string ErrorRangeNotHonored(int chunkIndex, long offset) => T(
+        $"Sunucu kısmi içerik (HTTP 206 Partial Content) yerine dosyanın tamamını (HTTP 200 OK) döndürdü. " +
+        $"Chunk #{chunkIndex} (Ofset: {offset}) için dosya bozulmasını önlemek amacıyla indirme durduruldu.",
+        $"The server sent the whole file (HTTP 200 OK) instead of the requested part (HTTP 206 Partial Content). " +
+        $"The download was stopped at part #{chunkIndex} (offset {offset}) so the file is not corrupted.");
+    public static string ErrorServerStatus(int chunkIndex, int statusCode, string? reasonPhrase) => T(
+        $"Chunk #{chunkIndex} indirilemedi. Sunucu HTTP {statusCode} ({reasonPhrase}) döndü.",
+        $"Part #{chunkIndex} could not be downloaded. The server returned HTTP {statusCode} ({reasonPhrase}).");
+
     // ── Bildirimler ─────────────────────────────────────────────────────────
     public static string LinkCopiedTitle => T("Bağlantı Kopyalandı", "Link Copied");
     public static string LinkCopiedBody => T("İndirme bağlantısı panoya kopyalandı.", "The download link was copied to the clipboard.");
@@ -118,6 +146,7 @@ public static class Strings
     public static string CannotOpenFileBody(string message) => T($"Dosya çalıştırılamadı: {message}", $"The file could not be opened: {message}");
     public static string BrowserDownloadAddedTitle => T("Tarayıcıdan İndirme Eklendi", "Download Added from Browser");
     public static string BrowserDownloadAddedBody(string name) => T($"Yeni görev kuyruğa alındı: {name}", $"Added to the queue: {name}");
+    public static string AddDownloadFailedTitle => T("İndirme Eklenemedi", "Could Not Add Download");
 
     // ── Yeni indirme penceresi ──────────────────────────────────────────────
     public static string AddDialogTitle => T("Yeni İndirme Ekle - AKINCI", "Add Download - AKINCI");

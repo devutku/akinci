@@ -1,3 +1,4 @@
+using Akinci.Domain.Enums;
 using Akinci.Domain.Exceptions;
 using Akinci.Domain.ValueObjects;
 using Xunit;
@@ -26,23 +27,55 @@ public class DownloadUrlTests
     [InlineData("")]
     [InlineData("   ")]
     [InlineData(null)]
-    public void Create_WithEmptyOrNull_ThrowsDomainException(string? url)
+    public void Create_WithEmptyOrNull_ThrowsInvalidDownloadUrlException(string? url)
     {
-        Assert.Throws<DomainException>(() => DownloadUrl.Create(url!));
+        var ex = Assert.Throws<InvalidDownloadUrlException>(() => DownloadUrl.Create(url!));
+        Assert.Equal(InvalidDownloadUrlReason.Empty, ex.Reason);
+        Assert.Equal("İndirme URL'i boş olamaz.", ex.Message);
     }
 
     [Theory]
-    [InlineData("file:///C:/Users/Admin/file.txt")]
-    [InlineData("ssh://git@github.com/repo.git")]
-    [InlineData("not-a-valid-url")]
-    public void Create_WithInvalidSchemeOrFormat_ThrowsDomainException(string url)
+    [InlineData("file:///C:/Users/Admin/file.txt", InvalidDownloadUrlReason.UnsupportedScheme)]
+    [InlineData("ssh://git@github.com/repo.git", InvalidDownloadUrlReason.UnsupportedScheme)]
+    [InlineData("not-a-valid-url", InvalidDownloadUrlReason.InvalidFormat)]
+    public void Create_WithInvalidSchemeOrFormat_ThrowsInvalidDownloadUrlException(string url, InvalidDownloadUrlReason reason)
     {
-        Assert.Throws<DomainException>(() => DownloadUrl.Create(url));
+        var ex = Assert.Throws<InvalidDownloadUrlException>(() => DownloadUrl.Create(url));
+        Assert.Equal(reason, ex.Reason);
+        Assert.Equal(url, ex.Url);
+    }
+
+    [Fact]
+    public void Create_WithUnsupportedScheme_KeepsTurkishMessageAndScheme()
+    {
+        var ex = Assert.Throws<InvalidDownloadUrlException>(() => DownloadUrl.Create("ssh://git@github.com/repo.git"));
+        Assert.Equal("ssh", ex.Scheme);
+        Assert.Equal("Desteklenmeyen URL şeması: 'ssh'. Yalnızca HTTP, HTTPS, FTP ve FTPS desteklenir.", ex.Message);
     }
 }
 
 public class DownloadCredentialsTests
 {
+    [Theory]
+    [InlineData(AuthenticationType.Basic, "Basic kimlik doğrulama için kullanıcı adı boş olamaz.")]
+    [InlineData(AuthenticationType.Ntlm, "NTLM kimlik doğrulama için kullanıcı adı boş olamaz.")]
+    [InlineData(AuthenticationType.Kerberos, "Kerberos kimlik doğrulama için kullanıcı adı veya kullanıcı anahtarı boş olamaz.")]
+    [InlineData(AuthenticationType.Negotiate, "Negotiate kimlik doğrulama için kullanıcı adı boş olamaz.")]
+    public void WithoutUserName_ThrowsMissingCredentialUserNameException(AuthenticationType type, string expectedMessage)
+    {
+        Func<DownloadCredentials> create = type switch
+        {
+            AuthenticationType.Ntlm => () => DownloadCredentials.Ntlm(" ", "pw"),
+            AuthenticationType.Kerberos => () => DownloadCredentials.Kerberos("", "pw"),
+            AuthenticationType.Negotiate => () => DownloadCredentials.Negotiate("", "pw"),
+            _ => () => DownloadCredentials.Basic("", "pw")
+        };
+
+        var ex = Assert.Throws<MissingCredentialUserNameException>(() => create());
+        Assert.Equal(type, ex.AuthenticationType);
+        Assert.Equal(expectedMessage, ex.Message);
+    }
+
     [Fact]
     public void Basic_CreatesValidCredentials()
     {

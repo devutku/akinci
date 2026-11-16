@@ -130,7 +130,9 @@ public class CreateDownloadCommandHandlerTests
             DestinationDirectory: @"C:\Downloads",
             RequestedConnections: 2);
 
-        var ex = await Assert.ThrowsAsync<Akinci.Domain.Exceptions.DomainException>(() => handler.HandleAsync(command));
+        var ex = await Assert.ThrowsAsync<Akinci.Domain.Exceptions.InsufficientDiskSpaceException>(() => handler.HandleAsync(command));
         Assert.Contains("yetersiz disk alanı", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Equal(2000, ex.RequiredBytes);
+        Assert.Equal(500, ex.AvailableBytes);
     }
 }

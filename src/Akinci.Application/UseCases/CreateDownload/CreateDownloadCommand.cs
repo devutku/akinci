@@ -52,8 +52,7 @@ public sealed class CreateDownloadCommandHandler
             var freeSpace = _fileStorage.GetAvailableFreeSpace(command.DestinationDirectory);
             if (freeSpace.HasValue && freeSpace.Value < metadata.ContentLength.Value)
             {
-                throw new DomainException(
-                    $"Hedef sürücüde yetersiz disk alanı. Gerekli: {FormatBytes(metadata.ContentLength.Value)}, Kullanılabilir: {FormatBytes(freeSpace.Value)}.");
+                throw new InsufficientDiskSpaceException(metadata.ContentLength.Value, freeSpace.Value);
             }
         }
 
@@ -100,18 +99,5 @@ public sealed class CreateDownloadCommandHandler
         } while (_fileStorage.FileExists(candidatePath));
 
         return candidatePath;
-    }
-
-    private static string FormatBytes(long bytes)
-    {
-        string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
-        int i = 0;
-        double dbl = bytes;
-        while (dbl >= 1024 && i < suffixes.Length - 1)
-        {
-            dbl /= 1024;
-            i++;
-        }
-        return $"{dbl:0.##} {suffixes[i]}";
     }
 }

@@ -338,7 +338,7 @@ public partial class DownloadItemViewModel : ObservableObject
         catch (Exception ex)
         {
             UpdateStatusState(DownloadStatus.Failed);
-            StatusText = Strings.StatusError(ex.Message);
+            StatusText = Strings.StatusError(DownloadErrorText.Format(ex));
             OnDownloadFinished(false, ex);
         }
     }
@@ -383,7 +383,7 @@ public partial class DownloadItemViewModel : ObservableObject
         catch (Exception ex)
         {
             UpdateStatusState(DownloadStatus.Failed);
-            StatusText = Strings.StatusError(ex.Message);
+            StatusText = Strings.StatusError(DownloadErrorText.Format(ex));
             OnDownloadFinished(false, ex);
         }
     }
@@ -508,7 +508,7 @@ public partial class DownloadItemViewModel : ObservableObject
         {
             _notificationService?.ShowNotification(
                 Strings.DownloadErrorTitle,
-                $"{FileName}: {ex.Message}",
+                $"{FileName}: {DownloadErrorText.Format(ex)}",
                 NotificationType.Error);
         }
     }
