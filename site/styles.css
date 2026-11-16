@@ -162,3 +162,12 @@ section[id], main[id] { scroll-margin-top: 72px; }
   *, *::before, *::after { transition-duration: 1ms !important; animation-duration: 1ms !important; }
   .js .reveal { opacity: 1; transform: none; }
 }
+
+/* Code signing policy sayfası */
+.policy h1 { font-size: clamp(2rem, 1.4rem + 2vw, 2.8rem); }
+.policy section { margin-top: var(--space-6); }
+.policy h2 { font-size: 1.4rem; margin-bottom: var(--space-2); }
+.policy p, .policy li { color: var(--fg-muted); }
+.policy strong { color: var(--fg); }
+.policy ul { padding-left: 1.2rem; }
+.policy p[lang="tr"] { border-left: 3px solid var(--border); padding-left: var(--space-2); }

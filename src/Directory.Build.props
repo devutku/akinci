@@ -1,0 +1,14 @@
+<Project>
+  <!--
+    Tüm dağıtılan dosyalarda aynı ürün bilgisi (SignPath Foundation şartı:
+    imzalanan her dosyada ürün adı ve sürüm meta verisi tutarlı olmalı).
+    Sürüm numarası her projenin <Version> değerinden gelir.
+  -->
+  <PropertyGroup>
+    <Product>Akıncı</Product>
+    <Company>Akıncı</Company>
+    <Copyright>Copyright © devutku</Copyright>
+    <!-- Ürün sürümü kurulum programıyla aynı kalsın (git karması eklenmesin) -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+  </PropertyGroup>
+</Project>
