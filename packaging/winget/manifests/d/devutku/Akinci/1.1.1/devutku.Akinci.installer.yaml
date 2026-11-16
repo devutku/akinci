@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.10.0.schema.json
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.installer.1.28.0.schema.json
 
 PackageIdentifier: devutku.Akinci
 PackageVersion: 1.1.1
@@ -21,4 +21,4 @@ Installers:
   InstallerUrl: https://github.com/devutku/akinci/releases/download/v1.1.1/Akinci-Setup-1.1.1.exe
   InstallerSha256: 5A18CF1D58A4626775F63E64D549A0B408C5396EC7A598464419A61F95654BC0
 ManifestType: installer
-ManifestVersion: 1.10.0
+ManifestVersion: 1.28.0

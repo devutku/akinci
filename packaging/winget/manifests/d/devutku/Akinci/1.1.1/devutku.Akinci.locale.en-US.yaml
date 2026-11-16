@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.10.0.schema.json
+# yaml-language-server: $schema=https://aka.ms/winget-manifest.defaultLocale.1.28.0.schema.json
 
 PackageIdentifier: devutku.Akinci
 PackageVersion: 1.1.1
@@ -30,4 +30,4 @@ Tags:
 - virustotal
 ReleaseNotesUrl: https://github.com/devutku/akinci/releases/tag/v1.1.1
 ManifestType: defaultLocale
-ManifestVersion: 1.10.0
+ManifestVersion: 1.28.0
