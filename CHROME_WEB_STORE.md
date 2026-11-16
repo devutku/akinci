@@ -23,6 +23,8 @@ powershell -ExecutionPolicy Bypass -File pack-extension.ps1
 
 Mağaza eklentiye kendi kimliğini (item ID) atar. Akıncı'nın mağaza kimliği: **`coeeghhijegibfhhodhnjhjffaipckok`**.
 
+**Durum:** Yayında — <https://chromewebstore.google.com/detail/coeeghhijegibfhhodhnjhjffaipckok> (ilk yayınlanan sürüm 1.0.2). Masaüstü uygulamasının "Eklentiyi Kur" adımı bu sayfayı açar (`BrowserIntegrationService.ChromeWebStoreUrl`). Yeni sürüm göndermek için `pack-extension.ps1` ile paketi üretip panelden **Paket → Yeni paket yükle** yapın; `manifest.json` sürümü artırılmış olmalıdır.
+
 Bu kimlik, masaüstü uygulamasının Native Messaging izin listesinde bulunmalıdır; yoksa mağazadan kurulan eklenti uygulamaya yalnızca `127.0.0.1` yedek yolu üzerinden ulaşır:
 
 - `src/Akinci.UI/Services/BrowserIntegrationService.cs` → `AllowedExtensionIds`

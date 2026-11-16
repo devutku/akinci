@@ -266,70 +266,52 @@ public static class BrowserIntegrationService
         }
     }
 
-    public static void OpenExtensionFolder()
-    {
-        var extDir = GetPermanentExtensionPath();
-        if (!Directory.Exists(extDir)) return;
+    /// <summary>Akıncı tarayıcı eklentisinin Chrome Web Mağazası sayfası.</summary>
+    public const string ChromeWebStoreUrl = "https://chromewebstore.google.com/detail/coeeghhijegibfhhodhnjhjffaipckok";
 
-        try
-        {
-            if (OperatingSystem.IsWindows())
-            {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = extDir,
-                    UseShellExecute = true
-                });
-            }
-            else if (OperatingSystem.IsMacOS())
-            {
-                Process.Start("open", $"\"{extDir}\"");
-            }
-            else if (OperatingSystem.IsLinux())
-            {
-                Process.Start("xdg-open", $"\"{extDir}\"");
-            }
-        }
-        catch { }
-    }
-
-    public static void OpenChromeExtensionsPage()
+    /// <summary>
+    /// Eklentinin Chrome Web Mağazası sayfasını açar: Chrome kuruluysa Chrome'da, değilse varsayılan tarayıcıda
+    /// (Edge, "diğer mağazalardan eklentilere izin ver" ile Chrome Web Mağazası'ndan kurulum yapabilir).
+    /// </summary>
+    public static void OpenChromeWebStorePage()
     {
         try
         {
             if (OperatingSystem.IsWindows())
             {
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "chrome",
-                    Arguments = "chrome://extensions",
-                    UseShellExecute = true
-                });
+                // "chrome", Windows'un App Paths kaydı üzerinden çözümlenir
+                Process.Start(new ProcessStartInfo { FileName = "chrome", Arguments = ChromeWebStoreUrl, UseShellExecute = true });
             }
             else if (OperatingSystem.IsMacOS())
             {
-                Process.Start("open", "-a \"Google Chrome\" \"chrome://extensions\"");
+                Process.Start("open", $"-a \"Google Chrome\" \"{ChromeWebStoreUrl}\"")?.WaitForExit();
             }
-            else if (OperatingSystem.IsLinux())
+            else
             {
-                Process.Start("google-chrome", "chrome://extensions");
+                Process.Start("google-chrome", ChromeWebStoreUrl);
             }
+            return;
         }
         catch
         {
-            try
-            {
-                if (OperatingSystem.IsWindows())
-                {
-                    Process.Start(new ProcessStartInfo
-                    {
-                        FileName = "msedge",
-                        Arguments = "edge://extensions",
-                        UseShellExecute = true
-                    });
-                }
-            }
-            catch { }
+            // Chrome yok: varsayılan tarayıcıya düş
         }
+
+        try
+        {
+            if (OperatingSystem.IsMacOS())
+            {
+                Process.Start("open", ChromeWebStoreUrl);
+            }
+            else if (OperatingSystem.IsLinux())
+            {
+                Process.Start("xdg-open", ChromeWebStoreUrl);
+            }
+            else
+            {
+                Process.Start(new ProcessStartInfo { FileName = ChromeWebStoreUrl, UseShellExecute = true });
+            }
+        }
+        catch { }
     }
 }

@@ -89,9 +89,11 @@ publish.bat
 
 ## 🌐 Tarayıcı Entegrasyonu Kurulumu
 
-Chrome, Microsoft Edge ve Firefox ile sağ tık *"Akıncı ile İndir"* entegrasyonu için:
-1. `src\Akinci.NativeHost\install-host.bat` dosyasını çalıştırın (veya Akıncı masaüstü uygulamasının otomatik kurulum bildirimini onaylayın).
-2. `src\Akinci.NativeHost\extension` klasörünü tarayıcınızın Geliştirici Modunda *"Paketlenmemiş Öğe Yükle"* seçeneğiyle ekleyin.
+Eklenti **[Chrome Web Mağazası](https://chromewebstore.google.com/detail/coeeghhijegibfhhodhnjhjffaipckok)**'nda yayında (Chrome ve Edge):
+1. Akıncı'nın ilk açılışta gösterdiği kurulum bildirimini onaylayın (veya **Ayarlar → Eklentiyi Kur**). Akıncı tarayıcı köprüsünü yapılandırır ve mağaza sayfasını açar.
+2. Mağaza sayfasında **Chrome'a ekle** deyin. Edge'de önce *"Diğer mağazalardaki uzantılara izin ver"* seçeneğini onaylayın.
+
+Geliştirme için: `src\Akinci.NativeHost\extension` klasörü Geliştirici Modunda *"Paketlenmemiş Öğe Yükle"* ile de eklenebilir (sabit geliştirme kimliğiyle).
 
 ---
 
