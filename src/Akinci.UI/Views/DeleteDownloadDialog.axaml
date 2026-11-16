@@ -1,7 +1,8 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:l="using:Akinci.UI.Localization"
         x:Class="Akinci.UI.Views.DeleteDownloadDialog"
-        Title="İndirmeyi Sil - AKINCI"
+        Title="{x:Static l:Strings.DeleteDialogTitle}"
         Icon="/Assets/akinci.ico"
         Width="480"
         SizeToContent="Height"
@@ -77,8 +78,8 @@
                               VerticalAlignment="Center" HorizontalAlignment="Center" />
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                    <TextBlock Text="İndirmeyi Sil" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" />
-                    <TextBlock Text="Bu indirmeyi nasıl kaldırmak istiyorsunuz?" FontSize="12" Foreground="#94A3B8" />
+                    <TextBlock Text="{x:Static l:Strings.DeleteHeader}" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" />
+                    <TextBlock Text="{x:Static l:Strings.DeleteQuestion}" FontSize="12" Foreground="#94A3B8" />
                 </StackPanel>
             </Grid>
 
@@ -103,8 +104,8 @@
                     <PathIcon Grid.Column="0" Data="{StaticResource IconClose}" Width="14" Height="14"
                               Foreground="#94A3B8" Margin="0,2,12,0" VerticalAlignment="Top" />
                     <StackPanel Grid.Column="1" Spacing="2">
-                        <TextBlock Text="Yalnızca Listeden Kaldır" FontSize="13" FontWeight="SemiBold" Foreground="#F8FAFC" />
-                        <TextBlock Text="İndirilen dosya diskinizde saklanmaya devam eder, yalnızca Akıncı listesinden temizlenir."
+                        <TextBlock Text="{x:Static l:Strings.RemoveFromList}" FontSize="13" FontWeight="SemiBold" Foreground="#F8FAFC" />
+                        <TextBlock Text="{x:Static l:Strings.RemoveFromListDescription}"
                                    FontSize="11" Foreground="#64748B" TextWrapping="Wrap" />
                     </StackPanel>
                 </Grid>
@@ -116,8 +117,8 @@
                     <PathIcon Grid.Column="0" Data="{StaticResource IconTrash}" Width="14" Height="14"
                               Foreground="#EF4444" Margin="0,2,12,0" VerticalAlignment="Top" />
                     <StackPanel Grid.Column="1" Spacing="2">
-                        <TextBlock Text="Dosyayı ve Listeyi Sil" FontSize="13" FontWeight="SemiBold" Foreground="#F87171" />
-                        <TextBlock Text="İndirilen dosya ve geçici parçalar bilgisayarınızdan kalıcı olarak silinir."
+                        <TextBlock Text="{x:Static l:Strings.DeleteFileAndList}" FontSize="13" FontWeight="SemiBold" Foreground="#F87171" />
+                        <TextBlock Text="{x:Static l:Strings.DeleteFileAndListDescription}"
                                    FontSize="11" Foreground="#991B1B" TextWrapping="Wrap" />
                     </StackPanel>
                 </Grid>
@@ -125,7 +126,7 @@
 
             <!-- Bottom Cancel Bar -->
             <Grid HorizontalAlignment="Right" Margin="0,4,0,0">
-                <Button Classes="cancel-btn" Content="Vazgeç" Click="OnCancelClick" />
+                <Button Classes="cancel-btn" Content="{x:Static l:Strings.KeepDownload}" Click="OnCancelClick" />
             </Grid>
         </StackPanel>
     </Border>

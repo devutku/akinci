@@ -19,6 +19,11 @@ public sealed class AppSettings
     public long SpeedLimitBytesPerSecond { get; set; } = 0;
 
     public bool EnableClipboardMonitor { get; set; } = false;
+
+    /// <summary>
+    /// Arayüz dili: "tr", "en" veya <c>null</c> (Windows dilini izle).
+    /// </summary>
+    public string? Language { get; set; }
 }
 
 public sealed class SettingsService
@@ -29,8 +34,13 @@ public sealed class SettingsService
     public AppSettings Current => _currentSettings;
 
     public SettingsService()
+        : this(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".akinci"))
     {
-        var appDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".akinci");
+    }
+
+    /// <summary>Ayarları belirtilen klasörde tutar (testler gerçek kullanıcı ayarlarına dokunmasın diye).</summary>
+    internal SettingsService(string appDir)
+    {
         if (!Directory.Exists(appDir))
         {
             Directory.CreateDirectory(appDir);
@@ -58,6 +68,13 @@ public sealed class SettingsService
                 var loaded = JsonSerializer.Deserialize<AppSettings>(json);
                 if (loaded != null)
                 {
+                    if (!HasLanguageKey(json))
+                    {
+                        // Dil seçeneğinden önceki sürümlerden gelen kullanıcı: arayüz şimdiye kadar Türkçeydi,
+                        // Windows dili farklı olsa bile güncellemeden sonra Türkçe kalsın.
+                        loaded.Language = Localization.Loc.TurkishCode;
+                        SaveSettings(loaded);
+                    }
                     return loaded;
                 }
             }
@@ -70,6 +87,13 @@ public sealed class SettingsService
         var defaultSettings = new AppSettings();
         SaveSettings(defaultSettings);
         return defaultSettings;
+    }
+
+    private static bool HasLanguageKey(string json)
+    {
+        using var doc = JsonDocument.Parse(json);
+        return doc.RootElement.ValueKind == JsonValueKind.Object &&
+               doc.RootElement.TryGetProperty(nameof(AppSettings.Language), out _);
     }
 
     public void SaveSettings(AppSettings settings)

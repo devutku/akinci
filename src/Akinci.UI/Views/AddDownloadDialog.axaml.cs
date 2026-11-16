@@ -1,3 +1,4 @@
+using Akinci.UI.Localization;
 using Akinci.UI.ViewModels;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
@@ -19,7 +20,7 @@ public partial class AddDownloadDialog : Window
         {
             var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
             {
-                Title = "İndirme Konumunu Seçin",
+                Title = Strings.ChooseDownloadFolder,
                 AllowMultiple = false
             });
 

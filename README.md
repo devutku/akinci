@@ -24,7 +24,7 @@
   <img src="site/assets/screenshot-main.png" alt="Akıncı main window" width="800" />
 </p>
 
-> **Note:** The desktop interface is currently in Turkish. This README, the CLI options and the browser extension are usable without knowing Turkish.
+> **Language:** The desktop app is available in English and Turkish. It follows your Windows display language, and you can change it under **Settings → Dil / Language**.
 
 ---
 
@@ -67,7 +67,7 @@ The core of the app (Domain and Application layers) follows **Clean Architecture
 
 1. Download `Akinci-Setup-<version>.exe` from the [Releases](https://github.com/devutku/akinci/releases/latest) page and run it.
 2. The installer is not code-signed yet, so Windows SmartScreen may show *"Windows protected your PC"*. Click **More info → Run anyway**.
-3. Follow the wizard. No administrator rights are needed: Akıncı installs for your user only, under `%LOCALAPPDATA%\Programs\Akinci`. If you have a VirusTotal API key you can enter it in the wizard, or add it later in **Ayarlar** (Settings).
+3. Follow the wizard. No administrator rights are needed: Akıncı installs for your user only, under `%LOCALAPPDATA%\Programs\Akinci`. If you have a VirusTotal API key you can enter it in the wizard, or add it later in **Settings**.
 
 To uninstall, pick *Akıncı* in **Control Panel → Programs and Features** (or **Settings → Apps**). Uninstalling never touches your downloaded files. You are asked whether to also remove settings and download history.
 
@@ -79,7 +79,7 @@ Each release also includes `linux-x64`, `osx-x64` and `osx-arm64` archives (`.ta
 
 ### VirusTotal API key
 
-Scanning needs a free [VirusTotal](https://www.virustotal.com/) account. Copy the API key from your account page into the installer or **Ayarlar** (Settings). Without a key, downloads work normally and are simply not checked.
+Scanning needs a free [VirusTotal](https://www.virustotal.com/) account. Copy the API key from your account page into the installer or **Settings**. Without a key, downloads work normally and are simply not checked.
 
 ---
 
@@ -87,7 +87,7 @@ Scanning needs a free [VirusTotal](https://www.virustotal.com/) account. Copy th
 
 The extension is published on the **[Chrome Web Store](https://chromewebstore.google.com/detail/coeeghhijegibfhhodhnjhjffaipckok)** and works in Chrome and Edge:
 
-1. Accept the setup prompt Akıncı shows on first launch (or open **Ayarlar** (Settings) and click **Eklentiyi Kur** (Install extension)). Akıncı registers the browser bridge and opens the store page.
+1. Accept the setup prompt Akıncı shows on first launch (or **Settings → Install Extension**). Akıncı registers the browser bridge and opens the store page.
 2. Click **Add to Chrome**. In Edge, first allow *"extensions from other stores"*.
 
 For development, the `src\Akinci.NativeHost\extension` folder can be loaded with **Load unpacked** in developer mode (it uses a fixed development ID).

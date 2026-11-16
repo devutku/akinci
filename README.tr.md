@@ -21,6 +21,8 @@
 
 Uygulamanın çekirdek iş kuralları (Domain ve Application katmanları); HTTP protokolü, disk G/Ç işlemleri, SQLite veri tabanı veya Avalonia UI gibi harici kütüphanelerden **tamamen izoledir**.
 
+> **Dil:** Masaüstü uygulaması Türkçe ve İngilizce kullanılabilir. Windows'un görüntüleme dilini izler; **Ayarlar → Dil / Language** bölümünden değiştirebilirsiniz.
+
 ---
 
 ## 🦅 Desteklenen Protokoller ve Kimlik Doğrulama

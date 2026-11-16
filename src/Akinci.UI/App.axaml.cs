@@ -10,6 +10,7 @@ using Akinci.Infrastructure.Persistence;
 using Akinci.Infrastructure.Resilience;
 using Akinci.Infrastructure.Security;
 using Akinci.Infrastructure.Storage;
+using Akinci.UI.Localization;
 using Akinci.UI.Services;
 using Akinci.UI.ViewModels;
 using Avalonia;
@@ -35,6 +36,9 @@ public partial class App : Avalonia.Application
         var serviceCollection = new ServiceCollection();
         ConfigureServices(serviceCollection);
         Services = serviceCollection.BuildServiceProvider();
+
+        // Arayüz dili, herhangi bir pencere veya metin oluşturulmadan önce seçilmeli
+        Loc.Initialize(Services.GetRequiredService<SettingsService>().Current.Language);
 
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
@@ -112,30 +116,30 @@ public partial class App : Avalonia.Application
     {
         var trayIcon = new TrayIcon
         {
-            ToolTipText = "Akıncı - Çok Kanallı İndirme Yöneticisi",
+            ToolTipText = Strings.TrayTooltip,
             Icon = _mainWindow!.Icon,
             IsVisible = true
         };
 
         var menu = new NativeMenu();
 
-        var showItem = new NativeMenuItem("Göster");
+        var showItem = new NativeMenuItem(Strings.TrayShow);
         showItem.Click += (_, _) => ShowMainWindow();
         menu.Add(showItem);
 
         menu.Add(new NativeMenuItemSeparator());
 
-        var resumeAllItem = new NativeMenuItem("Tümünü Başlat");
+        var resumeAllItem = new NativeMenuItem(Strings.ResumeAll);
         resumeAllItem.Click += async (_, _) => await mainWindowVm.ResumeAllAsync();
         menu.Add(resumeAllItem);
 
-        var pauseAllItem = new NativeMenuItem("Tümünü Duraklat");
+        var pauseAllItem = new NativeMenuItem(Strings.PauseAll);
         pauseAllItem.Click += async (_, _) => await mainWindowVm.PauseAllAsync();
         menu.Add(pauseAllItem);
 
         menu.Add(new NativeMenuItemSeparator());
 
-        var exitItem = new NativeMenuItem("Çıkış");
+        var exitItem = new NativeMenuItem(Strings.TrayExit);
         exitItem.Click += async (_, _) => await RequestGracefulShutdownAsync();
         menu.Add(exitItem);
 

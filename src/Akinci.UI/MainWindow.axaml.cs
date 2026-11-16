@@ -1,3 +1,4 @@
+using Akinci.UI.Localization;
 using Akinci.UI.Services;
 using Akinci.UI.ViewModels;
 using Akinci.UI.Views;
@@ -87,8 +88,8 @@ public partial class MainWindow : Window
             e.Cancel = true;
             Hide();
             _notificationService?.ShowNotification(
-                "Akıncı Arka Planda Çalışıyor",
-                "İndirmeleriniz devam ediyor. Görev çubuğundan geri açabilirsiniz.",
+                Strings.RunningInBackgroundTitle,
+                Strings.RunningInBackgroundBody,
                 Application.Ports.NotificationType.Information);
             return;
         }

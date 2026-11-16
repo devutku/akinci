@@ -8,6 +8,7 @@ using Akinci.Application.UseCases.StartDownload;
 using Akinci.Domain.Entities;
 using Akinci.Domain.Enums;
 using Akinci.Domain.ValueObjects;
+using Akinci.UI.Localization;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Threading;
@@ -68,7 +69,7 @@ public partial class DownloadItemViewModel : ObservableObject
     private string _progressBarColor = "#38BDF8";
 
     [ObservableProperty]
-    private string _statusText = "Beklemede";
+    private string _statusText = Strings.StatusPending;
 
     [ObservableProperty]
     private string _statusColor = "#94A3B8";
@@ -86,7 +87,7 @@ public partial class DownloadItemViewModel : ObservableObject
     private SecurityVerdict? _securityVerdict;
 
     [ObservableProperty]
-    private string _securityBadgeText = "Tarama Bekleniyor";
+    private string _securityBadgeText = Strings.SecurityAwaitingScan;
 
     [ObservableProperty]
     private string _securityBgColor = "#1E293B";
@@ -177,15 +178,15 @@ public partial class DownloadItemViewModel : ObservableObject
 
     private void UpdateProgressMetrics(long downloaded, long? total, double speedBps)
     {
-        TotalSizeText = total.HasValue ? FormatBytes(total.Value) : "Boyut Belirsiz";
+        TotalSizeText = total.HasValue ? FormatBytes(total.Value) : Strings.SizeUnknown;
         string downloadedStr = FormatBytes(downloaded);
-        string totalStr = total.HasValue ? FormatBytes(total.Value) : "Bilinmiyor";
+        string totalStr = total.HasValue ? FormatBytes(total.Value) : Strings.TotalUnknown;
 
         DownloadedAndTotalText = $"{downloadedStr} / {totalStr}";
         ProgressText = total.HasValue
             ? $"{downloadedStr} / {totalStr} ({ProgressPercentage:F1}%)"
-            : $"{downloadedStr} indirildi";
-        ConnectionsText = Chunks.Count > 0 ? $"{Chunks.Count} bağlantı" : "";
+            : Strings.DownloadedAmount(downloadedStr);
+        ConnectionsText = Chunks.Count > 0 ? Strings.ConnectionCount(Chunks.Count) : "";
 
         bool hasUnknownSize = !total.HasValue || total.Value <= 0;
         IsIndeterminate = hasUnknownSize && Status == DownloadStatus.Downloading;
@@ -199,10 +200,10 @@ public partial class DownloadItemViewModel : ObservableObject
         {
             EtaText = Status switch
             {
-                DownloadStatus.Completed => "Tamamlandı",
-                DownloadStatus.Paused => "Duraklatıldı",
-                DownloadStatus.Failed => "Hata",
-                DownloadStatus.Canceled => "İptal",
+                DownloadStatus.Completed => Strings.StatusCompleted,
+                DownloadStatus.Paused => Strings.StatusPaused,
+                DownloadStatus.Failed => Strings.EtaFailed,
+                DownloadStatus.Canceled => Strings.EtaCanceled,
                 _ => ""
             };
             return;
@@ -213,23 +214,23 @@ public partial class DownloadItemViewModel : ObservableObject
 
         if (seconds < 1)
         {
-            EtaText = "Kalan: < 1 sn";
+            EtaText = Strings.EtaUnderOneSecond;
         }
         else if (seconds < 60)
         {
-            EtaText = $"Kalan: {(int)seconds} sn";
+            EtaText = Strings.EtaSeconds((int)seconds);
         }
         else if (seconds < 3600)
         {
             int mins = (int)(seconds / 60);
             int secs = (int)(seconds % 60);
-            EtaText = $"Kalan: {mins} dk {secs} sn";
+            EtaText = Strings.EtaMinutes(mins, secs);
         }
         else
         {
             int hours = (int)(seconds / 3600);
             int mins = (int)((seconds % 3600) / 60);
-            EtaText = $"Kalan: {hours} sa {mins} dk";
+            EtaText = Strings.EtaHours(hours, mins);
         }
     }
 
@@ -262,12 +263,12 @@ public partial class DownloadItemViewModel : ObservableObject
 
         (StatusText, StatusTextColor, StatusBgColor, StatusBorderColor, ProgressBarColor) = status switch
         {
-            DownloadStatus.Downloading => ("İndiriliyor", "#93C5FD", "#0C2B45", "#1E4E79", "#38BDF8"),  // Pastel Mavi
-            DownloadStatus.Completed   => ("Tamamlandı", "#34D399", "#063A29", "#0D6348", "#10B981"),   // Pastel Yeşil
-            DownloadStatus.Paused      => ("Duraklatıldı", "#94A3B8", "#1E293B", "#334155", "#475569"), // Monokrom Gri
-            DownloadStatus.Failed      => ("Hata Oluştu", "#F87171", "#3C1313", "#6E2222", "#EF4444"),  // Pastel Kırmızı
-            DownloadStatus.Canceled    => ("İptal Edildi", "#64748B", "#182234", "#283548", "#334155"),
-            _                          => ("Beklemede", "#94A3B8", "#1E293B", "#334155", "#38BDF8")
+            DownloadStatus.Downloading => (Strings.StatusDownloading, "#93C5FD", "#0C2B45", "#1E4E79", "#38BDF8"),  // Pastel Mavi
+            DownloadStatus.Completed   => (Strings.StatusCompleted, "#34D399", "#063A29", "#0D6348", "#10B981"),    // Pastel Yeşil
+            DownloadStatus.Paused      => (Strings.StatusPaused, "#94A3B8", "#1E293B", "#334155", "#475569"),       // Monokrom Gri
+            DownloadStatus.Failed      => (Strings.StatusFailed, "#F87171", "#3C1313", "#6E2222", "#EF4444"),       // Pastel Kırmızı
+            DownloadStatus.Canceled    => (Strings.StatusCanceled, "#64748B", "#182234", "#283548", "#334155"),
+            _                          => (Strings.StatusPending, "#94A3B8", "#1E293B", "#334155", "#38BDF8")
         };
         StatusColor = StatusTextColor;
     }
@@ -277,7 +278,7 @@ public partial class DownloadItemViewModel : ObservableObject
         SecurityVerdict = verdict;
         if (verdict == null)
         {
-            SecurityBadgeText = "Tarama Bekleniyor";
+            SecurityBadgeText = SecurityVerdictText.Format(null);
             SecurityBgColor = "#1E293B";
             SecurityBorderColor = "#334155";
             SecurityTextColor = "#64748B";
@@ -286,7 +287,7 @@ public partial class DownloadItemViewModel : ObservableObject
             return;
         }
 
-        SecurityBadgeText = verdict.FormatBadge();
+        SecurityBadgeText = SecurityVerdictText.Format(verdict);
         HasThreat = verdict.HasThreat;
         IsSafe = verdict.IsSafe;
 
@@ -337,7 +338,7 @@ public partial class DownloadItemViewModel : ObservableObject
         catch (Exception ex)
         {
             UpdateStatusState(DownloadStatus.Failed);
-            StatusText = $"Hata: {ex.Message}";
+            StatusText = Strings.StatusError(ex.Message);
             OnDownloadFinished(false, ex);
         }
     }
@@ -382,7 +383,7 @@ public partial class DownloadItemViewModel : ObservableObject
         catch (Exception ex)
         {
             UpdateStatusState(DownloadStatus.Failed);
-            StatusText = $"Hata: {ex.Message}";
+            StatusText = Strings.StatusError(ex.Message);
             OnDownloadFinished(false, ex);
         }
     }
@@ -453,8 +454,8 @@ public partial class DownloadItemViewModel : ObservableObject
         {
             await desktop.MainWindow.Clipboard.SetTextAsync(Url);
             _notificationService?.ShowNotification(
-                "Bağlantı Kopyalandı",
-                "İndirme bağlantısı panoya kopyalandı.",
+                Strings.LinkCopiedTitle,
+                Strings.LinkCopiedBody,
                 NotificationType.Information);
         }
     }
@@ -468,8 +469,8 @@ public partial class DownloadItemViewModel : ObservableObject
         {
             await desktop.MainWindow.Clipboard.SetTextAsync(Task.Sha256Hash);
             _notificationService?.ShowNotification(
-                "SHA-256 Kopyalandı",
-                "Dosya hash değeri panoya kopyalandı.",
+                Strings.Sha256CopiedTitle,
+                Strings.Sha256CopiedBody,
                 NotificationType.Information);
         }
     }
@@ -481,8 +482,8 @@ public partial class DownloadItemViewModel : ObservableObject
         if (isSuccess && Task.Status == DownloadStatus.Completed)
         {
             _notificationService?.ShowNotification(
-                "İndirme Tamamlandı",
-                $"{FileName} başarıyla indirildi.",
+                Strings.DownloadCompletedTitle,
+                Strings.DownloadCompletedBody(FileName),
                 NotificationType.Success);
 
             if (Task.SecurityVerdict != null)
@@ -490,15 +491,15 @@ public partial class DownloadItemViewModel : ObservableObject
                 if (Task.SecurityVerdict.HasThreat)
                 {
                     _notificationService?.ShowNotification(
-                        "Güvenlik Uyarısı!",
-                        $"{FileName}: {Task.SecurityVerdict.FormatBadge()}",
+                        Strings.SecurityWarningTitle,
+                        $"{FileName}: {SecurityVerdictText.Format(Task.SecurityVerdict)}",
                         NotificationType.Warning);
                 }
                 else if (Task.SecurityVerdict.IsSafe)
                 {
                     _notificationService?.ShowNotification(
-                        "Güvenlik Taraması Temiz",
-                        $"{FileName}: {Task.SecurityVerdict.FormatBadge()}",
+                        Strings.SecurityCleanTitle,
+                        $"{FileName}: {SecurityVerdictText.Format(Task.SecurityVerdict)}",
                         NotificationType.Success);
                 }
             }
@@ -506,7 +507,7 @@ public partial class DownloadItemViewModel : ObservableObject
         else if (!isSuccess && ex != null)
         {
             _notificationService?.ShowNotification(
-                "İndirme Hatası",
+                Strings.DownloadErrorTitle,
                 $"{FileName}: {ex.Message}",
                 NotificationType.Error);
         }
@@ -533,8 +534,8 @@ public partial class DownloadItemViewModel : ObservableObject
         catch (Exception ex)
         {
             _notificationService?.ShowNotification(
-                "Dosya Açılamadı",
-                $"Dosya çalıştırılamadı: {ex.Message}",
+                Strings.CannotOpenFileTitle,
+                Strings.CannotOpenFileBody(ex.Message),
                 NotificationType.Error);
         }
     }

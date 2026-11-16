@@ -1,8 +1,12 @@
 using Akinci.Application.Ports;
+using Akinci.UI.Localization;
 using Akinci.UI.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace Akinci.UI.ViewModels;
+
+/// <summary>Ayarlardaki dil seçeneği. <see cref="Code"/> <c>null</c> ise sistem dili izlenir.</summary>
+public sealed record LanguageOption(string? Code, string DisplayName);
 
 public partial class SettingsDialogViewModel : ObservableObject
 {
@@ -27,6 +31,21 @@ public partial class SettingsDialogViewModel : ObservableObject
     [ObservableProperty]
     private bool _enableClipboardMonitor;
 
+    public IReadOnlyList<LanguageOption> LanguageOptions { get; } =
+    [
+        new LanguageOption(null, Strings.LanguageSystem),
+        new LanguageOption(Loc.TurkishCode, "Türkçe"),
+        new LanguageOption(Loc.EnglishCode, "English")
+    ];
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsLanguageChanged))]
+    private LanguageOption _selectedLanguage;
+
+    /// <summary>Seçilen dil şu an kullanılan dilden farklıysa yeniden başlatma notu gösterilir.</summary>
+    public bool IsLanguageChanged =>
+        Loc.Resolve(SelectedLanguage.Code, System.Globalization.CultureInfo.CurrentUICulture) != Loc.Current;
+
     public SettingsService SettingsService => _settingsService;
 
     public SettingsDialogViewModel(SettingsService settingsService, IBandwidthThrottler? throttler = null)
@@ -40,6 +59,7 @@ public partial class SettingsDialogViewModel : ObservableObject
         _speedLimitKbps = current.SpeedLimitBytesPerSecond > 0 ? current.SpeedLimitBytesPerSecond / 1024 : 0;
         _virusTotalApiKey = current.VirusTotalApiKey ?? "";
         _enableClipboardMonitor = current.EnableClipboardMonitor;
+        _selectedLanguage = LanguageOptions.FirstOrDefault(o => o.Code == current.Language) ?? LanguageOptions[0];
     }
 
     public void Save()
@@ -51,6 +71,7 @@ public partial class SettingsDialogViewModel : ObservableObject
         current.SpeedLimitBytesPerSecond = SpeedLimitKbps > 0 ? SpeedLimitKbps * 1024 : 0;
         current.VirusTotalApiKey = string.IsNullOrWhiteSpace(VirusTotalApiKey) ? null : VirusTotalApiKey.Trim();
         current.EnableClipboardMonitor = EnableClipboardMonitor;
+        current.Language = SelectedLanguage.Code;
         _settingsService.SaveSettings(current);
 
         if (_throttler != null)

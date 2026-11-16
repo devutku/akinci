@@ -193,8 +193,8 @@ public sealed class IpcServerService : IAsyncDisposable
                         credentials);
 
                     _notificationService.ShowNotification(
-                        "Tarayıcıdan İndirme Eklendi",
-                        $"Yeni görev kuyruğa alındı: {downloadReq.CustomFileName ?? downloadReq.Url}",
+                        Localization.Strings.BrowserDownloadAddedTitle,
+                        Localization.Strings.BrowserDownloadAddedBody(downloadReq.CustomFileName ?? downloadReq.Url),
                         Application.Ports.NotificationType.Success);
 
                     response.StatusCode = (int)HttpStatusCode.OK;

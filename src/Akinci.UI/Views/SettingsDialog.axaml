@@ -1,9 +1,10 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Akinci.UI.ViewModels"
+        xmlns:l="using:Akinci.UI.Localization"
         x:Class="Akinci.UI.Views.SettingsDialog"
         x:DataType="vm:SettingsDialogViewModel"
-        Title="Ayarlar - AKINCI"
+        Title="{x:Static l:Strings.SettingsDialogTitle}"
         Icon="/Assets/akinci.ico"
         Width="580"
         SizeToContent="Height"
@@ -73,43 +74,55 @@
                     <Image Source="/Assets/akinci-logo.png" Width="38" Height="38" />
                 </Border>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-                    <TextBlock Text="Uygulama Ayarları" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" />
-                    <TextBlock Text="İndirme tercihlerinizi ve VirusTotal entegrasyonunu yapılandırın." FontSize="11" Foreground="#64748B" />
+                    <TextBlock Text="{x:Static l:Strings.SettingsHeader}" FontSize="15" FontWeight="Bold" Foreground="#F8FAFC" />
+                    <TextBlock Text="{x:Static l:Strings.SettingsSubheader}" FontSize="11" Foreground="#64748B" />
                 </StackPanel>
             </Grid>
 
             <!-- Form Content: ekran yüksekliğine sığmazsa kaydırılır; başlık ve alt düğmeler sabit kalır -->
             <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <StackPanel Spacing="6" Margin="0,0,10,0">
-                <TextBlock Text="Varsayılan Kayıt Dizini" Classes="label" />
+                <TextBlock Text="{x:Static l:Strings.LanguageLabel}" Classes="label" />
+                <ComboBox ItemsSource="{Binding LanguageOptions}" SelectedItem="{Binding SelectedLanguage}"
+                          HorizontalAlignment="Stretch" Background="#18181C" Foreground="#F8FAFC" BorderBrush="#272730" CornerRadius="5">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate x:DataType="vm:LanguageOption">
+                            <TextBlock Text="{Binding DisplayName}" />
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <TextBlock Text="{x:Static l:Strings.LanguageRestartHint}" FontSize="11" Foreground="#64748B"
+                           TextWrapping="Wrap" IsVisible="{Binding IsLanguageChanged}" />
+
+                <TextBlock Text="{x:Static l:Strings.DefaultDirectoryLabel}" Classes="label" Margin="0,8,0,3" />
                 <Grid ColumnDefinitions="*,Auto">
                     <TextBox Grid.Column="0" Text="{Binding DefaultDirectory}" Margin="0,0,8,0" />
-                    <Button Grid.Column="1" Content="Seç..." Click="OnBrowseFolderClick" Classes="quiet-btn" Padding="12,7" />
+                    <Button Grid.Column="1" Content="{x:Static l:Strings.Browse}" Click="OnBrowseFolderClick" Classes="quiet-btn" Padding="12,7" />
                 </Grid>
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
-                    <TextBlock Grid.Column="0" Text="Varsayılan Bağlantı / Parça Sayısı" Classes="label" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="0" Text="{x:Static l:Strings.DefaultConnectionsLabel}" Classes="label" VerticalAlignment="Center" />
                     <TextBlock Grid.Column="1" Text="{Binding DefaultConnections}" FontWeight="Bold" Foreground="#38BDF8" FontSize="13" VerticalAlignment="Center" />
                 </Grid>
                 <Slider Minimum="1" Maximum="32" Value="{Binding DefaultConnections}" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,2,0,4" />
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
-                    <TextBlock Grid.Column="0" Text="Kuyruk: Eşzamanlı Maksimum Aktif İndirme" Classes="label" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="0" Text="{x:Static l:Strings.MaxConcurrentLabel}" Classes="label" VerticalAlignment="Center" />
                     <TextBlock Grid.Column="1" Text="{Binding MaxConcurrentDownloads}" FontWeight="Bold" Foreground="#38BDF8" FontSize="13" VerticalAlignment="Center" />
                 </Grid>
                 <Slider Minimum="1" Maximum="10" Value="{Binding MaxConcurrentDownloads}" IsSnapToTickEnabled="True" TickFrequency="1" Margin="0,2,0,4" />
 
                 <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
-                    <TextBlock Grid.Column="0" Text="Küresel Hız Sınırı (KB/s - 0 = Sınırsız)" Classes="label" VerticalAlignment="Center" />
+                    <TextBlock Grid.Column="0" Text="{x:Static l:Strings.SpeedLimitLabel}" Classes="label" VerticalAlignment="Center" />
                 </Grid>
-                <TextBox Text="{Binding SpeedLimitKbps}" PlaceholderText="Örn: 2048 (2 MB/s) veya 0 (Sınırsız)" />
+                <TextBox Text="{Binding SpeedLimitKbps}" PlaceholderText="{x:Static l:Strings.SpeedLimitPlaceholder}" />
 
                 <!-- Akıllı Pano İzleyici Kartı -->
                 <Border Background="#18181C" BorderBrush="#22222A" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,6,0,0">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="📋 Akıllı Pano İzleyici" FontWeight="SemiBold" FontSize="12" Foreground="#38BDF8" />
-                            <TextBlock Text="Akıncı açık ve odaktayken panoya kopyalanan indirme bağlantılarını algılar."
+                            <TextBlock Text="{x:Static l:Strings.ClipboardTitle}" FontWeight="SemiBold" FontSize="12" Foreground="#38BDF8" />
+                            <TextBlock Text="{x:Static l:Strings.ClipboardDescription}"
                                        FontSize="11" Foreground="#64748B" TextWrapping="Wrap" />
                         </StackPanel>
                         <ToggleSwitch Grid.Column="1" IsChecked="{Binding EnableClipboardMonitor}" OnContent="" OffContent="" Margin="8,0,0,0" VerticalAlignment="Center" />
@@ -119,10 +132,10 @@
                 <!-- VirusTotal Kartı (Strict Monochrome) -->
                 <Border Background="#18181C" BorderBrush="#22222A" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,6,0,0">
                     <StackPanel Spacing="6">
-                        <TextBlock Text="🛡 VirusTotal API Entegrasyonu" FontWeight="SemiBold" FontSize="12" Foreground="#34D399" />
-                        <TextBlock Text="İndirilen dosyaların 70+ antivirüs motoru ile taranması için API anahtarınızı girin."
+                        <TextBlock Text="{x:Static l:Strings.VirusTotalTitle}" FontWeight="SemiBold" FontSize="12" Foreground="#34D399" />
+                        <TextBlock Text="{x:Static l:Strings.VirusTotalDescription}"
                                    FontSize="11" Foreground="#64748B" TextWrapping="Wrap" />
-                        <TextBox Text="{Binding VirusTotalApiKey}" PasswordChar="●" PlaceholderText="VirusTotal API Key (64 karakter)" />
+                        <TextBox Text="{Binding VirusTotalApiKey}" PasswordChar="●" PlaceholderText="{x:Static l:Strings.VirusTotalPlaceholder}" />
                     </StackPanel>
                 </Border>
 
@@ -130,11 +143,11 @@
                 <Border Background="#18181C" BorderBrush="#22222A" BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,6,0,0">
                     <Grid ColumnDefinitions="*,Auto">
                         <StackPanel Grid.Column="0" Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Text="🌐 Chrome &amp; Edge İndirme Eklentisi" FontWeight="SemiBold" FontSize="12" Foreground="#38BDF8" />
-                            <TextBlock Text="İndirmeleri otomatik yakalayan tarayıcı eklentisini kurun veya yeniden yapılandırın."
+                            <TextBlock Text="{x:Static l:Strings.ExtensionTitle}" FontWeight="SemiBold" FontSize="12" Foreground="#38BDF8" />
+                            <TextBlock Text="{x:Static l:Strings.ExtensionDescription}"
                                        FontSize="11" Foreground="#64748B" TextWrapping="Wrap" />
                         </StackPanel>
-                        <Button Grid.Column="1" Content="Eklentiyi Kur..." Click="OnInstallExtensionClick" Classes="quiet-btn" Padding="12,7" Margin="8,0,0,0" />
+                        <Button Grid.Column="1" Content="{x:Static l:Strings.InstallExtensionButton}" Click="OnInstallExtensionClick" Classes="quiet-btn" Padding="12,7" Margin="8,0,0,0" />
                     </Grid>
                 </Border>
 
@@ -147,10 +160,10 @@
 
                         <StackPanel Grid.Row="1" Spacing="2">
                             <Grid ColumnDefinitions="*,Auto">
-                                <TextBlock Grid.Column="0" x:Name="TxtVersion" Text="AKINCI İndirme Motoru" FontWeight="SemiBold" FontSize="12" Foreground="#F8FAFC" />
+                                <TextBlock Grid.Column="0" x:Name="TxtVersion" Text="{x:Static l:Strings.AboutName}" FontWeight="SemiBold" FontSize="12" Foreground="#F8FAFC" />
                                 <TextBlock Grid.Column="1" Text=".NET 10 • Clean Core" FontSize="10" FontWeight="SemiBold" Foreground="#38BDF8" />
                             </Grid>
-                            <TextBlock Text="Katı Clean Core mimarisi, SocketsHttpHandler, FluentFTP, SQLite WAL persistence ve VirusTotal v3 analizi."
+                            <TextBlock Text="{x:Static l:Strings.AboutDescription}"
                                        FontSize="11" Foreground="#64748B" TextWrapping="Wrap" />
                         </StackPanel>
                     </Grid>
@@ -160,8 +173,8 @@
 
             <!-- Actions Footer -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8" Margin="0,16,0,0">
-                <Button Content="İptal" Click="OnCancelClick" Classes="quiet-btn" />
-                <Button Content="Kaydet" Click="OnSaveClick" Classes="primary-action-btn" />
+                <Button Content="{x:Static l:Strings.Cancel}" Click="OnCancelClick" Classes="quiet-btn" />
+                <Button Content="{x:Static l:Strings.Save}" Click="OnSaveClick" Classes="primary-action-btn" />
             </StackPanel>
         </Grid>
     </Border>

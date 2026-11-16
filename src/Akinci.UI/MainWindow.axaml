@@ -1,9 +1,10 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:Akinci.UI.ViewModels"
+        xmlns:l="using:Akinci.UI.Localization"
         x:Class="Akinci.UI.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Title="AKINCI - İndirme Yöneticisi"
+        Title="{x:Static l:Strings.MainWindowTitle}"
         Icon="/Assets/akinci.ico"
         Width="1080" Height="680"
         MinWidth="820" MinHeight="500"
@@ -213,7 +214,7 @@
                     </StackPanel>
 
                     <!-- Integrated Search Box (Quiet dark #18181C) -->
-                    <TextBox x:Name="SearchInputBox" Text="{Binding SearchQuery}" PlaceholderText="Filtrele veya ara (Ctrl+F)..."
+                    <TextBox x:Name="SearchInputBox" Text="{Binding SearchQuery}" PlaceholderText="{x:Static l:Strings.SearchPlaceholder}"
                              Width="210" Height="28" VerticalContentAlignment="Center"
                              Background="#18181C" Foreground="#F8FAFC" BorderBrush="#272730" CornerRadius="5" Padding="8,0" FontSize="12">
                         <TextBox.InnerLeftContent>
@@ -227,40 +228,40 @@
                     <TextBlock Text="↓" Foreground="#38BDF8" FontWeight="Bold" FontSize="12" VerticalAlignment="Center" />
                     <TextBlock Text="{Binding TotalSpeedText}" Foreground="#38BDF8" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
                     <TextBlock Text="•" Foreground="#272730" FontSize="12" Margin="4,0" VerticalAlignment="Center" />
-                    <TextBlock Text="Aktif:" Foreground="#64748B" FontSize="12" VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Static l:Strings.ActiveLabel}" Foreground="#64748B" FontSize="12" VerticalAlignment="Center" />
                     <TextBlock Text="{Binding ActiveCount}" Foreground="#F8FAFC" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
                     <TextBlock Text="•" Foreground="#272730" FontSize="12" Margin="4,0" VerticalAlignment="Center" />
-                    <TextBlock Text="Biten:" Foreground="#64748B" FontSize="12" VerticalAlignment="Center" />
+                    <TextBlock Text="{x:Static l:Strings.CompletedLabel}" Foreground="#64748B" FontSize="12" VerticalAlignment="Center" />
                     <TextBlock Text="{Binding CompletedCount}" Foreground="#F8FAFC" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center" />
                 </StackPanel>
 
                 <!-- Right: Quiet Buttons, Accent Action + Integrated Window Controls -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-                    <Button Command="{Binding PauseAllCommand}" Classes="icon-btn" ToolTip.Tip="Tümünü Duraklat">
+                    <Button Command="{Binding PauseAllCommand}" Classes="icon-btn" ToolTip.Tip="{x:Static l:Strings.PauseAll}">
                         <PathIcon Data="{StaticResource IconPauseAll}" Width="12" Height="12" Foreground="#F8FAFC" />
                     </Button>
-                    <Button Command="{Binding ResumeAllCommand}" Classes="icon-btn" ToolTip.Tip="Tümünü Başlat">
+                    <Button Command="{Binding ResumeAllCommand}" Classes="icon-btn" ToolTip.Tip="{x:Static l:Strings.ResumeAll}">
                         <PathIcon Data="{StaticResource IconResumeAll}" Width="12" Height="12" Foreground="#F8FAFC" />
                     </Button>
-                    <Button Click="OnSettingsClick" Classes="icon-btn" ToolTip.Tip="Ayarlar">
+                    <Button Click="OnSettingsClick" Classes="icon-btn" ToolTip.Tip="{x:Static l:Strings.Settings}">
                         <PathIcon Data="{StaticResource IconSettings}" Width="12" Height="12" Foreground="#F8FAFC" />
                     </Button>
 
                     <Rectangle Width="1" Height="16" Fill="#272730" Margin="4,0" VerticalAlignment="Center" />
 
                     <!-- Single Clean Highlighted Button (#38BDF8) -->
-                    <Button Content="+ İndirme Ekle" Click="OnAddDownloadClick" Classes="primary-action-btn" />
+                    <Button Content="{x:Static l:Strings.AddDownloadButton}" Click="OnAddDownloadClick" Classes="primary-action-btn" />
 
                     <Rectangle Width="1" Height="16" Fill="#272730" Margin="4,0" VerticalAlignment="Center" />
 
                     <!-- Frameless Window Controls (Minimize, Maximize, Close) -->
-                    <Button Click="OnMinimizeClick" Classes="window-control-btn" ToolTip.Tip="Simge Durumuna Küçült">
+                    <Button Click="OnMinimizeClick" Classes="window-control-btn" ToolTip.Tip="{x:Static l:Strings.Minimize}">
                         <PathIcon Data="{StaticResource IconMinimize}" Width="12" Height="12" Foreground="#CBD5E1" />
                     </Button>
-                    <Button Click="OnMaximizeClick" Classes="window-control-btn" ToolTip.Tip="Büyüt / Önceki Boyut">
+                    <Button Click="OnMaximizeClick" Classes="window-control-btn" ToolTip.Tip="{x:Static l:Strings.MaximizeRestore}">
                         <PathIcon Data="{StaticResource IconMaximize}" Width="11" Height="11" Foreground="#CBD5E1" />
                     </Button>
-                    <Button Click="OnCloseClick" Classes="window-control-btn window-close-btn" ToolTip.Tip="Kapat (Arka Plana Al)">
+                    <Button Click="OnCloseClick" Classes="window-control-btn window-close-btn" ToolTip.Tip="{x:Static l:Strings.CloseToBackground}">
                         <PathIcon Data="{StaticResource IconClose}" Width="11" Height="11" Foreground="#CBD5E1" />
                     </Button>
                 </StackPanel>
@@ -273,14 +274,14 @@
             <Border Grid.Column="0" Background="#131317" BorderBrush="#1E1E24" BorderThickness="0,0,1,0" Padding="8,10">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                     <StackPanel Spacing="2">
-                        <TextBlock Text="İNDİRMELER" FontSize="10" FontWeight="SemiBold" Foreground="#475569" Margin="10,2,0,6" />
+                        <TextBlock Text="{x:Static l:Strings.SectionDownloads}" FontSize="10" FontWeight="SemiBold" Foreground="#475569" Margin="10,2,0,6" />
 
                         <!-- Tümü -->
                         <Button Click="OnFilterClicked" Tag="Tümü" Classes="nav-item" Classes.selected="{Binding IsAllSelected}">
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                                     <PathIcon Data="{StaticResource IconInbox}" Width="13" Height="13" />
-                                    <TextBlock Text="Tümü" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static l:Strings.FilterAll}" FontSize="12" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="2" Text="{Binding TotalCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
                             </Grid>
@@ -291,7 +292,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                                     <PathIcon Data="{StaticResource IconDownload}" Width="13" Height="13" />
-                                    <TextBlock Text="İndirilenler" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static l:Strings.FilterDownloading}" FontSize="12" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="2" Text="{Binding ActiveCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
                             </Grid>
@@ -302,7 +303,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                                     <PathIcon Data="{StaticResource IconPause}" Width="13" Height="13" />
-                                    <TextBlock Text="Duraklatılanlar" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static l:Strings.FilterPaused}" FontSize="12" VerticalAlignment="Center" />
                                 </StackPanel>
                             </Grid>
                         </Button>
@@ -312,7 +313,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                                     <PathIcon Data="{StaticResource IconCheck}" Width="13" Height="13" />
-                                    <TextBlock Text="Tamamlananlar" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static l:Strings.FilterCompleted}" FontSize="12" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="2" Text="{Binding CompletedCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
                             </Grid>
@@ -320,14 +321,14 @@
 
                         <Rectangle Height="1" Fill="#1E1E24" Margin="4,8" />
 
-                        <TextBlock Text="KATEGORİLER" FontSize="10" FontWeight="SemiBold" Foreground="#475569" Margin="10,2,0,6" />
+                        <TextBlock Text="{x:Static l:Strings.SectionCategories}" FontSize="10" FontWeight="SemiBold" Foreground="#475569" Margin="10,2,0,6" />
 
                         <!-- Tümü (Kategori) -->
                         <Button Click="OnCategoryClicked" Tag="Tümü" Classes="nav-item" Classes.selected="{Binding IsCategoryAllSelected}">
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                                     <PathIcon Data="{StaticResource IconGrid}" Width="13" Height="13" />
-                                    <TextBlock Text="Tüm Türler" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static l:Strings.CategoryAll}" FontSize="12" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="2" Text="{Binding TotalCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
                             </Grid>
@@ -338,7 +339,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                                     <PathIcon Data="{StaticResource IconVideo}" Width="13" Height="13" />
-                                    <TextBlock Text="Videolar" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static l:Strings.CategoryVideo}" FontSize="12" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="2" Text="{Binding CategoryVideoCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
                             </Grid>
@@ -349,7 +350,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                                     <PathIcon Data="{StaticResource IconAudio}" Width="13" Height="13" />
-                                    <TextBlock Text="Müzik &amp; Ses" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static l:Strings.CategoryAudio}" FontSize="12" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="2" Text="{Binding CategoryAudioCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
                             </Grid>
@@ -360,7 +361,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                                     <PathIcon Data="{StaticResource IconDocument}" Width="13" Height="13" />
-                                    <TextBlock Text="Belgeler" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static l:Strings.CategoryDocuments}" FontSize="12" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="2" Text="{Binding CategoryDocumentCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
                             </Grid>
@@ -371,7 +372,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                                     <PathIcon Data="{StaticResource IconProgram}" Width="13" Height="13" />
-                                    <TextBlock Text="Programlar" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static l:Strings.CategoryPrograms}" FontSize="12" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="2" Text="{Binding CategoryProgramCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
                             </Grid>
@@ -382,7 +383,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                                     <PathIcon Data="{StaticResource IconArchive}" Width="13" Height="13" />
-                                    <TextBlock Text="Sıkıştırılmış" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static l:Strings.CategoryArchives}" FontSize="12" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="2" Text="{Binding CategoryArchiveCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
                             </Grid>
@@ -393,7 +394,7 @@
                             <Grid ColumnDefinitions="Auto,*,Auto">
                                 <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="9" VerticalAlignment="Center">
                                     <PathIcon Data="{StaticResource IconFile}" Width="13" Height="13" />
-                                    <TextBlock Text="Diğer" FontSize="12" VerticalAlignment="Center" />
+                                    <TextBlock Text="{x:Static l:Strings.CategoryOther}" FontSize="12" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Grid.Column="2" Text="{Binding CategoryOtherCount}" FontSize="11" Foreground="#64748B" VerticalAlignment="Center" />
                             </Grid>
@@ -409,9 +410,9 @@
                             IsVisible="{Binding !FilteredDownloads.Count}">
                     <Image Source="/Assets/akinci-logo.png" Width="64" Height="64" Opacity="0.55" HorizontalAlignment="Center" />
                     <StackPanel Spacing="5" HorizontalAlignment="Center">
-                        <TextBlock Text="Henüz bir indirme eklenmedi" FontSize="15" FontWeight="SemiBold"
+                        <TextBlock Text="{x:Static l:Strings.EmptyTitle}" FontSize="15" FontWeight="SemiBold"
                                    Foreground="#CBD5E1" HorizontalAlignment="Center" />
-                        <TextBlock Text="Bağlantı yapıştırmak için Ctrl + V tuşlarına basın veya yukarıdan '+ İndirme Ekle'ye tıklayın."
+                        <TextBlock Text="{x:Static l:Strings.EmptyHint}"
                                    FontSize="12" Foreground="#64748B" HorizontalAlignment="Center" />
                     </StackPanel>
                 </StackPanel>
@@ -425,50 +426,50 @@
                                 <Border Classes="download-row" DoubleTapped="OnRowDoubleTapped">
                                     <Border.ContextMenu>
                                         <ContextMenu Background="#18181C" BorderBrush="#272730" BorderThickness="1" CornerRadius="6">
-                                            <MenuItem Header="Dosyayı Aç" Command="{Binding OpenFileCommand}" IsVisible="{Binding IsCompleted}">
+                                            <MenuItem Header="{x:Static l:Strings.OpenFile}" Command="{Binding OpenFileCommand}" IsVisible="{Binding IsCompleted}">
                                                 <MenuItem.Icon>
                                                     <PathIcon Data="{StaticResource IconFile}" Width="12" Height="12" Foreground="#38BDF8" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
-                                            <MenuItem Header="Klasörde Göster" Command="{Binding OpenFolderCommand}">
+                                            <MenuItem Header="{x:Static l:Strings.ShowInFolder}" Command="{Binding OpenFolderCommand}">
                                                 <MenuItem.Icon>
                                                     <PathIcon Data="{StaticResource IconFolder}" Width="12" Height="12" Foreground="#94A3B8" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
                                             <Separator />
-                                            <MenuItem Header="İndirmeyi Duraklat" Command="{Binding PauseCommand}" IsVisible="{Binding CanPause}">
+                                            <MenuItem Header="{x:Static l:Strings.PauseDownload}" Command="{Binding PauseCommand}" IsVisible="{Binding CanPause}">
                                                 <MenuItem.Icon>
                                                     <PathIcon Data="{StaticResource IconPause}" Width="12" Height="12" Foreground="#38BDF8" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
-                                            <MenuItem Header="İndirmeye Devam Et" Command="{Binding ResumeCommand}" IsVisible="{Binding CanResume}">
+                                            <MenuItem Header="{x:Static l:Strings.ResumeDownload}" Command="{Binding ResumeCommand}" IsVisible="{Binding CanResume}">
                                                 <MenuItem.Icon>
                                                     <PathIcon Data="{StaticResource IconResumeAll}" Width="12" Height="12" Foreground="#38BDF8" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
-                                            <MenuItem Header="Yeniden Başlat" Command="{Binding RestartCommand}">
+                                            <MenuItem Header="{x:Static l:Strings.Restart}" Command="{Binding RestartCommand}">
                                                 <MenuItem.Icon>
                                                     <PathIcon Data="{StaticResource IconRestart}" Width="12" Height="12" Foreground="#F59E0B" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
                                             <Separator />
-                                            <MenuItem Header="İndirme Adresini Kopyala" Command="{Binding CopyUrlCommand}">
+                                            <MenuItem Header="{x:Static l:Strings.CopyUrl}" Command="{Binding CopyUrlCommand}">
                                                 <MenuItem.Icon>
                                                     <PathIcon Data="{StaticResource IconCopy}" Width="12" Height="12" Foreground="#94A3B8" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
-                                            <MenuItem Header="SHA-256 Değerini Kopyala" Command="{Binding CopySha256Command}" IsVisible="{Binding HasSha256}">
+                                            <MenuItem Header="{x:Static l:Strings.CopySha256}" Command="{Binding CopySha256Command}" IsVisible="{Binding HasSha256}">
                                                 <MenuItem.Icon>
                                                     <PathIcon Data="{StaticResource IconHash}" Width="12" Height="12" Foreground="#34D399" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
-                                            <MenuItem Header="Güvenlik Raporunu Aç" Command="{Binding OpenSecurityReportCommand}" IsVisible="{Binding SecurityVerdict, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                            <MenuItem Header="{x:Static l:Strings.OpenSecurityReport}" Command="{Binding OpenSecurityReportCommand}" IsVisible="{Binding SecurityVerdict, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                 <MenuItem.Icon>
                                                     <PathIcon Data="{StaticResource IconShield}" Width="12" Height="12" Foreground="{Binding SecurityTextColor}" />
                                                 </MenuItem.Icon>
                                             </MenuItem>
                                             <Separator />
-                                            <MenuItem Header="İndirmeyi Sil..." Command="{Binding DeleteCommand}">
+                                            <MenuItem Header="{x:Static l:Strings.DeleteDownloadMenu}" Command="{Binding DeleteCommand}">
                                                 <MenuItem.Icon>
                                                     <PathIcon Data="{StaticResource IconTrash}" Width="12" Height="12" Foreground="#EF4444" />
                                                 </MenuItem.Icon>
@@ -497,7 +498,7 @@
                                                         CornerRadius="4"
                                                         Padding="6,2"
                                                         Cursor="Hand"
-                                                        ToolTip.Tip="VirusTotal Güvenlik Raporu (Tıkla ve Aç)"
+                                                        ToolTip.Tip="{x:Static l:Strings.SecurityBadgeTooltip}"
                                                         IsVisible="{Binding SecurityVerdict, Converter={x:Static ObjectConverters.IsNotNull}}">
                                                     <StackPanel Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                                         <PathIcon Data="{StaticResource IconShield}" Width="10" Height="10"
@@ -565,31 +566,31 @@
                                             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
                                                 <!-- Open File Action (Tamamlandığında doğrudan dosyayı açar) -->
                                                 <Button Command="{Binding OpenFileCommand}" IsVisible="{Binding IsCompleted}"
-                                                        Classes="row-action" ToolTip.Tip="Dosyayı Aç">
+                                                        Classes="row-action" ToolTip.Tip="{x:Static l:Strings.OpenFile}">
                                                     <PathIcon Data="{StaticResource IconFile}" Width="13" Height="13" Foreground="#38BDF8" />
                                                 </Button>
 
                                                 <!-- Pause Action (Net, dolgulu ve canlı duraklatma) -->
                                                 <Button Command="{Binding PauseCommand}" IsVisible="{Binding CanPause}"
-                                                        Classes="row-action-primary" ToolTip.Tip="İndirmeyi Duraklat">
+                                                        Classes="row-action-primary" ToolTip.Tip="{x:Static l:Strings.PauseDownload}">
                                                     <PathIcon Data="{StaticResource IconPause}" Width="13" Height="13" Foreground="#38BDF8" />
                                                 </Button>
 
                                                 <!-- Resume Action (Canlı mavi/camgöbeği başlat ve devam et) -->
                                                 <Button Command="{Binding ResumeCommand}" IsVisible="{Binding CanResume}"
-                                                        Classes="row-action-primary" ToolTip.Tip="İndirmeyi Başlat / Devam Et">
+                                                        Classes="row-action-primary" ToolTip.Tip="{x:Static l:Strings.StartOrResumeDownload}">
                                                     <PathIcon Data="{StaticResource IconResumeAll}" Width="13" Height="13" Foreground="#38BDF8" />
                                                 </Button>
 
                                                 <!-- Open Folder Action -->
                                                 <Button Command="{Binding OpenFolderCommand}"
-                                                        Classes="row-action" ToolTip.Tip="Klasörde Göster">
+                                                        Classes="row-action" ToolTip.Tip="{x:Static l:Strings.ShowInFolder}">
                                                     <PathIcon Data="{StaticResource IconFolder}" Width="13" Height="13" Foreground="#94A3B8" />
                                                 </Button>
 
                                                 <!-- Delete Action -->
                                                 <Button Command="{Binding DeleteCommand}"
-                                                        Classes="row-action" ToolTip.Tip="İndirmeyi Sil...">
+                                                        Classes="row-action" ToolTip.Tip="{x:Static l:Strings.DeleteDownloadMenu}">
                                                     <PathIcon Data="{StaticResource IconTrash}" Width="13" Height="13" Foreground="#EF4444" />
                                                 </Button>
                                             </StackPanel>

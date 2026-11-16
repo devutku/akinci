@@ -4,6 +4,24 @@ Bu projedeki tüm önemli değişiklikler bu dosyada belgelenmektedir.
 
 Biçimlendirme [Keep a Changelog](https://keepachangelog.com/tr/1.0.0/) standardına dayanmaktadır ve bu proje [Semantic Versioning](https://semver.org/lang/tr/) kurallarına uymaktadır.
 
+## [Yayınlanmadı] (Unreleased)
+
+### ✨ Eklenenler (Added)
+- **İngilizce Arayüz:** Masaüstü uygulaması artık Türkçe ve İngilizce kullanılabilir. **Ayarlar → Dil / Language** ile "Sistem dili", "Türkçe" veya "English" seçilir; değişiklik Akıncı yeniden başlatıldığında uygulanır.
+  - Yeni kurulumlar Windows'un görüntüleme dilini izler: Windows Türkçe ise Türkçe, değilse İngilizce açılır.
+  - Önceki sürümlerden güncelleyenlerde arayüz, Windows dili farklı olsa bile Türkçe kalır.
+  - Tepsi menüsü, bildirimler, durum ve kalan süre metinleri ile VirusTotal rozeti de seçilen dilde gösterilir.
+
+### ⚡ Değiştirilenler ve İyileştirmeler (Changed)
+- **VirusTotal Rozeti Taramanın Neden Yapılamadığını Gösterir:** API anahtarı girilmemişse, istek limiti aşılmışsa veya bağlantı kurulamamışsa rozet artık bunu söylüyor. Önceden bu durumların hepsinde "Tarama Bekleniyor" yazıyordu.
+- Güvenlik sonucunun nedeni veritabanına dil bağımsız bir kod olarak kaydedilir (`vt_reason`). Eski kayıtlar açılışta mevcut mesajlarından tanınır.
+
+### 📌 Bilinen Sınırlamalar
+- İndirme hatası mesajları (ör. sunucunun dosya yerine web sayfası döndürmesi) çekirdek katmandan geldiği için İngilizce arayüzde de Türkçe görünür.
+- Tarayıcı eklentisi, kurulum programı ve komut satırı (CLI) henüz yalnızca Türkçe.
+
+---
+
 ## [1.1.1] - 2026-11-16
 
 ### ⚡ Değiştirilenler ve İyileştirmeler (Changed)
